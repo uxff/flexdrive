@@ -29,7 +29,13 @@ type DbNamespace interface {
 var cfgExpireSec int64 = 60 * 30
 
 func Insert(entityPtr interface{}) (int64, error) {
-	n, err := envinit.Dbs[common.DBNamespace].Insert(entityPtr)
+
+	dbname := common.DBMysqlDrive
+	if entityOfDb, ok := entityPtr.(DbNamespace); ok {
+		dbname = entityOfDb.DbNamespace()
+	}
+
+	n, err := envinit.Dbs[dbname].Insert(entityPtr)
 	if err != nil {
 		log.Errorf("insert error:%v", err)
 	}
@@ -43,10 +49,12 @@ func Insert(entityPtr interface{}) (int64, error) {
 */
 func GetByCol(colName string, colVal interface{}, entityPtr interface{}) (found bool, err error) {
 	// auto load cache
-	//if common.DBNamespace == common.DBPostgre {
-	//	colName = fmt.Sprintf(`"%s"`, colName)
-	//}
-	found, err = envinit.Dbs[common.DBNamespace].Where(colName+" = ?", colVal).Get(entityPtr)
+	dbname := common.DBMysqlDrive
+	if entityOfDb, ok := entityPtr.(DbNamespace); ok {
+		dbname = entityOfDb.DbNamespace()
+	}
+
+	found, err = envinit.Dbs[dbname].Where(colName+" = ?", colVal).Get(entityPtr)
 	return
 }
 
@@ -78,7 +86,7 @@ func GetByColWithCache(colName string, colVal interface{}, entityPtr interface{}
 
 // 保证entityPtr不为空指针，本函数会对其进行写
 func CacheGet(cacheKey string, entityPtr interface{}) error {
-	redisConn, _ := envinit.GetRdsConn(common.RedisNamespace)
+	redisConn, _ := envinit.GetRdsConn(common.RedisDrive)
 	if redisConn == nil {
 		return errors.New("get redis connection failed")
 	}
@@ -99,7 +107,7 @@ func CacheGet(cacheKey string, entityPtr interface{}) error {
 
 // 确保entityPtr对应的对象中有值，本函数只读其值
 func CacheSet(cacheKey string, entityPtr interface{}) error {
-	redisConn, _ := envinit.GetRdsConn(common.RedisNamespace)
+	redisConn, _ := envinit.GetRdsConn(common.RedisDrive)
 	if redisConn == nil {
 		return errors.New("get redis connection failed")
 	}
@@ -116,7 +124,7 @@ func CacheSet(cacheKey string, entityPtr interface{}) error {
 
 // entityEmptyPtr可空
 func CacheDel(cacheKey string) error {
-	redisConn, _ := envinit.GetRdsConn(common.RedisNamespace)
+	redisConn, _ := envinit.GetRdsConn(common.RedisDrive)
 	if redisConn == nil {
 		return errors.New("get redis connection failed")
 	}
@@ -132,10 +140,12 @@ func CacheDel(cacheKey string) error {
 */
 func UpdateByCol(colName string, colVal interface{}, entityPtrWithValue interface{}, cols []string) (n int64, err error) {
 
-	//if common.DBNamespace == common.DBPostgre {
-	//	colName = fmt.Sprintf(`"%s"`, colName)
-	//}
-	n, err = envinit.Dbs[common.DBNamespace].Cols(cols...).Where(colName+" = ?", colVal).Update(entityPtrWithValue)
+	dbname := common.DBMysqlDrive
+	if entityOfDb, ok := entityPtrWithValue.(DbNamespace); ok {
+		dbname = entityOfDb.DbNamespace()
+	}
+
+	n, err = envinit.Dbs[dbname].Cols(cols...).Where(colName+" = ?", colVal).Update(entityPtrWithValue)
 	return
 }
 
@@ -156,7 +166,12 @@ func DeleteByCol(colName string, colVal interface{}, statusColName string, entit
 	// auto update cache
 	// cols := []string{"status"}
 
-	_, err = envinit.Dbs[common.DBNamespace].Table(entityEmptyPtr).Cols(statusColName).Where(colName+" = ?", colVal).Update(map[string]interface{}{
+	dbname := common.DBMysqlDrive
+	if entityOfDb, ok := entityEmptyPtr.(DbNamespace); ok {
+		dbname = entityOfDb.DbNamespace()
+	}
+
+	_, err = envinit.Dbs[dbname].Table(entityEmptyPtr).Cols(statusColName).Where(colName+" = ?", colVal).Update(map[string]interface{}{
 		statusColName: StatusDeleted, // 此处转小写，否则pg不兼容
 	})
 
@@ -211,7 +226,12 @@ func ListAndCountByCondition(entityPtr interface{}, conditions map[string]interf
 		}
 	}
 
-	session := envinit.Dbs[common.DBNamespace].Where(whereStr, whereVal...)
+	dbname := common.DBMysqlDrive
+	if entityOfDb, ok := entityPtr.(DbNamespace); ok {
+		dbname = entityOfDb.DbNamespace()
+	}
+
+	session := envinit.Dbs[dbname].Where(whereStr, whereVal...)
 	for k, v := range whererInMap {
 		session.In(k, v)
 	}
@@ -227,7 +247,7 @@ func ListAndCountByCondition(entityPtr interface{}, conditions map[string]interf
 	total = nCount
 
 	// 此处必须重新建一个session,不能继续用上次的session
-	session = envinit.Dbs[common.DBNamespace].Where(whereStr, whereVal...)
+	session = envinit.Dbs[dbname].Where(whereStr, whereVal...)
 	for k, v := range whererInMap {
 		session.In(k, v)
 	}
@@ -259,7 +279,12 @@ func ListByCondition(entityPtr interface{}, conditions map[string]interface{}, p
 		whereVal = append(whereVal, cv)
 	}
 
-	session := envinit.Dbs[common.DBNamespace].Where(whereStr, whereVal...).Limit(pageSize, (pageNo-1)*pageSize)
+	dbname := common.DBMysqlDrive
+	if entityOfDb, ok := entityPtr.(DbNamespace); ok {
+		dbname = entityOfDb.DbNamespace()
+	}
+
+	session := envinit.Dbs[dbname].Where(whereStr, whereVal...).Limit(pageSize, (pageNo-1)*pageSize)
 	if orderBy != "" {
 		session = session.OrderBy(orderBy)
 	}
@@ -296,9 +321,14 @@ func RangeTableByConditions(tableEntity interface{}, conditions map[string]inter
 		whereVal = append(whereVal, cv)
 	}
 
+	dbname := common.DBMysqlDrive
+	if entityOfDb, ok := tableEntity.(DbNamespace); ok {
+		dbname = entityOfDb.DbNamespace()
+	}
+
 	// 每页读取
 	for {
-		session := envinit.Dbs[common.DBNamespace].Where(whereStr, whereVal...).Limit(pageSize, (startPageNo-1)*pageSize)
+		session := envinit.Dbs[dbname].Where(whereStr, whereVal...).Limit(pageSize, (startPageNo-1)*pageSize)
 		if orderBy != "" {
 			session = session.OrderBy(orderBy)
 		}
@@ -352,7 +382,12 @@ func CountByCondition(entityPtr interface{}, conditions map[string]interface{}) 
 		whereVal = append(whereVal, cv)
 	}
 
-	total, err = envinit.Dbs[common.DBNamespace].Where(whereStr, whereVal...).Count(entityPtr)
+	dbname := common.DBMysqlDrive
+	if entityOfDb, ok := entityPtr.(DbNamespace); ok {
+		dbname = entityOfDb.DbNamespace()
+	}
+
+	total, err = envinit.Dbs[dbname].Where(whereStr, whereVal...).Count(entityPtr)
 	// log.Debugf("nCount of listByCondition =%d", nCount)
 	if err != nil {
 		log.Errorf("countByCondition error:%v", err)
