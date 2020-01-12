@@ -26,7 +26,7 @@ type DbNamespace interface {
 }
 
 // 缓存过期时间 30min
-var cfgExpireSec int64 = 60 * 30
+var cacheExpireSec int64 = 60 * 30
 
 func Insert(entityPtr interface{}) (int64, error) {
 
@@ -118,7 +118,7 @@ func CacheSet(cacheKey string, entityPtr interface{}) error {
 		return err
 	}
 
-	_, err = redisConn.SetEx(cacheKey, cfgExpireSec, string(redisVal))
+	_, err = redisConn.SetEx(cacheKey, cacheExpireSec, string(redisVal))
 	return err
 }
 
