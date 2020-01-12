@@ -5,13 +5,14 @@ import (
 	"github.com/uxff/flexdrive/pkg/log"
 )
 
-func QueryByRid(rid int32) (*Role, error) {
-	m := Role{}
+func GetById(id int32) (*Role, error) {
+	e := Role{}
 
-	has, err := base.GetByColWithCache("rid", rid, &m)
+	//has, err := base.GetByColWithCache("id", id, &e)
+	has, err := base.GetByCol("id", id, &e)
 	// has, err := db.Dbs[common.DBNameNamespace].Engine.Where("merAppId=?", merAppId).Get(&mc)
 	if err != nil {
-		log.Errorf("query(rid=%d) failed:%v", rid, err)
+		log.Errorf("query(id=%d) failed:%v", id, err)
 		return nil, err
 	}
 
@@ -19,5 +20,5 @@ func QueryByRid(rid int32) (*Role, error) {
 		return nil, nil
 	}
 
-	return &m, nil
+	return &e, nil
 }

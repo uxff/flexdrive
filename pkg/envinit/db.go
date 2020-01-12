@@ -8,7 +8,6 @@ import (
 	"time"
 )
 
-
 // Dbs 分库分表数据库名称映射
 var Dbs map[string]*xorm.Engine
 

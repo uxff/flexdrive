@@ -283,4 +283,3 @@ func (r *RdsConn) ZIncrBy(key string, member string, v int64) (int64, error) {
 func (r *RdsConn) Publish(key string, value string) (int64, error) {
 	return redis.Int64(r.Conn.Do("PUBLISH", key, value))
 }
-

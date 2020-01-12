@@ -11,11 +11,9 @@ type Tracer struct {
 	Logger
 }
 
-
 func (t *Tracer) Debugf(format string, args ...interface{}) {
 	t.Logger.Debugf(t.wrapTraceId()+format, args...)
 }
-
 
 func (t *Tracer) Infof(format string, args ...interface{}) {
 	t.Logger.Infof(t.wrapTraceId()+format, args...)
@@ -45,6 +43,6 @@ func Trace(traceId string) Logger {
 
 	return &Tracer{
 		TraceId: traceId,
-		Logger: DefaultLogger,
+		Logger:  DefaultLogger,
 	}
 }

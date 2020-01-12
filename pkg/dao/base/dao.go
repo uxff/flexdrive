@@ -201,7 +201,7 @@ conditions = ["a = ?"=>1,"b like '%?%'"=>"bb"]
 // 如果conditions map的key里不包含“?”，则默认认为value是slice,即使用where in
 // 允许conditions里key的value为空
 */
-func ListAndCountByCondition(entityPtr interface{}, conditions map[string]interface{}, pageNo int, pageSize int, listSlicePtr interface{}, orderBy string) (total int64, err error) {
+func ListAndCountByCondition(entityPtr interface{}, conditions map[string]interface{}, pageNo int, pageSize int, orderBy string, listSlicePtr interface{}) (total int64, err error) {
 	if pageNo <= 0 {
 		pageNo = 1
 	}
@@ -258,8 +258,9 @@ func ListAndCountByCondition(entityPtr interface{}, conditions map[string]interf
 /**
 conditions = ["a = ?"=>1,"b like '%?%'"=>"bb"]
 // 允许conditions里key的value为空
+// listSlicePtr for output slice
 */
-func ListByCondition(entityPtr interface{}, conditions map[string]interface{}, pageNo int, pageSize int, listSlicePtr interface{}, orderBy string) (err error) {
+func ListByCondition(entityPtr interface{}, conditions map[string]interface{}, pageNo int, pageSize int, orderBy string, listSlicePtr interface{}) (err error) {
 
 	if pageNo <= 0 {
 		pageNo = 1

@@ -8,7 +8,7 @@ import (
 
 type TTT struct {
 	CreateAt JsonTime
-	StdTime time.Time
+	StdTime  time.Time
 }
 
 func TestJsonTime_IsEmptyTime(t *testing.T) {

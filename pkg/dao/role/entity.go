@@ -5,14 +5,14 @@ import (
 )
 
 type Role struct {
-	Rid      int32         `xorm:"pk autoincr COMMENT('角色id') 'rid'"`
-	RName    string        `xorm:"varchar(40) COMMENT('角色名') 'rname'"`
+	Rid      int32          `xorm:"pk autoincr COMMENT('角色id') 'rid'"`
+	RName    string         `xorm:"varchar(40) COMMENT('角色名') 'rname'"`
 	RCreated utils.JsonTime `xorm:"created not null default '0000-00-00 00:00:00' 'rcreated'"`
 	RUpdated utils.JsonTime `xorm:"updated not null default '0000-00-00 00:00:00' 'rupdated'"`
 	RDeleted utils.JsonTime `xorm:"not null default '0000-00-00 00:00:00' 'rdeleted'"`
-	RStatus  int8          `xorm:"not null tinyint  default(1) COMMENT('状态') 'rstatus'"`
-	RIsSuper int8          `xorm:"not null tinyint  default(0) COMMENT('是否是超管') 'rissuper'"`
-	RAccess  string        `xorm:"text COMMENT('角色权限配置 json') 'raccess'"`
+	RStatus  int8           `xorm:"not null tinyint  default(1) COMMENT('状态') 'rstatus'"`
+	RIsSuper int8           `xorm:"not null tinyint  default(0) COMMENT('是否是超管') 'rissuper'"`
+	RAccess  string         `xorm:"text COMMENT('角色权限配置 json') 'raccess'"`
 }
 
 func (m Role) TableName() string {

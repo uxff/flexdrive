@@ -15,11 +15,10 @@ import (
 )
 
 var (
-	version         = "0.1"
-	showVersion 	bool
-	logLevel     	= 0
+	version     = "0.1"
+	showVersion bool
+	logLevel    = 0
 )
-
 
 func main() {
 
@@ -49,7 +48,6 @@ func main() {
 		log.Fatalf("main error:%v", err)
 	}
 }
-
 
 func Serve(envMap map[string]string) error {
 
