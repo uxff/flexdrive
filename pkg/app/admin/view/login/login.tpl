@@ -34,12 +34,12 @@
                           <div class="col-sm-4">
                             <input class="form-control" name="captcha" type="text">
                           </div>
-                        {{create_captcha}}
+                        {..{ create_captcha}.. }
                       </div>
                       <div class="form-group text-center">
                         <div class="col-sm-12">
 			    		  <input class="btn btn-lg btn-success btn-block" type="submit" value="登录">
-                            <a href="{{urlfor "UsersController.PasswordReset"}}">
+                            <a href="{urlfor "UsersController.PasswordReset"}">
                                 忘记秘钥，请点击此处 »
                             </a>
 
@@ -48,7 +48,7 @@
                     </form>
 			    </div>
 
-                <div class="panel-footer text-center clearfix">没有账户 <a href='{{urlfor "UsersController.Signup"}}'>注册 »</a></div>
+                <div class="panel-footer text-center clearfix">没有账户 <a href='{urlfor "UsersController.Signup"}'>注册 »</a></div>
 
 			</div>
 		</div>

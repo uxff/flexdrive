@@ -36,7 +36,7 @@
                           <div class="col-sm-4">
                               <input class="form-control" name="captcha" type="text">
                           </div>
-                      {{create_captcha}}
+                      { {create_captcha} }
                       </div>
                       <div class="form-group text-center">
                           <label for="isCheckedProtocol"><input type="checkbox" id="isCheckedProtocol"/>我同意<a href="javascript:;">注册协议</a></label>

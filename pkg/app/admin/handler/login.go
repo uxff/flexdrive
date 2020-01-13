@@ -5,6 +5,7 @@ import (
 	"github.com/uxff/flexdrive/pkg/dao"
 	"github.com/uxff/flexdrive/pkg/dao/base"
 	"github.com/uxff/flexdrive/pkg/log"
+	"net/http"
 	"time"
 )
 
@@ -19,8 +20,12 @@ type LoginResponse struct {
 	Mid       int    `json:"mid"`
 }
 
-// 提交登录的处理
 func Login(c *gin.Context) {
+	c.HTML(http.StatusOK, "view/login/login.tpl", gin.H{})
+}
+
+// 提交登录的处理
+func LoginForm(c *gin.Context) {
 	// 如果已经登录 则跳到成功页
 	//gpaToken, _ := verifyFromCookie(c)
 	//if gpaToken == nil {

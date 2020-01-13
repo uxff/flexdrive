@@ -79,7 +79,7 @@ func ManagerList(c *gin.Context) {
 
 	// 列表查询
 	list := make([]*dao.Manager, 0)
-	total, err := base.ListAndCountByCondition(&dao.Manager{}, req.ToCondition(), req.Page, req.PageSize, &list, "")
+	total, err := base.ListAndCountByCondition(&dao.Manager{}, req.ToCondition(), req.Page, req.PageSize, "", &list)
 	if err != nil {
 		log.Trace(requestId).Errorf("list failed:%v", err)
 		StdErrResponse(c, ErrInternal)

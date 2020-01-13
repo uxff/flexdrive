@@ -7,6 +7,7 @@ package main
 
 import (
 	"flag"
+	"github.com/uxff/flexdrive/pkg/app/admin/handler"
 	"github.com/uxff/flexdrive/pkg/log"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -18,6 +19,7 @@ var (
 	version     = "0.1"
 	showVersion bool
 	logLevel    = 0
+	serveAddr   = "127.0.0.1:10011"
 )
 
 func main() {
@@ -50,5 +52,5 @@ func main() {
 }
 
 func Serve(envMap map[string]string) error {
-
+	return handler.StartHttpServer(serveAddr)
 }
