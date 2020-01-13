@@ -1,6 +1,8 @@
 package dao
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"github.com/uxff/flexdrive/pkg/dao/base"
 	"time"
 )
@@ -32,4 +34,26 @@ func (t *Manager) GetById(id int) error {
 func (t *Manager) UpdateById(cols []string) error {
 	_, err := base.UpdateByCol("id", t.Id, t, cols)
 	return err
+}
+
+func (t *Manager) GetByName(name string) error {
+	_, err := base.GetByCol("name", name, t)
+	return err
+}
+
+func (t *Manager) IsPwdValid(p string) bool {
+	enc := md5.New()
+	enc.Write([]byte(p))
+
+	return hex.EncodeToString(enc.Sum(nil)) == t.Pwd
+}
+func (t *Manager) SetPwd(p string) {
+	enc := md5.New()
+	enc.Write([]byte(p))
+
+	t.Pwd = hex.EncodeToString(enc.Sum(nil))
+}
+
+func (t *Manager) IsSuperRole() bool {
+	return t.IsSuper == 1
 }
