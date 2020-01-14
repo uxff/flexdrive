@@ -16,7 +16,7 @@
 
     <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation" >
       <ul class="nav navbar-nav">
-        <li><a href='{{urlfor "IndexController.Links"}}'>
+        <li><a href='/'>
           <span class="glyphicon glyphicon-home"></span> Fancy Navigator
         </a></li>
         <li>
