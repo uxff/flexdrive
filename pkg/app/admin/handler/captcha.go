@@ -12,7 +12,7 @@ import (
 
 func GetCaptcha(c *gin.Context) {
 	captchaId := captcha.New()
-	c.SetCookie(CookieKeyCaptchaId, captchaId, 3600*24*7, "", "", true, false)
+	c.SetCookie(CookieKeyCaptchaId, captchaId, 3600*24*7, "", "", false, false)
 
 	c.Writer.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 	c.Writer.Header().Set("Pragma", "no-cache")
@@ -32,7 +32,7 @@ func VerifyCaptcha(c *gin.Context, value string) bool {
 	requestId := c.GetString(CtxKeyRequestId)
 	captchaId, err := c.Cookie(CookieKeyCaptchaId)
 	if err != nil {
-		log.Trace(requestId).Errorf("cookie里没有captchaId")
+		log.Trace(requestId).Errorf("cookie里没有_captchaId")
 		return false
 	}
 

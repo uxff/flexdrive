@@ -1,18 +1,22 @@
 /**
 	分布式(distributed)
     运行方式：
- 	APPENV=beta SERVICE_PORT=9001 DATASTORE_URL='mysql://yourusername:yourpwd@tcp(yourmysqlhost)/yourdbname?charset=utf8mb4&parseTime=True&loc=Local' ./main
+ 	APPENV=beta SERVEADMIN=127.0.0.1:10011 DATADSN='mysql://yourusername:yourpwd@tcp(yourmysqlhost)/yourdbname?charset=utf8mb4&parseTime=True&loc=Local' ./main
 */
 package main
 
 import (
 	"flag"
+	slog "log"
+	"os"
+
+	"github.com/uxff/flexdrive/pkg/common"
+
 	"github.com/uxff/flexdrive/pkg/app/admin/handler"
+	"github.com/uxff/flexdrive/pkg/envinit"
 	"github.com/uxff/flexdrive/pkg/log"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	slog "log"
-	"os"
 )
 
 var (
@@ -20,6 +24,9 @@ var (
 	showVersion bool
 	logLevel    = 0
 	serveAddr   = "127.0.0.1:10011"
+	serveAdmin  = "127.0.0.1:10011"
+	dataDsn     = "mysql://user:pass@tcp(127.0.0.1:3306)/flexdrive?charset=utf8mb4&parseTime=True&loc=Local"
+	cacheDsn    = ""
 )
 
 func main() {
@@ -44,6 +51,19 @@ func main() {
 
 	log.SetLogger(logger.Sugar())
 
+	if s := os.Getenv("DATADSN"); s != "" {
+		dataDsn = s
+	}
+
+	if s := os.Getenv("SERVEADMIN"); s != "" {
+		serveAdmin = s
+	}
+
+	err = envinit.InitMysql(common.DBMysqlDrive, dataDsn)
+	if err != nil {
+		log.Fatalf("cannot init mysql, err:%s", err)
+	}
+
 	envMap := make(map[string]string)
 
 	if err := Serve(envMap); err != nil {
@@ -52,5 +72,5 @@ func main() {
 }
 
 func Serve(envMap map[string]string) error {
-	return handler.StartHttpServer(serveAddr)
+	return handler.StartHttpServer(serveAdmin)
 }

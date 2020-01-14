@@ -16,7 +16,8 @@ CREATE TABLE `user` (
   `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '创建时间',
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态 1=正常启用 99=账户冻结 ',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `IDX_email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `user_level` (
@@ -43,7 +44,8 @@ CREATE TABLE `manager` (
   `isSuper` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否是超管 1=超管',
   `lastLoginAt` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '最后登录时间',
   `lastLoginIp` varchar(16) NOT NULL DEFAULT '' COMMENT '最后登录ip',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `IDX_email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `role` (

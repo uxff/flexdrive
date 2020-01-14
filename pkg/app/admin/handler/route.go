@@ -3,8 +3,6 @@ package handler
 import (
 	"context"
 	"fmt"
-	"github.com/mattn/go-runewidth"
-	"github.com/uxff/flexdrive/pkg/log"
 	"html/template"
 	"net/http"
 	"net/url"
@@ -12,6 +10,9 @@ import (
 	"reflect"
 	"strings"
 	"time"
+
+	"github.com/mattn/go-runewidth"
+	"github.com/uxff/flexdrive/pkg/log"
 
 	"github.com/gin-gonic/gin"
 )
@@ -34,11 +35,11 @@ func StartHttpServer(addr string) error {
 	// 登录
 	router.GET("/login", TraceMiddleWare, Login)
 	router.POST("/login", TraceMiddleWare, LoginForm)
-	router.GET("/api/logout", TraceMiddleWare, Logout)
-	//router.GET("/api/app/config", TraceMiddleWare, GetAppConfig)
+	router.GET("/logout", TraceMiddleWare, Logout)
+	//router.GET("/app/config", TraceMiddleWare, GetAppConfig)
 
 	// 验证码
-	router.GET("/api/captcha", GetCaptcha)
+	router.GET("/captcha", GetCaptcha)
 
 	// 导出下载 基于登录cookie验证
 	authRouter := router.Group("/api", TraceMiddleWare, AuthMiddleWare)
@@ -156,6 +157,9 @@ func StartHttpServer(addr string) error {
 		},
 		"urlfor": func(endpoint string, values ...interface{}) string {
 			return endpoint
+		},
+		"captchaUrl": func() string {
+			return fmt.Sprintf("/captcha?t=%d", time.Now().Unix())
 		},
 	})
 

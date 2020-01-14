@@ -1,17 +1,18 @@
 package handler
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/uxff/flexdrive/pkg/dao"
 	"github.com/uxff/flexdrive/pkg/dao/base"
 	"github.com/uxff/flexdrive/pkg/log"
-	"net/http"
-	"time"
 )
 
 type LoginRequst struct {
 	LoginName string `form:"loginName"`
-	Pwd       string `form:"pwd"`
+	Pwd       string `form:"password"`
 	Captcha   string `form:"captcha"`
 }
 

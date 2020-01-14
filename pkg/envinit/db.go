@@ -1,11 +1,15 @@
 package envinit
 
 import (
+	"errors"
+	"regexp"
+	"time"
+
 	"github.com/go-xorm/core"
 	"github.com/go-xorm/xorm"
 	"github.com/uxff/flexdrive/pkg/log"
-	"regexp"
-	"time"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 // Dbs 分库分表数据库名称映射
@@ -15,14 +19,30 @@ func init() {
 	Dbs = make(map[string]*xorm.Engine)
 }
 
+func InitMysql(namespace, dsn string) error {
+	eng, err := ConnectMysql(dsn)
+	if err != nil {
+		log.Errorf("connect mysql %s error:%v", dsn, err)
+		return err
+	}
+
+	// redo register namespace is not allowed
+	if _, ok := Dbs[namespace]; ok {
+		log.Errorf("namespace already exist, do not redo this")
+		return errors.New("namespace already exit")
+	}
+
+	Dbs[namespace] = eng
+	return nil
+}
+
 // InitMysql 链接数据库 path 为 dsn
-func InitMysql(path string) *xorm.Engine {
+func ConnectMysql(path string) (*xorm.Engine, error) {
 	var err error
 	engine, err := xorm.NewEngine("mysql", path)
 	if err != nil {
-
-		log.Fatalf("xorm create err:", err)
-		return nil
+		//log.Fatalf("xorm create err:", err)
+		return nil, err
 	}
 
 	engine.Ping()
@@ -32,13 +52,13 @@ func InitMysql(path string) *xorm.Engine {
 	re := regexp.MustCompile(`/\w*\?`)
 	str := re.FindString(path)
 	if len(str) < 2 {
-		log.Fatalf("prefix parse dbname err:", str, path)
-		return nil
+		//log.Fatalf("prefix parse dbname err:", str, path)
+		return nil, errors.New("regexp find dbname failed")
 	}
 	dbPrefix := ""
 	mptable := core.NewPrefixMapper(&core.SnakeMapper{}, dbPrefix)
 	engine.SetTableMapper(mptable)
 
 	// Engine.ShowSQL(true)
-	return engine
+	return engine, nil
 }
