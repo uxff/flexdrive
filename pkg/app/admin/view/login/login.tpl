@@ -1,4 +1,7 @@
-{{ define "admin/login/login.tpl" }}
+{{ define "login/login.tpl" }}
+
+{{template "common/head.tpl" .}}
+{{template "common/partheader.tpl" .}}
 
 <div class="container">
     <div class="row vertical-offset-75">
@@ -40,4 +43,8 @@
 		</div>
 	</div>
 </div>
+
+{{template "common/partfooter.tpl"}}
+{{template "common/foot.tpl"}}
+
 {{ end }}

@@ -9,7 +9,7 @@
     {{range .HeadStyles}}
         <link rel="stylesheet" href="{{.}}">
     {{end}}
- </head>
+</head>
 <body id="home">
 
   {{.BaseHeader}}

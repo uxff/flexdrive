@@ -1,3 +1,4 @@
+{{define "common/partheader.tpl"}}
 <header id="topbar" class="navbar navbar-default navbar-fixed-top bs-docs-nav" role="banner">
   <div class="container">
     <div class="row">
@@ -59,3 +60,4 @@
   </div>
 
 </header>
+{{end}}

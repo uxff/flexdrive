@@ -22,8 +22,8 @@ type LoginResponse struct {
 
 func Login(c *gin.Context) {
 	//c.HTML(http.StatusOK, "pkg/app/admin/view/login/login.tpl", gin.H{})
-	c.HTML(http.StatusOK, "admin/login/login.tpl", gin.H{
-		"path":"login",
+	c.HTML(http.StatusOK, "login/login.tpl", gin.H{
+		"path": "login",
 	})
 }
 
