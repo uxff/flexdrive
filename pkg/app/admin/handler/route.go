@@ -32,8 +32,8 @@ func StartHttpServer(addr string) error {
 
 	// 公共路由
 	// 登录
-	router.GET("/login", TraceMiddleWare, LoginForm)
-	router.POST("/login", TraceMiddleWare, Login)
+	router.GET("/login", TraceMiddleWare, Login)
+	router.POST("/login", TraceMiddleWare, LoginForm)
 	router.GET("/api/logout", TraceMiddleWare, Logout)
 	//router.GET("/api/app/config", TraceMiddleWare, GetAppConfig)
 

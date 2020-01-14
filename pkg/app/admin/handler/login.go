@@ -21,7 +21,10 @@ type LoginResponse struct {
 }
 
 func Login(c *gin.Context) {
-	c.HTML(http.StatusOK, "view/login/login.tpl", gin.H{})
+	//c.HTML(http.StatusOK, "pkg/app/admin/view/login/login.tpl", gin.H{})
+	c.HTML(http.StatusOK, "admin/login/login.tpl", gin.H{
+		"path":"login",
+	})
 }
 
 // 提交登录的处理
