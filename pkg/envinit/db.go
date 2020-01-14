@@ -33,6 +33,7 @@ func InitMysql(namespace, dsn string) error {
 	}
 
 	Dbs[namespace] = eng
+	log.Debugf("namespace %s is registered ok", namespace)
 	return nil
 }
 
