@@ -22,7 +22,7 @@ import (
 var (
 	version     = "0.1"
 	showVersion bool
-	logLevel    = 0
+	logLevel    = -1
 	serveAddr   = "127.0.0.1:10011"
 	serveAdmin  = "127.0.0.1:10011"
 	dataDsn     = "mysql://user:pass@tcp(127.0.0.1:3306)/flexdrive?charset=utf8mb4&parseTime=True&loc=Local"
@@ -42,7 +42,7 @@ func main() {
 
 	lcf := zap.NewDevelopmentConfig()
 	lcf.Level.SetLevel(zapcore.Level(logLevel))
-	lcf.Development = false
+	lcf.Development = true
 	lcf.DisableStacktrace = true
 	logger, err := lcf.Build(zap.AddCallerSkip(1))
 	if err != nil {
@@ -63,6 +63,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("cannot init mysql, err:%s", err)
 	}
+
+	log.Infof("db %s init ok", dataDsn)
 
 	envMap := make(map[string]string)
 

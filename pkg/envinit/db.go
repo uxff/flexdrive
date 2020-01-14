@@ -20,16 +20,17 @@ func init() {
 }
 
 func InitMysql(namespace, dsn string) error {
-	eng, err := ConnectMysql(dsn)
-	if err != nil {
-		log.Errorf("connect mysql %s error:%v", dsn, err)
-		return err
-	}
-
+	log.Debugf("will connect %s", dsn)
 	// redo register namespace is not allowed
 	if _, ok := Dbs[namespace]; ok {
 		log.Errorf("namespace already exist, do not redo this")
 		return errors.New("namespace already exit")
+	}
+
+	eng, err := ConnectMysql(dsn)
+	if err != nil {
+		log.Errorf("connect mysql %s error:%v", dsn, err)
+		return err
 	}
 
 	Dbs[namespace] = eng
@@ -59,6 +60,7 @@ func ConnectMysql(path string) (*xorm.Engine, error) {
 	dbPrefix := ""
 	mptable := core.NewPrefixMapper(&core.SnakeMapper{}, dbPrefix)
 	engine.SetTableMapper(mptable)
+	engine.SetColumnMapper(&core.SameMapper{})
 
 	// Engine.ShowSQL(true)
 	return engine, nil
