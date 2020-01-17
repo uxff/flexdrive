@@ -1,8 +1,9 @@
 package dao
 
 import (
-	"github.com/uxff/flexdrive/pkg/dao/base"
 	"time"
+
+	"github.com/uxff/flexdrive/pkg/dao/base"
 )
 
 type Role struct {
@@ -26,4 +27,10 @@ func (t *Role) GetById(id int) error {
 func (t *Role) UpdateById(cols []string) error {
 	_, err := base.UpdateByCol("id", t.Id, t, cols)
 	return err
+}
+
+func GetRoleById(id int) (*Role, error) {
+	ent := &Role{}
+	err := ent.GetById(id)
+	return ent, err
 }

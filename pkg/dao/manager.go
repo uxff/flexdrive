@@ -3,8 +3,11 @@ package dao
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"github.com/uxff/flexdrive/pkg/dao/base"
 	"time"
+
+	"github.com/uxff/flexdrive/pkg/log"
+
+	"github.com/uxff/flexdrive/pkg/dao/base"
 )
 
 type Manager struct {
@@ -36,8 +39,8 @@ func (t *Manager) UpdateById(cols []string) error {
 	return err
 }
 
-func (t *Manager) GetByName(name string) error {
-	_, err := base.GetByCol("name", name, t)
+func (t *Manager) GetByEmail(email string) error {
+	_, err := base.GetByCol("email", email, t)
 	return err
 }
 
@@ -45,7 +48,9 @@ func (t *Manager) IsPwdValid(p string) bool {
 	enc := md5.New()
 	enc.Write([]byte(p))
 
-	return hex.EncodeToString(enc.Sum(nil)) == t.Pwd
+	s := hex.EncodeToString(enc.Sum(nil))
+	log.Debugf("IsPwdValid: p:%s p.md5:%s expected t.md5:%s t==s:%v", p, s, t.Pwd, s == t.Pwd)
+	return s == t.Pwd
 }
 func (t *Manager) SetPwd(p string) {
 	enc := md5.New()
@@ -56,4 +61,16 @@ func (t *Manager) SetPwd(p string) {
 
 func (t *Manager) IsSuperRole() bool {
 	return t.IsSuper == 1
+}
+
+func GetManagerById(id int) (*Manager, error) {
+	m := &Manager{}
+	err := m.GetById(id)
+	return m, err
+}
+
+func GetManagerByEmail(email string) (*Manager, error) {
+	m := &Manager{}
+	err := m.GetByEmail(email)
+	return m, err
 }

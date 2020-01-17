@@ -1,7 +1,7 @@
 /**
 	分布式(distributed)
     运行方式：
- 	APPENV=beta SERVEADMIN=127.0.0.1:10011 DATADSN='mysql://yourusername:yourpwd@tcp(yourmysqlhost)/yourdbname?charset=utf8mb4&parseTime=True&loc=Local' ./main
+ 	APPENV=beta SERVEADMIN=127.0.0.1:10011 DATADSN='yourusername:yourpwd@tcp(yourmysqlhost)/yourdbname?charset=utf8mb4&parseTime=True&loc=Local' ./main
 */
 package main
 
@@ -25,7 +25,7 @@ var (
 	logLevel    = -1
 	serveAddr   = "127.0.0.1:10011"
 	serveAdmin  = "127.0.0.1:10011"
-	dataDsn     = "mysql://user:pass@tcp(127.0.0.1:3306)/flexdrive?charset=utf8mb4&parseTime=True&loc=Local"
+	dataDsn     = "user:pass@tcp(127.0.0.1:3306)/flexdrive?charset=utf8mb4&parseTime=True&loc=Local"
 	cacheDsn    = ""
 )
 
@@ -52,10 +52,12 @@ func main() {
 	log.SetLogger(logger.Sugar())
 
 	if s := os.Getenv("DATADSN"); s != "" {
+		log.Debugf("the datadsn from env: %s", s)
 		dataDsn = s
 	}
 
 	if s := os.Getenv("SERVEADMIN"); s != "" {
+		log.Debugf("the serveradmin from env: %s", s)
 		serveAdmin = s
 	}
 

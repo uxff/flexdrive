@@ -11,14 +11,14 @@ import (
 )
 
 type LoginRequst struct {
-	LoginName string `form:"loginName"`
-	Pwd       string `form:"password"`
-	Captcha   string `form:"captcha"`
+	Email   string `form:"email"`
+	Pwd     string `form:"password"`
+	Captcha string `form:"captcha"`
 }
 
 type LoginResponse struct {
-	LoginName string `json:"loginName"`
-	Mid       int    `json:"mid"`
+	Email string `json:"email"`
+	Mid   int    `json:"mid"`
 }
 
 func Login(c *gin.Context) {
@@ -50,28 +50,27 @@ func LoginForm(c *gin.Context) {
 		return
 	}
 
-	mgrEnt := &dao.Manager{}
-
-	err = mgrEnt.GetByName(req.LoginName)
+	mgrEnt, err := dao.GetManagerByEmail(req.Email)
 	if err != nil {
-		log.Errorf("query by mgrLoginName:%s failed:%v", req.LoginName, err)
+		log.Errorf("query by email:%s failed:%v", req.Email, err)
 		StdErrResponse(c, ErrMgrNotExist)
 		return
 	}
 
 	if mgrEnt.Id == 0 {
-		log.Warnf("mgrLoginName:%s not exist, verify failed", req.LoginName)
+		log.Warnf("email:%s not exist, verify failed", req.Email)
 		StdErrResponse(c, ErrMgrNotExist)
 		return
 	}
 
-	if mgrEnt.IsPwdValid(req.Pwd) {
-		log.Warnf("mgr pwd not matched, verify failed. mgrLoginName:%s", req.LoginName)
+	if !mgrEnt.IsPwdValid(req.Pwd) {
+		log.Warnf("mgr pwd not matched, verify failed. email:%s", req.Email)
 		StdErrResponse(c, ErrInvalidPass)
+		return
 	}
 
 	//// 密码是否正确
-	//mgrEnt := managermodel.VerifyPwd(req.LoginName, req.Pwd)
+	//mgrEnt := managermodel.VerifyPwd(req.Email, req.Pwd)
 	//if mgrEnt == nil {
 	//	StdErrResponse(c, errcodes.LoginFailed)
 	//	return
@@ -87,8 +86,8 @@ func LoginForm(c *gin.Context) {
 	AcceptLogin(c, mgrEnt)
 
 	StdResponse(c, ErrSuccess, LoginResponse{
-		LoginName: mgrEnt.Name,
-		Mid:       mgrEnt.Id,
+		Email: mgrEnt.Email,
+		Mid:   mgrEnt.Id,
 	})
 }
 

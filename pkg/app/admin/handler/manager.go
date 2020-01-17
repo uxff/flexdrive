@@ -1,19 +1,20 @@
 package handler
 
 import (
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/uxff/flexdrive/pkg/dao"
 	"github.com/uxff/flexdrive/pkg/dao/base"
 	"github.com/uxff/flexdrive/pkg/log"
-	"strconv"
-	"strings"
-	"time"
 )
 
 type ManagerListRequest struct {
 	CreateStart string `form:"createStart"`
 	CreateEnd   string `form:"createEnd"`
-	LoginName   string `form:"loginName"`
+	Email       string `form:"email"`
 	Page        int    `form:"page"`
 	PageSize    int    `form:"pagesize"`
 }
@@ -29,8 +30,8 @@ func (r *ManagerListRequest) ToCondition() (condition map[string]interface{}) {
 		condition["created<=?"] = r.CreateEnd
 	}
 
-	if r.LoginName != "" {
-		condition["name like ?"] = "%" + r.LoginName + "%"
+	if r.Email != "" {
+		condition["name like ?"] = "%" + r.Email + "%"
 	}
 
 	log.Debugf("r=%+v tocondition:%+v", r, condition)
@@ -40,7 +41,7 @@ func (r *ManagerListRequest) ToCondition() (condition map[string]interface{}) {
 // 接口返回的元素
 type ManagerItem struct {
 	Mid         int    `json:"mid"`
-	LoginName   string `json:"loginName"`
+	Email       string `json:"email"`
 	LastLoginAt string `json:"lastLoginAt"`
 	LastLoginIp string `json:"lastLoginIp"`
 	Pwd         string `json:"pwd"`
@@ -54,7 +55,7 @@ type ManagerItem struct {
 func NewManagerItemFromEnt(mgrEnt *dao.Manager) *ManagerItem {
 	return &ManagerItem{
 		Mid:         mgrEnt.Id,
-		LoginName:   mgrEnt.Name,
+		Email:       mgrEnt.Email,
 		LastLoginAt: mgrEnt.LastLoginAt.String(),
 		LastLoginIp: mgrEnt.LastLoginIp,
 		RoleId:      mgrEnt.RoleId,
@@ -101,13 +102,13 @@ func ManagerList(c *gin.Context) {
 }
 
 type ManagerAddRequest struct {
-	ManagerItem // 新增只用到里面的 loginname,roleid,pwd
+	ManagerItem // 新增只用到里面的 Email,roleid,pwd
 	// Status int
 }
 
 func (r *ManagerAddRequest) ToEnt() *dao.Manager {
 	e := &dao.Manager{
-		Name:   r.LoginName,
+		Email:  r.Email,
 		RoleId: r.RoleId,
 		// MgrLastLoginAt:time.Now(),
 		//Pwd: r.Pwd,
@@ -127,16 +128,14 @@ func ManagerAdd(c *gin.Context) {
 	}
 
 	// 去掉用户输入的字符串里开头结尾的不可见字符
-	req.LoginName = strings.TrimSpace(req.LoginName)
+	req.Email = strings.TrimSpace(req.Email)
 	req.Pwd = strings.TrimSpace(req.Pwd)
 	req.RoleName = strings.TrimSpace(req.RoleName)
 
 	log.Trace(requestId).Debugf("%+v", req)
 
 	// 检验名称是否已经存在
-	existEnt := &dao.Manager{}
-	err = existEnt.GetByName(req.LoginName)
-	// exist, err := base.GetByCol("mgrLoginName", req.LoginName, existEnt)
+	existEnt, err := dao.GetManagerByEmail(req.Email)
 	if err != nil {
 		log.Errorf("db error:%v", err)
 		StdErrResponse(c, ErrInternal)
@@ -148,19 +147,18 @@ func ManagerAdd(c *gin.Context) {
 		return
 	}
 
-	mid := req.Mid
-	roleEnt := &dao.Role{}
-	_, err = base.GetByCol("id", req.RoleId, roleEnt)
-	if err != nil {
-		log.Trace(requestId).Errorf("查询角色信息失败:%v roleId:%d", err, req.RoleId)
-		return
-	}
+	mid := req.Mid // 如果有则是编辑
+	// roleEnt, err := dao.GetRoleById(req.RoleId)
+	// if err != nil {
+	// 	log.Trace(requestId).Errorf("查询角色信息失败:%v roleId:%d", err, req.RoleId)
+	// 	return
+	// }
 
 	mgrEnt := req.ToEnt()
 	mgrEnt.LastLoginAt.UnmarshalJSON([]byte(time.Now().String()))
 	mgrEnt.LastLoginIp = c.Request.Header.Get("X-Real-IP")
 	mgrEnt.Status = base.StatusNormal
-	//mgrEnt.RoleName = roleEnt.RName
+	//mgrEnt.RoleName = roleEnt.Name
 
 	if mgrEnt.Name == "" { // 用户名不能为空
 		StdResponseJson(c, ErrInvalidParam, "用户名不能为空", "")
@@ -169,13 +167,13 @@ func ManagerAdd(c *gin.Context) {
 	}
 
 	if mid > 0 {
-		cols := []string{"mgrLoginName", "mgrRoleId", "mgrRoleName"}
+		cols := []string{"email", "roleId", "roleName"}
 		if req.Pwd != "" { // 默认如果密码不为空，则更新密码
 			cols = append(cols, "mgrPwd")
 			mgrEnt.SetPwd(req.Pwd)
 		}
 		_, err = base.UpdateByCol("mid", mid, mgrEnt, cols)
-		//base.CacheDelByEntity("mgrLoginName", req.LoginName, existEnt)
+		//base.CacheDelByEntity("mgrLoginName", req.Email, existEnt)
 	} else {
 		if req.Pwd == "" {
 			StdResponseJson(c, ErrInvalidParam, "密码不能为空", "")
@@ -210,9 +208,9 @@ func ManagerEnable(c *gin.Context) {
 
 	loginInfo := getLoginInfo(c)
 
-	mgrEnt := &dao.Manager{}
+	mgrEnt, err := dao.GetManagerById(int(mid)) //&dao.Manager{}
 
-	_, err := base.GetByCol("id", mid, mgrEnt)
+	//_, err := base.GetByCol("id", mid, mgrEnt)
 	// exist, err := base.GetByCol("mid", mid, mgrEnt)
 	if err != nil {
 		log.Errorf("db error:%v", err)
@@ -241,9 +239,9 @@ func ManagerEnable(c *gin.Context) {
 		mgrEnt.Status = base.StatusDeleted
 	}
 
-	//base.CacheDelByEntity("mgrLoginName", mgrEnt.LoginName, mgrEnt)
+	//base.CacheDelByEntity("mgrLoginName", mgrEnt.Email, mgrEnt)
 
-	_, err = base.UpdateByCol("mid", mid, mgrEnt, []string{"mgrStatus"})
+	_, err = base.UpdateByCol("mid", mid, mgrEnt, []string{"status"})
 	if err != nil {
 		log.Errorf("db error:%v", err)
 		StdErrResponse(c, ErrInternal)
@@ -254,7 +252,7 @@ func ManagerEnable(c *gin.Context) {
 }
 
 type ManagerChangePwdRequest struct {
-	// LoginName string `json:"mgrName" binding:"required"`
+	// Email string `json:"mgrName" binding:"required"`
 	Oldpwd string `json:"oldpwd" binding:"required"`
 	Newpwd string `json:"pwd" binding:"required"`
 	// Force int ?
@@ -277,8 +275,8 @@ func ManagerChangePwd(c *gin.Context) {
 		return
 	}
 
-	mgrEnt := dao.Manager{}
-	_, err = base.GetByCol("id", loginEnt.Mid, mgrEnt)
+	mgrEnt, err := dao.GetManagerById(loginEnt.Mid) // dao.Manager{}
+	//_, err = base.GetByCol("id", loginEnt.Mid, mgrEnt)
 	if err != nil {
 		StdErrResponse(c, ErrMgrNotExist)
 		return
