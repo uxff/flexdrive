@@ -29,20 +29,20 @@ func (t Manager) TableName() string {
 	return "manager"
 }
 
-func (t *Manager) GetById(id int) error {
-	_, err := base.GetByCol("id", id, t)
-	return err
-}
+// func (t *Manager) GetById(id int) error {
+// 	_, err := base.GetByCol("id", id, t)
+// 	return err
+// }
 
 func (t *Manager) UpdateById(cols []string) error {
 	_, err := base.UpdateByCol("id", t.Id, t, cols)
 	return err
 }
 
-func (t *Manager) GetByEmail(email string) error {
-	_, err := base.GetByCol("email", email, t)
-	return err
-}
+// func (t *Manager) GetByEmail(email string) error {
+// 	_, err := base.GetByCol("email", email, t)
+// 	return err
+// }
 
 func (t *Manager) IsPwdValid(p string) bool {
 	enc := md5.New()
@@ -65,12 +65,12 @@ func (t *Manager) IsSuperRole() bool {
 
 func GetManagerById(id int) (*Manager, error) {
 	m := &Manager{}
-	err := m.GetById(id)
+	_, err := base.GetByCol("id", id, m)
 	return m, err
 }
 
 func GetManagerByEmail(email string) (*Manager, error) {
 	m := &Manager{}
-	err := m.GetByEmail(email)
+	_, err := base.GetByCol("email", email, m)
 	return m, err
 }

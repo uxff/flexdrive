@@ -6,16 +6,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/uxff/flexdrive/pkg/dao"
-	"github.com/uxff/flexdrive/pkg/dao/base"
-	"github.com/uxff/flexdrive/pkg/log"
-	"github.com/uxff/flexdrive/pkg/utils"
 	"net/http"
 	"net/http/httputil"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/uxff/flexdrive/pkg/dao"
+	"github.com/uxff/flexdrive/pkg/dao/base"
+	"github.com/uxff/flexdrive/pkg/log"
+	"github.com/uxff/flexdrive/pkg/utils"
 )
 
 const (
@@ -33,11 +34,11 @@ const (
 
 // 后台登录关键信息
 type GpaToken struct {
-	Mid      int
-	Name     string
-	RoleId   int
-	RoleName string
-	LoginAt  int
+	Mid int
+	//Name     string // 没有值
+	RoleId int
+	//RoleName string // 没有值
+	LoginAt int
 }
 
 func (t *GpaToken) ToString() string {
@@ -81,8 +82,8 @@ func decodeGpaFromToken(gpaTokenStr string, sign string) (g *GpaToken, err error
 
 func genGpaFromMgrEnt(mgrEnt *dao.Manager) (g *GpaToken, gpaTokenStr, sign string, err error) {
 	g = &GpaToken{
-		Mid:    mgrEnt.Id,
-		Name:   mgrEnt.Name,
+		Mid: mgrEnt.Id,
+		//Name:   mgrEnt.Name,
 		RoleId: mgrEnt.RoleId,
 		//RoleName: 	 mgrEnt.RoleName,
 		LoginAt: int(mgrEnt.LastLoginAt.Unix()),
@@ -124,16 +125,16 @@ func AuthMiddleWare(c *gin.Context) {
 		return
 	}
 
-	mgrEnt := &dao.Manager{}
-	_, err = base.GetByCol("name", gpaToken.Name, mgrEnt)
+	//mgrEnt := &dao.Manager{}
+	mgrEnt, err := dao.GetManagerById(gpaToken.Mid)
 	if err != nil {
-		log.Errorf("query by LoginName:%s failed:%v", gpaToken.Name, err)
+		log.Errorf("query by mid:%d failed:%v", gpaToken.Mid, err)
 		StdErrResponse(c, ErrMgrNotExist)
 		c.Abort()
 		return
 	}
 	if mgrEnt == nil {
-		log.Warnf("登陆账号%s不存在", gpaToken.Name)
+		log.Warnf("登陆账号%d不存在", gpaToken.Mid)
 		StdErrResponse(c, ErrMgrNotExist)
 		c.Abort()
 		return
@@ -148,7 +149,7 @@ func AuthMiddleWare(c *gin.Context) {
 
 	// 判断账号是否已被禁用
 	if mgrEnt.Status != base.StatusNormal {
-		log.Warnf("登陆账号(%s)已被禁用", gpaToken.Name)
+		log.Warnf("登陆账号(%d)已被禁用", gpaToken.Mid)
 		StdErrResponse(c, ErrMgrDisabled)
 		c.Abort()
 		return

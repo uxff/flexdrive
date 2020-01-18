@@ -19,10 +19,10 @@ func (t Role) TableName() string {
 	return "role"
 }
 
-func (t *Role) GetById(id int) error {
-	_, err := base.GetByCol("id", id, t)
-	return err
-}
+// func (t *Role) GetById(id int) error {
+// 	_, err := base.GetByCol("id", id, t)
+// 	return err
+// }
 
 func (t *Role) UpdateById(cols []string) error {
 	_, err := base.UpdateByCol("id", t.Id, t, cols)
@@ -31,6 +31,7 @@ func (t *Role) UpdateById(cols []string) error {
 
 func GetRoleById(id int) (*Role, error) {
 	ent := &Role{}
-	err := ent.GetById(id)
+	_, err := base.GetByCol("id", id, ent)
+	//err := ent.GetById(id)
 	return ent, err
 }
