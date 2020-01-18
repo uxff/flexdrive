@@ -69,13 +69,6 @@ func LoginForm(c *gin.Context) {
 		return
 	}
 
-	//// 密码是否正确
-	//mgrEnt := managermodel.VerifyPwd(req.Email, req.Pwd)
-	//if mgrEnt == nil {
-	//	StdErrResponse(c, errcodes.LoginFailed)
-	//	return
-	//}
-
 	// 判断账号是否已被禁用
 	if mgrEnt.Status != base.StatusNormal {
 		StdErrResponse(c, ErrMgrDisabled)

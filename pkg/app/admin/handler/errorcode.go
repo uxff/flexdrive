@@ -18,7 +18,7 @@ const (
 )
 
 var errCodeMap = map[string]string{
-	ErrSuccess: "成功",
+	ErrSuccess: "操作成功",
 }
 
 func codeToMessage(code string) string {
