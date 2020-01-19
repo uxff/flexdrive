@@ -30,8 +30,12 @@ func (r *ManagerListRequest) ToCondition() (condition map[string]interface{}) {
 		condition["created<=?"] = r.CreateEnd
 	}
 
+	// if r.Name != "" {
+	// 	condition["name like ?"] = "%" + r.Email + "%"
+	// }
+
 	if r.Email != "" {
-		condition["name like ?"] = "%" + r.Email + "%"
+		condition["email = ?"] = r.Email
 	}
 
 	log.Debugf("r=%+v tocondition:%+v", r, condition)

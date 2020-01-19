@@ -1,7 +1,8 @@
 /**
 	分布式(distributed)
     运行方式：
- 	APPENV=beta SERVEADMIN=127.0.0.1:10011 DATADSN='yourusername:yourpwd@tcp(yourmysqlhost)/yourdbname?charset=utf8mb4&parseTime=True&loc=Local' ./main
+ 	APPENV=beta SERVEADMIN=127.0.0.1:10011 DATADSN='mysql://yourusername:yourpwd@tcp(yourmysqlhost)/yourdbname?charset=utf8mb4&parseTime=True&loc=Local' ./main
+ 	APPENV=beta SERVEADMIN=127.0.0.1:10011 DATADSN='sqlite3://./flexdrive.db' ./main
 */
 package main
 
@@ -25,7 +26,7 @@ var (
 	logLevel    = -1
 	serveAddr   = "127.0.0.1:10011"
 	serveAdmin  = "127.0.0.1:10011"
-	dataDsn     = "user:pass@tcp(127.0.0.1:3306)/flexdrive?charset=utf8mb4&parseTime=True&loc=Local"
+	dataDsn     = "mysql://user:pass@tcp(127.0.0.1:3306)/flexdrive?charset=utf8mb4&parseTime=True&loc=Local"
 	cacheDsn    = ""
 )
 
@@ -61,7 +62,7 @@ func main() {
 		serveAdmin = s
 	}
 
-	err = envinit.InitMysql(common.DBMysqlDrive, dataDsn)
+	err = envinit.InitDb(common.DBMysqlDrive, dataDsn)
 	if err != nil {
 		log.Fatalf("cannot init mysql, err:%s", err)
 	}
