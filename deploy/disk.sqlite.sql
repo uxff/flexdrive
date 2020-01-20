@@ -143,3 +143,6 @@ CREATE TABLE `share` (
   `expired` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' 
 ) ;
 
+
+insert into manager (email,pwd,status,isSuper) values("admin@admin.com","e10adc3949ba59abbe56e057f20f883e",1,1);
+
