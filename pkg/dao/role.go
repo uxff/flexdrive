@@ -35,3 +35,9 @@ func GetRoleById(id int) (*Role, error) {
 	//err := ent.GetById(id)
 	return ent, err
 }
+func GetRoleByName(name string) (*Role, error) {
+	ent := &Role{}
+	_, err := base.GetByCol("name", name, ent)
+	//err := ent.GetById(id)
+	return ent, err
+}

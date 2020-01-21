@@ -59,11 +59,11 @@ func StartHttpServer(addr string) error {
 	// 也就是增加的接口必须以下面的group中的某一个路径开头
 	rbacRouter := router.Group("/api", TraceMiddleWare, AuthMiddleWare, RbacAuthMiddleWare)
 
-	//rbacRouter.POST("/role/add", RoleAdd)
-	//// rbacRouter.POST("/role/edit/:roleid", RoleAdd)
-	//rbacRouter.POST("/role/delete/:roleid", RoleDelete)
-	//rbacRouter.GET("/role/list", RoleList)
-	//
+	rbacRouter.POST("/role/add", RoleAdd)
+	rbacRouter.POST("/role/edit/:id", RoleAdd)
+	rbacRouter.POST("/role/enable/:id", RoleEnable)
+	rbacRouter.GET("/role/list", RoleList)
+
 	//rbacRouter.POST("/role/rbac/edit/:roleid", RoleRbacSet)
 	//rbacRouter.GET("/role/rbac/list/:roleid", RoleRbacGet)
 

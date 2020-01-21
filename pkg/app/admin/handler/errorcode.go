@@ -14,6 +14,7 @@ const (
 	ErrInvalidCaptcha = "16"
 	ErrNameDuplicate  = "17"
 	ErrMgrDisabled    = "18"
+	ErrRoleNotExist   = "19"
 	ErrInternal       = "101"
 )
 
