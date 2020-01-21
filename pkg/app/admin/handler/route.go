@@ -17,6 +17,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const (
+	RouteHome        = "/"
+	RouteLogin       = "/login"
+	RouteLogout      = "/logout"
+	RouteManagerList = "/manager/list"
+	RouteRoleList    = "/role/list"
+	RouteChangePwd   = "/changepwd"
+)
+
 var adminServer *http.Server
 var router = gin.New() // *gin.Engine // 在本包init函数之前运行
 

@@ -78,10 +78,8 @@ func LoginForm(c *gin.Context) {
 	// 登录成功 种下cookie
 	AcceptLogin(c, mgrEnt)
 
-	StdResponse(c, ErrSuccess, LoginResponse{
-		Email: mgrEnt.Email,
-		Mid:   mgrEnt.Id,
-	})
+	c.Redirect(http.StatusMovedPermanently, RouteHome)
+	//StdResponse(c, ErrSuccess, "/")
 }
 
 //// 获取一些全局配置 比如登录信息 菜单列表
@@ -117,7 +115,8 @@ func LoginForm(c *gin.Context) {
 
 func Logout(c *gin.Context) {
 	ClearLogin(c)
-	StdResponse(c, ErrSuccess, nil)
+	//StdResponse(c, ErrSuccess, nil)
+	c.Redirect(http.StatusMovedPermanently, RouteLogin)
 }
 
 // 验证cookie合法性 并返回有效的登录信息

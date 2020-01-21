@@ -18,7 +18,7 @@
       <ul class="nav navbar-nav">
         <li>
           <a href='/'>
-            <span class="glyphicon glyphicon-home"></span> Fancy Navigator
+            <span class="glyphicon glyphicon-home"></span> 云盘管理后台首页
           </a>
         </li>
         <li>
@@ -31,7 +31,6 @@
             <li role="presentation" class="divider"></li>
             <li role="presentation" class="dropdown-header">selected picsets</li>
             <li><a href="/picset/folderName1/">文件管理</a></li>
-            <li><a href="/picset/55156/"></a></li>
           </ul>
         </li>
         <li>
@@ -54,8 +53,8 @@
             <li><a href="/picset">Picset</a></li>
             <li role="presentation" class="divider"></li>
             <li role="presentation" class="dropdown-header">selected picsets</li>
-            <li><a href="/picset/folderName1/">FolderName1</a></li>
-            <li><a href="/picset/55156/">The 55156 site</a></li>
+            <li><a href="/picset/folderName1/">角色管理</a></li>
+            <li><a href="/picset/55156/">权限管理</a></li>
           </ul>
         </li>
       </ul>
@@ -69,6 +68,7 @@
           <ul class="dropdown-menu">
             {{if .IsLogin}}
                 <li ><a href='{{urlfor "UsersController.Logout"}}'>
+                  <span class='glyphicon glyphicon-log-out'></span> 修改密码
                   <span class='glyphicon glyphicon-log-out'></span> 退出登录
                 </a></li>
             {{else}}

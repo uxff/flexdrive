@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -196,9 +197,11 @@ func ManagerAdd(c *gin.Context) {
 		return
 	}
 
-	StdResponse(c, ErrSuccess, gin.H{
-		"mid": mid,
-	})
+	// StdResponse(c, ErrSuccess, gin.H{
+	// 	"mid": mid,
+	// })
+	c.Redirect(http.StatusMovedPermanently, RouteManagerList)
+
 }
 
 func ManagerEnable(c *gin.Context) {
@@ -252,7 +255,8 @@ func ManagerEnable(c *gin.Context) {
 		return
 	}
 
-	StdResponse(c, ErrSuccess, nil)
+	//StdResponse(c, ErrSuccess, nil)
+	c.Redirect(http.StatusMovedPermanently, RouteManagerList)
 }
 
 type ManagerChangePwdRequest struct {
@@ -263,6 +267,7 @@ type ManagerChangePwdRequest struct {
 	// Captcha ?
 }
 
+// 超管修改别人的手机号
 func ManagerChangePwd(c *gin.Context) {
 	requestId := c.GetString(CtxKeyRequestId)
 
@@ -279,7 +284,7 @@ func ManagerChangePwd(c *gin.Context) {
 		return
 	}
 
-	mgrEnt, err := dao.GetManagerById(loginEnt.Mid) // dao.Manager{}
+	mgrEnt, err := dao.GetManagerById(loginEnt.Mid)
 	//_, err = base.GetByCol("id", loginEnt.Mid, mgrEnt)
 	if err != nil {
 		StdErrResponse(c, ErrMgrNotExist)
@@ -302,5 +307,6 @@ func ManagerChangePwd(c *gin.Context) {
 		return
 	}
 
-	StdResponse(c, ErrSuccess, nil)
+	//StdResponse(c, ErrSuccess, nil)
+	c.Redirect(http.StatusMovedPermanently, RouteManagerList)
 }
