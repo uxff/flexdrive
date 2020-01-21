@@ -16,15 +16,41 @@
 
     <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation" >
       <ul class="nav navbar-nav">
-        <li><a href='/'>
-          <span class="glyphicon glyphicon-home"></span> Fancy Navigator
-        </a></li>
+        <li>
+          <a href='/'>
+            <span class="glyphicon glyphicon-home"></span> Fancy Navigator
+          </a>
+        </li>
         <li>
           <a href="javascript:;" class="dropdown-toggle" data-hover="dropdown">
-            <span class="glyphicon glyphicon-picture"></span> Picset <b class="caret"></b>
+            <span class="glyphicon glyphicon-picture"></span> 节点管理 <b class="caret"></b>
           </a>
           <ul class="dropdown-menu">
             <li role="presentation" class="dropdown-header">main route</li>
+            <li><a href="/picset">节点列表</a></li>
+            <li role="presentation" class="divider"></li>
+            <li role="presentation" class="dropdown-header">selected picsets</li>
+            <li><a href="/picset/folderName1/">文件管理</a></li>
+            <li><a href="/picset/55156/"></a></li>
+          </ul>
+        </li>
+        <li>
+          <a href="javascript:;" class="dropdown-toggle" data-hover="dropdown">
+            <span class="glyphicon glyphicon-picture"></span> 会员管理 <b class="caret"></b>
+          </a>
+          <ul class="dropdown-menu">
+            <li><a href="/picset">会员列表</a></li>
+            <li><a href="/picset/folderName1/">等级管理</a></li>
+            <li><a href="/picset/55156/">订单管理</a></li>
+            <li><a href="/picset/55156/">分享管理</a></li>
+          </ul>
+        </li>
+        <li>
+          <a href="javascript:;" class="dropdown-toggle" data-hover="dropdown">
+            <span class="glyphicon glyphicon-picture"></span> 系统管理 <b class="caret"></b>
+          </a>
+          <ul class="dropdown-menu">
+            <li role="presentation" class="dropdown-header">管理员账号</li>
             <li><a href="/picset">Picset</a></li>
             <li role="presentation" class="divider"></li>
             <li role="presentation" class="dropdown-header">selected picsets</li>

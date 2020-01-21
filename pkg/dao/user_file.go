@@ -1,16 +1,17 @@
 package dao
 
 import (
-	"github.com/uxff/flexdrive/pkg/dao/base"
 	"time"
+
+	"github.com/uxff/flexdrive/pkg/dao/base"
 )
 
 type UserFile struct {
 	Id       int       `xorm:"not null pk autoincr comment('文件id') INT(10)"`
 	UserId   string    `xorm:"not null default '' comment('用户id') unique(IDX_userId_pathhash) VARCHAR(32)"`
-	Path     string    `xorm:"not null default '' comment('文件路径') VARCHAR(256)"`
+	FilePath string    `xorm:"not null default '' comment('文件路径') VARCHAR(256)"`
 	FileName string    `xorm:"not null default '' comment('文件名') VARCHAR(256)"`
-	PathHash string    `xorm:"not null comment('路径哈希，hash(path+fileName)，用户下唯一') unique(IDX_userId_pathhash) VARCHAR(32)"`
+	PathHash string    `xorm:"not null comment('路径哈希，hash(filePath+fileName)，用户下唯一') unique(IDX_userId_pathhash) VARCHAR(32)"`
 	FileHash string    `xorm:"not null default '' comment('文件哈希') VARCHAR(32)"`
 	NodeId   int       `xorm:"not null default 0 comment('所在节点名 第一副本所在节点') INT(11)"`
 	IsDir    int       `xorm:"not null default 0 comment('是否是目录') TINYINT(4)"`
