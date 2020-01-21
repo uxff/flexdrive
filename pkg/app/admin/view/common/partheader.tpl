@@ -34,22 +34,23 @@
         </li>
       </ul>
 
+      <!-- 右侧菜单 -->
       <ul class="nav navbar-nav navbar-right">
         <li class="dropdown">
           <a href="javascript:;" role="button" class="dropdown-toggle" data-hover="dropdown">
-            <span class='glyphicon glyphicon-info-sign'></span> Account <b class="caret"></b>
+            <span class='glyphicon glyphicon-info-sign'></span> 账户 <b class="caret"></b>
           </a>
           <ul class="dropdown-menu">
             {{if .IsLogin}}
                 <li ><a href='{{urlfor "UsersController.Logout"}}'>
-                  <span class='glyphicon glyphicon-log-out'></span> Logout
+                  <span class='glyphicon glyphicon-log-out'></span> 退出登录
                 </a></li>
             {{else}}
                 <li ><a href='{{urlfor "UsersController.Login"}}'>
-                  <span class='glyphicon glyphicon-log-in'></span> Login
+                  <span class='glyphicon glyphicon-log-in'></span> 登录
                 </a></li>
                 <li ><a href='{{urlfor "UsersController.Signup"}}'>
-                    <span class='glyphicon glyphicon-check'></span> Sign Up
+                    <span class='glyphicon glyphicon-check'></span> 注册
                 </a></li>
             {{end}}
           </ul>

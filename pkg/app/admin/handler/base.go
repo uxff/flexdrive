@@ -200,13 +200,17 @@ func StdResponse(c *gin.Context, code string, biz interface{}) {
 
 // 接口调用出错时，标准输出必须调用的接口
 func StdErrResponse(c *gin.Context, code string) {
-	StdResponseJson(c, code, "", "")
+	errMsg := CodeToMessage(code)
+	c.HTML(http.StatusOK, "common/error.tpl", gin.H{
+		"errMsg": errMsg,
+	})
+	//StdResponseJson(c, code, "", "")
 }
 
 func StdResponseJson(c *gin.Context, code, msg string, data interface{}) {
 	requestId := c.GetString(CtxKeyRequestId)
 
-	codeMsg := codeToMessage(code)
+	codeMsg := CodeToMessage(code)
 	if msg != "" {
 		codeMsg += "(" + msg + ")"
 	}
