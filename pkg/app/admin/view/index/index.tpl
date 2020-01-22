@@ -1,5 +1,7 @@
-{{append . "HeadStyles" "/static/css/custom.css"}}
-{{append . "HeadScripts" "/static/js/custom.js"}}
+{{ define "index/index.tpl" }}
+
+{{template "common/head.tpl" .}}
+{{template "common/partheader.tpl" .}}
 
 
 <div class="container">
@@ -37,3 +39,8 @@
         <a href="https://github.com/uxff/taniago">view source</a>
     </div>
 </div>
+
+{{template "common/partfooter.tpl"}}
+{{template "common/foot.tpl"}}
+
+{{ end }}

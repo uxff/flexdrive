@@ -15,6 +15,7 @@
     </div>
 
     <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation" >
+      <!-- 左侧主要菜单 -->
       <ul class="nav navbar-nav">
         <li>
           <a href='/'>
@@ -23,7 +24,7 @@
         </li>
         <li>
           <a href="javascript:;" class="dropdown-toggle" data-hover="dropdown">
-            <span class="glyphicon glyphicon-picture"></span> 节点管理 <b class="caret"></b>
+            <span class="glyphicon glyphicon-th-large"></span> 节点管理 <b class="caret"></b>
           </a>
           <ul class="dropdown-menu">
             <li role="presentation" class="dropdown-header">main route</li>
@@ -35,7 +36,7 @@
         </li>
         <li>
           <a href="javascript:;" class="dropdown-toggle" data-hover="dropdown">
-            <span class="glyphicon glyphicon-picture"></span> 会员管理 <b class="caret"></b>
+            <span class="glyphicon glyphicon-list-alt"></span> 会员管理 <b class="caret"></b>
           </a>
           <ul class="dropdown-menu">
             <li><a href="/picset">会员列表</a></li>
@@ -46,13 +47,10 @@
         </li>
         <li>
           <a href="javascript:;" class="dropdown-toggle" data-hover="dropdown">
-            <span class="glyphicon glyphicon-picture"></span> 系统管理 <b class="caret"></b>
+            <span class="glyphicon glyphicon-cog"></span> 系统管理 <b class="caret"></b>
           </a>
           <ul class="dropdown-menu">
-            <li role="presentation" class="dropdown-header">管理员账号</li>
-            <li><a href="/picset">Picset</a></li>
-            <li role="presentation" class="divider"></li>
-            <li role="presentation" class="dropdown-header">selected picsets</li>
+            <li><a href="/picset">管理员账号</a></li>
             <li><a href="/picset/folderName1/">角色管理</a></li>
             <li><a href="/picset/55156/">权限管理</a></li>
           </ul>
@@ -63,21 +61,25 @@
       <ul class="nav navbar-nav navbar-right">
         <li class="dropdown">
           <a href="javascript:;" role="button" class="dropdown-toggle" data-hover="dropdown">
-            <span class='glyphicon glyphicon-info-sign'></span> 账户 <b class="caret"></b>
+            <span class='glyphicon glyphicon-user'></span> 账户 <b class="caret"></b>
           </a>
           <ul class="dropdown-menu">
             {{if .IsLogin}}
-                <li ><a href='{{urlfor "UsersController.Logout"}}'>
-                  <span class='glyphicon glyphicon-log-out'></span> 修改密码
+                <li ><a href='/logout'>
                   <span class='glyphicon glyphicon-log-out'></span> 退出登录
                 </a></li>
+                <li ><a href='/changePwd'>
+                  <span class='glyphicon glyphicon-log-out'></span> 修改密码
+                </a></li>
             {{else}}
-                <li ><a href='{{urlfor "UsersController.Login"}}'>
+                <li ><a href='/login'>
                   <span class='glyphicon glyphicon-log-in'></span> 登录
                 </a></li>
-                <li ><a href='{{urlfor "UsersController.Signup"}}'>
+                <!--
+                <li ><a href='/signup'>
                     <span class='glyphicon glyphicon-check'></span> 注册
                 </a></li>
+                -->
             {{end}}
           </ul>
         </li>
