@@ -51,13 +51,14 @@ func StartHttpServer(addr string) error {
 	router.GET("/captcha", GetCaptcha)
 
 	// 导出下载 基于登录cookie验证
-	authRouter := router.Group("/api", TraceMiddleWare, AuthMiddleWare)
-	authRouter.POST("/manager/modifyPwd", ManagerChangePwd)
+	authRouter := router.Group("/", TraceMiddleWare, AuthMiddleWare)
+	authRouter.POST("/changePwd", ManagerChangePwd)
+	authRouter.GET("/", Index)
 
 	// 基础基于登录cookie并rabc授权的验证
 	// 如果增加接口，必须在现有的菜单下，否则会被权限控制拦住
 	// 也就是增加的接口必须以下面的group中的某一个路径开头
-	rbacRouter := router.Group("/api", TraceMiddleWare, AuthMiddleWare, RbacAuthMiddleWare)
+	rbacRouter := router.Group("/", TraceMiddleWare, AuthMiddleWare, RbacAuthMiddleWare)
 
 	rbacRouter.POST("/role/add", RoleAdd)
 	rbacRouter.POST("/role/edit/:id", RoleAdd)
@@ -70,6 +71,7 @@ func StartHttpServer(addr string) error {
 	rbacRouter.GET("/manager/list", ManagerList)
 	rbacRouter.POST("/manager/add", ManagerAdd)
 	// rbacRouter.POST("/manager/edit/:mid", ManagerAdd)
+	//authRouter.POST("/manager/modifyPwd", ManagerChangePwd)
 	rbacRouter.POST("/manager/enable/:mid/:enable", ManagerEnable)
 
 	//rbacRouter.GET("/merchant/list", MerchantList)
