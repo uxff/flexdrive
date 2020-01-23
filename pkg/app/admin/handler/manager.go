@@ -98,7 +98,13 @@ func ManagerList(c *gin.Context) {
 		resItems = append(resItems, NewManagerItemFromEnt(v))
 	}
 
-	StdResponse(c, ErrSuccess, map[string]interface{}{
+	// StdResponse(c, ErrSuccess, map[string]interface{}{
+	// 	"total":    total,
+	// 	"page":     req.Page,
+	// 	"pagesize": req.PageSize,
+	// 	"data":     resItems,
+	// })
+	c.HTML(http.StatusOK, "manager/list.tpl", gin.H{
 		"total":    total,
 		"page":     req.Page,
 		"pagesize": req.PageSize,
