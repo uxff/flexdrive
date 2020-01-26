@@ -69,9 +69,10 @@ func StartHttpServer(addr string) error {
 	//rbacRouter.GET("/role/rbac/list/:roleid", RoleRbacGet)
 
 	rbacRouter.GET("/manager/list", ManagerList)
-	rbacRouter.POST("/manager/add", ManagerAdd)
-	rbacRouter.GET("/manager/add", ManagerAddForm)
-	// rbacRouter.POST("/manager/edit/:mid", ManagerAdd)
+	rbacRouter.GET("/manager/add", ManagerAdd)
+	rbacRouter.POST("/manager/add", ManagerAddForm)
+	rbacRouter.GET("/manager/edit/:mid", ManagerEdit)
+	rbacRouter.POST("/manager/edit/:mid", ManagerAddForm)
 	//authRouter.POST("/manager/modifyPwd", ManagerChangePwd)
 	rbacRouter.POST("/manager/enable/:mid/:enable", ManagerEnable)
 

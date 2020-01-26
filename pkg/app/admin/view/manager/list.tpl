@@ -63,6 +63,7 @@
                     <td>{{.Status}}</td>
                     <td>
                         <a href="/manager/enable/1">禁用</a>
+                        <a href="/manager/edit/{{.Mid}}">编辑</a>
                     </td>
                 </tr>
                 {{else}}

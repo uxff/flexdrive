@@ -47,12 +47,12 @@ func (r *ManagerListRequest) ToCondition() (condition map[string]interface{}) {
 
 // 接口返回的元素
 type ManagerItem struct {
-	Mid         int    `json:"mid"`
-	Email       string `json:"email"`
+	Mid         int    `json:"mid" form:"id"`
+	Email       string `json:"email" form:"email" binding:"required"`
 	LastLoginAt string `json:"lastLoginAt"`
 	LastLoginIp string `json:"lastLoginIp"`
-	Pwd         string `json:"pwd"`
-	RoleId      int    `json:"roleId"`
+	Pwd         string `json:"pwd" form:"pwd"`
+	RoleId      int    `json:"roleId" form:"roleId"`
 	RoleName    string `json:"roleName"`
 	Created     string `json:"created"`
 	Updated     string `json:"updated"`
@@ -140,11 +140,37 @@ func ManagerAdd(c *gin.Context) {
 	})
 }
 
+func ManagerEdit(c *gin.Context) {
+	mid, _ := strconv.Atoi(c.Param("mid"))
+	if mid <= 0 {
+		StdErrResponse(c, ErrInvalidParam)
+		return
+	}
+
+	mgrEnt, _ := dao.GetManagerById(mid)
+	if mgrEnt == nil {
+		StdErrResponse(c, ErrMgrNotExist)
+		return
+	}
+
+	if mgrEnt.Status == base.StatusDeleted {
+		StdErrResponse(c, ErrMgrDisabled)
+		return
+	}
+
+	c.HTML(http.StatusOK, "manager/edit.tpl", gin.H{
+		"LoginInfo": getLoginInfo(c),
+		"IsLogin":   isLoginIn(c),
+		"Mid":       mid,
+		"MgrEnt":    mgrEnt,
+	})
+}
+
 func ManagerAddForm(c *gin.Context) {
 	requestId := c.GetString(CtxKeyRequestId)
 
 	req := &ManagerAddRequest{}
-	err := c.ShouldBindJSON(req)
+	err := c.ShouldBind(req)
 	if err != nil {
 		StdErrResponse(c, ErrInvalidParam)
 		return
@@ -153,7 +179,7 @@ func ManagerAddForm(c *gin.Context) {
 	// 去掉用户输入的字符串里开头结尾的不可见字符
 	req.Email = strings.TrimSpace(req.Email)
 	req.Pwd = strings.TrimSpace(req.Pwd)
-	req.RoleName = strings.TrimSpace(req.RoleName)
+	//req.RoleId = strings.TrimSpace(req.RoleName)
 
 	log.Trace(requestId).Debugf("%+v", req)
 
@@ -183,9 +209,9 @@ func ManagerAddForm(c *gin.Context) {
 	mgrEnt.Status = base.StatusNormal
 	//mgrEnt.RoleName = roleEnt.Name
 
-	if mgrEnt.Name == "" { // 用户名不能为空
-		StdResponseJson(c, ErrInvalidParam, "用户名不能为空", "")
-		log.Trace(requestId).Warnf("用户名不能为空")
+	if mgrEnt.Email == "" {
+		StdResponseJson(c, ErrInvalidParam, "邮箱不能为空", "")
+		log.Trace(requestId).Warnf("邮箱不能为空")
 		return
 	}
 
@@ -204,6 +230,7 @@ func ManagerAddForm(c *gin.Context) {
 			return
 		}
 
+		mgrEnt.SetPwd(req.Pwd)
 		//mgrEnt.Pwd, _ = utils.Md5Sum([]byte(mgrEnt.Pwd))
 		_, err = base.Insert(mgrEnt)
 		mid = mgrEnt.Id
