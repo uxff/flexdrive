@@ -7,8 +7,8 @@ import (
 )
 
 func Index(c *gin.Context) {
-	//c.HTML(http.StatusOK, "pkg/app/admin/view/login/login.tpl", gin.H{})
 	c.HTML(http.StatusOK, "index/index.tpl", gin.H{
-		"path": "login",
+		"LoginInfo": getLoginInfo(c),
+		"IsLogin":   isLoginIn(c),
 	})
 }

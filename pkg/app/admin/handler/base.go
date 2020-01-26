@@ -19,12 +19,14 @@ import (
 	"github.com/uxff/flexdrive/pkg/utils"
 )
 
+// cookie中使用
 const (
 	CookieKeyGpa  = "t"
 	CookieKeySign = "s"
 	CookieKeySalt = "TmhMbU52YlM1amJp"
 )
 
+// 代码内使用 http协议中不可见
 const (
 	CtxKeyGpa          = "_gpa"
 	CtxKeyRequestId    = "_requestId"
@@ -39,6 +41,8 @@ type GpaToken struct {
 	RoleId int
 	//RoleName string // 没有值
 	LoginAt int
+
+	MgrEnt *dao.Manager
 }
 
 func (t *GpaToken) ToString() string {
@@ -141,6 +145,7 @@ func AuthMiddleWare(c *gin.Context) {
 	}
 
 	gpaToken.RoleId = mgrEnt.RoleId
+	gpaToken.MgrEnt = mgrEnt
 	//gpaToken.RoleName = mgrEnt.RoleName
 	// gpaToken.IsSuper = mgrEnt.IsSuper()
 	// gpaToken.IsSuperRole = mgrEnt.IsSuperRole()
@@ -229,4 +234,43 @@ func StdResponseJson(c *gin.Context, code, msg string, data interface{}) {
 	log.Trace(requestId).Debugf("==========DEBUG - URI:%s 应答：%+s", c.GetString(CtxKeyURI), b)
 
 	log.Trace(requestId).Infof("URI:%s 应答：%+v", c.GetString(CtxKeyURI), resp)
+}
+
+// 此方法必须提前验证cookie 就是前文必须调用过verifyFromCookie，此方法才有效
+func getLoginInfo(c *gin.Context) *GpaToken {
+	loginInfoIf, _ := c.Get(CtxKeyGpa)
+	loginInfo, ok := loginInfoIf.(*GpaToken)
+	if !ok {
+		log.Warnf("gpatoken not exist, invalid type")
+	}
+	if loginInfo == nil {
+		log.Warnf("gpatoken not exist, empty value")
+	}
+	return loginInfo
+}
+
+func isLoginIn(c *gin.Context) bool {
+	return getLoginInfo(c) != nil
+}
+
+// 验证cookie合法性 并返回有效的登录信息
+func verifyFromCookie(c *gin.Context) (*GpaToken, error) {
+	// gopay admin token
+	gpaTokenStr, err := c.Cookie(CookieKeyGpa)
+	if gpaTokenStr == "" {
+		return nil, err
+	}
+
+	// gopay admin sign
+	gpaSignStr, err := c.Cookie(CookieKeySign)
+	if err != nil {
+		return nil, err
+	}
+	gpaToken, err := decodeGpaFromToken(gpaTokenStr, gpaSignStr)
+	if err != nil {
+		log.Warnf("cookie has invalid sign, error:%v", err)
+		return nil, err
+	}
+
+	return gpaToken, nil
 }

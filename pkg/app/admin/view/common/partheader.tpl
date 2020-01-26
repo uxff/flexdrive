@@ -61,15 +61,21 @@
       <ul class="nav navbar-nav navbar-right">
         <li class="dropdown">
           <a href="javascript:;" role="button" class="dropdown-toggle" data-hover="dropdown">
-            <span class='glyphicon glyphicon-user'></span> 账户 <b class="caret"></b>
+            <span class='glyphicon glyphicon-user'></span> 
+            {{if .IsLogin}}
+              {{.LoginInfo.MgrEnt.Email}} 
+            {{else}}
+              账户
+            {{end}}
+            <b class="caret"></b>
           </a>
           <ul class="dropdown-menu">
             {{if .IsLogin}}
+                <li ><a href='/changePwd'>
+                  <span class='glyphicon glyphicon-certificate'></span> 修改密码
+                </a></li>
                 <li ><a href='/logout'>
                   <span class='glyphicon glyphicon-log-out'></span> 退出登录
-                </a></li>
-                <li ><a href='/changePwd'>
-                  <span class='glyphicon glyphicon-log-out'></span> 修改密码
                 </a></li>
             {{else}}
                 <li ><a href='/login'>

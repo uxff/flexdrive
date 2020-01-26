@@ -23,7 +23,8 @@ type LoginResponse struct {
 
 func Login(c *gin.Context) {
 	c.HTML(http.StatusOK, "login/login.tpl", gin.H{
-		"path": "login",
+		"LoginInfo": getLoginInfo(c),
+		"IsLogin":   isLoginIn(c),
 	})
 }
 
@@ -118,41 +119,6 @@ func Logout(c *gin.Context) {
 	c.Redirect(http.StatusMovedPermanently, RouteLogin)
 }
 
-// 验证cookie合法性 并返回有效的登录信息
-func verifyFromCookie(c *gin.Context) (*GpaToken, error) {
-	// gopay admin token
-	gpaTokenStr, err := c.Cookie(CookieKeyGpa)
-	if gpaTokenStr == "" {
-		return nil, err
-	}
-
-	// gopay admin sign
-	gpaSignStr, err := c.Cookie(CookieKeySign)
-	if err != nil {
-		return nil, err
-	}
-	gpaToken, err := decodeGpaFromToken(gpaTokenStr, gpaSignStr)
-	if err != nil {
-		log.Warnf("cookie has invalid sign, error:%v", err)
-		return nil, err
-	}
-
-	return gpaToken, nil
-}
-
-// 此方法必须提前验证cookie 就是前文必须调用过verifyFromCookie，此方法才有效
-func getLoginInfo(c *gin.Context) *GpaToken {
-	loginInfoIf, _ := c.Get(CtxKeyGpa)
-	loginInfo, ok := loginInfoIf.(*GpaToken)
-	if !ok {
-		log.Warnf("gpatoken not exist, invalid type")
-	}
-	if loginInfo == nil {
-		log.Warnf("gpatoken not exist, empty value")
-	}
-	return loginInfo
-}
-
 // 受理登录
 func AcceptLogin(c *gin.Context, mgrEnt *dao.Manager) {
 	mgrEnt.LastLoginIp = c.Request.Header.Get("X-Real-IP")
@@ -163,14 +129,14 @@ func AcceptLogin(c *gin.Context, mgrEnt *dao.Manager) {
 		log.Errorf("gen gpatoken failed:%v", err)
 		return
 	}
-	c.SetCookie(CookieKeyGpa, tokenStr, 3600*24*7, "", "", true, false)
-	c.SetCookie(CookieKeySign, sign, 3600*24*7, "", "", true, false)
+	c.SetCookie(CookieKeyGpa, tokenStr, 3600*24*7, "", "", false, false)
+	c.SetCookie(CookieKeySign, sign, 3600*24*7, "", "", false, false)
 
 	// record login
 	//go managermodel.RecordLoginStatus(mgrEnt)
 }
 
 func ClearLogin(c *gin.Context) {
-	c.SetCookie(CookieKeyGpa, "", -1, "", "", true, false)
-	c.SetCookie(CookieKeySign, "", -1, "", "", true, false)
+	c.SetCookie(CookieKeyGpa, "", -1, "", "", false, false)
+	c.SetCookie(CookieKeySign, "", -1, "", "", false, false)
 }
