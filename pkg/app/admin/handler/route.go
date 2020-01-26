@@ -70,6 +70,7 @@ func StartHttpServer(addr string) error {
 
 	rbacRouter.GET("/manager/list", ManagerList)
 	rbacRouter.POST("/manager/add", ManagerAdd)
+	rbacRouter.GET("/manager/add", ManagerAddForm)
 	// rbacRouter.POST("/manager/edit/:mid", ManagerAdd)
 	//authRouter.POST("/manager/modifyPwd", ManagerChangePwd)
 	rbacRouter.POST("/manager/enable/:mid/:enable", ManagerEnable)

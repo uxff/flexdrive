@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/uxff/flexdrive/pkg/utils/paginator"
+
 	"github.com/gin-gonic/gin"
 	"github.com/uxff/flexdrive/pkg/dao"
 	"github.com/uxff/flexdrive/pkg/dao/base"
@@ -105,10 +107,13 @@ func ManagerList(c *gin.Context) {
 	// 	"data":     resItems,
 	// })
 	c.HTML(http.StatusOK, "manager/list.tpl", gin.H{
-		"total":    total,
-		"page":     req.Page,
-		"pagesize": req.PageSize,
-		"data":     resItems,
+		"LoginInfo": getLoginInfo(c),
+		"IsLogin":   isLoginIn(c),
+		"total":     total,
+		"page":      req.Page,
+		"pagesize":  req.PageSize,
+		"list":      resItems,
+		"paginator": paginator.NewPaginator(c.Request, 10, int64(total)),
 	})
 }
 
@@ -129,6 +134,13 @@ func (r *ManagerAddRequest) ToEnt() *dao.Manager {
 }
 
 func ManagerAdd(c *gin.Context) {
+	c.HTML(http.StatusOK, "manager/add.tpl", gin.H{
+		"LoginInfo": getLoginInfo(c),
+		"IsLogin":   isLoginIn(c),
+	})
+}
+
+func ManagerAddForm(c *gin.Context) {
 	requestId := c.GetString(CtxKeyRequestId)
 
 	req := &ManagerAddRequest{}

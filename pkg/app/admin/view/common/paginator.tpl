@@ -1,3 +1,4 @@
+{{define "paginator.tpl"}}
 {{if gt .paginator.PageNums 1}}
 <ul class="pagination">
 {{if .paginator.HasPrev}}
@@ -21,4 +22,5 @@
 {{end}}
     <li class="disabled"><a>共{{.paginator.PageNums}}页</a></li>
 </ul>
+{{end}}
 {{end}}

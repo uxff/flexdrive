@@ -1,5 +1,5 @@
 {{define "common/partheader.tpl"}}
-<header id="topbar" class="navbar navbar-default navbar-fixed-top bs-docs-nav" role="banner">
+<header id="topbar" class="navbar navbar-default bs-docs-nav" role="banner">
   <div class="container">
     <div class="row">
     <div class="navbar-header">
@@ -50,7 +50,7 @@
             <span class="glyphicon glyphicon-cog"></span> 系统管理 <b class="caret"></b>
           </a>
           <ul class="dropdown-menu">
-            <li><a href="/picset">管理员账号</a></li>
+            <li><a href="/manager/list">管理员账号</a></li>
             <li><a href="/picset/folderName1/">角色管理</a></li>
             <li><a href="/picset/55156/">权限管理</a></li>
           </ul>

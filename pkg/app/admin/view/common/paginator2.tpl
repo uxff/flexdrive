@@ -1,5 +1,6 @@
-{{if gt .paginator.PageNums 1}}
+{{define "paginator2.tpl"}}
 <ul class="pagination">
+{{if gt .paginator.PageNums 1}}
 {{if .paginator.HasPrev}}
     <li><a href="{{.paginator.PageLinkFirst}}" title="首页"><i class="glyphicon glyphicon-step-backward"></i></a></li>
     <li><a href="{{.paginator.PageLinkPrev}}"><i class="glyphicon glyphicon-backward"></i></a></li>
@@ -20,5 +21,8 @@
     <li class="disabled"><a title="末页"><i class="glyphicon glyphicon-step-forward"></i></a></li>
 {{end}}
     <li class="disabled"><a>共{{.paginator.PageNums}}页</a></li>
+{{else}}
+    <li class="disabled"><a>共{{.paginator.Nums}}条</a></li>
+{{end}}
 </ul>
 {{end}}

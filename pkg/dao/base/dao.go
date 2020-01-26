@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
+	"strings"
+
 	"github.com/uxff/flexdrive/pkg/common"
 	"github.com/uxff/flexdrive/pkg/envinit"
 	"github.com/uxff/flexdrive/pkg/log"
-	"reflect"
-	"strings"
 )
 
 // 是否使用缓存
@@ -211,7 +212,7 @@ func ListAndCountByCondition(entityPtr interface{}, conditions map[string]interf
 	}
 
 	whereVal := make([]interface{}, 0)
-	whereStr := "true "
+	whereStr := "1 "
 	whererInMap := make(map[string]interface{})
 	for ck, cv := range conditions {
 		if cv == nil {
@@ -271,7 +272,7 @@ func ListByCondition(entityPtr interface{}, conditions map[string]interface{}, p
 	}
 
 	whereVal := make([]interface{}, 0)
-	whereStr := "true "
+	whereStr := "1 " // postgre 要求true开头; mysql 可以true或1; sqlite要求不能是true
 	for ck, cv := range conditions {
 		whereStr += " and " + ck
 		if cv == nil {
@@ -313,7 +314,7 @@ func RangeTableByConditions(tableEntity interface{}, conditions map[string]inter
 	tableName := getTableName(tableEntity)
 
 	whereVal := make([]interface{}, 0)
-	whereStr := "true "
+	whereStr := "1 "
 	for ck, cv := range conditions {
 		whereStr += " and " + ck
 		if cv == nil {
@@ -374,7 +375,7 @@ conditions = ["a = ?"=>1,"b like '%?%'"=>"bb"]
 */
 func CountByCondition(entityPtr interface{}, conditions map[string]interface{}) (total int64, err error) {
 	whereVal := make([]interface{}, 0)
-	whereStr := "true "
+	whereStr := "1 "
 	for ck, cv := range conditions {
 		whereStr += " and " + ck
 		if cv == nil {

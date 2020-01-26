@@ -83,7 +83,7 @@ func ConnectMysql(dsnPath string) (*xorm.Engine, error) {
 	engine.SetTableMapper(mptable)
 	engine.SetColumnMapper(&core.SameMapper{})
 
-	// Engine.ShowSQL(true)
+	engine.ShowSQL(true)
 	return engine, nil
 }
 
@@ -106,6 +106,6 @@ func ConnectSqlite3(dsnPath string) (*xorm.Engine, error) {
 	engine.SetTableMapper(mptable)
 	engine.SetColumnMapper(&core.SameMapper{})
 
-	// Engine.ShowSQL(true)
+	engine.ShowSQL(true)
 	return engine, nil
 }

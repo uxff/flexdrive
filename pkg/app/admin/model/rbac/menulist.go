@@ -13,7 +13,6 @@ var defaultMenus = RoleAccess{
 		Sub: []*ResourceItem{
 			&ResourceItem{
 				Name:        "节点列表",
-				Route:       "/payment/merchant",
 				PermitRoute: "/api/merchant",
 			},
 		},
