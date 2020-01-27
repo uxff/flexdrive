@@ -28,6 +28,11 @@ const (
 
 var adminServer *http.Server
 var router = gin.New() // *gin.Engine // 在本包init函数之前运行
+var tplFuncMap = make(template.FuncMap, 0)
+
+func init() {
+	loadFuncMap()
+}
 
 func StartHttpServer(addr string) error {
 	gin.SetMode(gin.DebugMode)
@@ -74,7 +79,7 @@ func StartHttpServer(addr string) error {
 	rbacRouter.GET("/manager/edit/:mid", ManagerEdit)
 	rbacRouter.POST("/manager/edit/:mid", ManagerAddForm)
 	//authRouter.POST("/manager/modifyPwd", ManagerChangePwd)
-	rbacRouter.POST("/manager/enable/:mid/:enable", ManagerEnable)
+	rbacRouter.GET("/manager/enable/:mid/:enable", ManagerEnable)
 
 	//rbacRouter.GET("/merchant/list", MerchantList)
 	//rbacRouter.POST("/merchant/add", MerchantAdd)
@@ -101,80 +106,7 @@ func StartHttpServer(addr string) error {
 	//fnMap := template.FuncMap{}
 	//fnMap[""] =
 
-	router.SetFuncMap(template.FuncMap{
-		"i18nja": func(format string, args ...interface{}) string {
-			return "" //i18n.Tr("ja-JP", format, args...)
-		},
-		//"i18n": i18n.Tr,
-		"datenow": func(format string) string {
-			return time.Now().Add(time.Duration(9) * time.Hour).Format(format)
-		},
-		"dateformatJst": func(in time.Time) string {
-			in = in.Add(time.Duration(9) * time.Hour)
-			return in.Format("2006/01/02 15:04")
-		},
-
-		"qescape": func(in string) string {
-			return url.QueryEscape(in)
-		},
-		"nl2br": func(in string) string {
-			return strings.Replace(in, "\n", "<br>", -1)
-		},
-
-		"tostr": func(in interface{}) string {
-			return fmt.Sprintf("%d", in) //convert.ToStr(reflect.ValueOf(in).Interface())
-		},
-
-		"first": func(in interface{}) interface{} {
-			return reflect.ValueOf(in).Index(0).Interface()
-		},
-
-		"last": func(in interface{}) interface{} {
-			s := reflect.ValueOf(in)
-			return s.Index(s.Len() - 1).Interface()
-		},
-
-		"truncate": func(in string, length int) string {
-			return runewidth.Truncate(in, length, "...")
-		},
-
-		"noname": func(in string) string {
-			if in == "" {
-				return "(未入力)"
-			}
-			return in
-		},
-
-		"cleanurl": func(in string) string {
-			return strings.Trim(strings.Trim(in, " "), "　")
-		},
-
-		"append": func(data map[interface{}]interface{}, key string, value interface{}) template.JS {
-			if _, ok := data[key].([]interface{}); !ok {
-				data[key] = []interface{}{value}
-			} else {
-				data[key] = append(data[key].([]interface{}), value)
-			}
-			return template.JS("")
-		},
-
-		"appendmap": func(data map[interface{}]interface{}, key string, name string, value interface{}) template.JS {
-			v := map[string]interface{}{name: value}
-
-			if _, ok := data[key].([]interface{}); !ok {
-				data[key] = []interface{}{v}
-			} else {
-				data[key] = append(data[key].([]interface{}), v)
-			}
-			return template.JS("")
-		},
-		"urlfor": func(endpoint string, values ...interface{}) string {
-			return endpoint
-		},
-		"captchaUrl": func() string {
-			return fmt.Sprintf("/captcha?t=%d", time.Now().Unix())
-		},
-	})
+	router.SetFuncMap(tplFuncMap)
 
 	// gin的debug 模式下每次访问请求都会读取模板 release模式下不会
 	router.LoadHTMLGlob("pkg/app/admin/view/**/*")
@@ -193,5 +125,80 @@ func ShutdownHttpServer() {
 		}
 
 		adminServer = nil
+	}
+}
+
+func loadFuncMap() {
+	tplFuncMap["i18nja"] = func(format string, args ...interface{}) string {
+		return "" //i18n.Tr("ja-JP", format, args...)
+	}
+	//"i18n": i18n.Tr,
+	tplFuncMap["datenow"] = func(format string) string {
+		return time.Now().Add(time.Duration(9) * time.Hour).Format(format)
+	}
+	tplFuncMap["dateformatJst"] = func(in time.Time) string {
+		in = in.Add(time.Duration(9) * time.Hour)
+		return in.Format("2006/01/02 15:04")
+	}
+
+	tplFuncMap["qescape"] = func(in string) string {
+		return url.QueryEscape(in)
+	}
+	tplFuncMap["nl2br"] = func(in string) string {
+		return strings.Replace(in, "\n", "<br>", -1)
+	}
+
+	tplFuncMap["tostr"] = func(in interface{}) string {
+		return fmt.Sprintf("%d", in) //convert.ToStr(reflect.ValueOf(in).Interface())
+	}
+
+	tplFuncMap["first"] = func(in interface{}) interface{} {
+		return reflect.ValueOf(in).Index(0).Interface()
+	}
+
+	tplFuncMap["last"] = func(in interface{}) interface{} {
+		s := reflect.ValueOf(in)
+		return s.Index(s.Len() - 1).Interface()
+	}
+
+	tplFuncMap["truncate"] = func(in string, length int) string {
+		return runewidth.Truncate(in, length, "...")
+	}
+
+	tplFuncMap["noname"] = func(in string) string {
+		if in == "" {
+			return "(未入力)"
+		}
+		return in
+	}
+
+	tplFuncMap["cleanurl"] = func(in string) string {
+		return strings.Trim(strings.Trim(in, " "), "　")
+	}
+
+	tplFuncMap["append"] = func(data map[interface{}]interface{}, key string, value interface{}) template.JS {
+		if _, ok := data[key].([]interface{}); !ok {
+			data[key] = []interface{}{value}
+		} else {
+			data[key] = append(data[key].([]interface{}), value)
+		}
+		return template.JS("")
+	}
+
+	tplFuncMap["appendmap"] = func(data map[interface{}]interface{}, key string, name string, value interface{}) template.JS {
+		v := map[string]interface{}{name: value}
+
+		if _, ok := data[key].([]interface{}); !ok {
+			data[key] = []interface{}{v}
+		} else {
+			data[key] = append(data[key].([]interface{}), v)
+		}
+		return template.JS("")
+	}
+	tplFuncMap["urlfor"] = func(endpoint string, values ...interface{}) string {
+		return endpoint
+	}
+	tplFuncMap["captchaUrl"] = func() string {
+		return fmt.Sprintf("/captcha?t=%d", time.Now().Unix())
 	}
 }

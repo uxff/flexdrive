@@ -14,6 +14,12 @@ import (
 	"github.com/uxff/flexdrive/pkg/log"
 )
 
+func init() {
+	tplFuncMap["mgrStatus"] = func(status int) string {
+		return base.StatusMap[status]
+	}
+}
+
 type ManagerListRequest struct {
 	CreateStart string `form:"createStart"`
 	CreateEnd   string `form:"createEnd"`
@@ -293,7 +299,7 @@ func ManagerEnable(c *gin.Context) {
 
 	//base.CacheDelByEntity("mgrLoginName", mgrEnt.Email, mgrEnt)
 
-	_, err = base.UpdateByCol("mid", mid, mgrEnt, []string{"status"})
+	_, err = base.UpdateByCol("id", mid, mgrEnt, []string{"status"})
 	if err != nil {
 		log.Errorf("db error:%v", err)
 		StdErrResponse(c, ErrInternal)

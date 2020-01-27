@@ -12,3 +12,8 @@ const (
 	// 小于10的roleid是超级管理角色 不可删除
 	MaxSuperRoleId = 10
 )
+
+var StatusMap = map[int]string{
+	StatusNormal:  "正常",
+	StatusDeleted: "已删除",
+}

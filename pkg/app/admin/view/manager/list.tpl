@@ -60,9 +60,13 @@
                     <td>{{.RoleName}}</td>
                     <td>{{.LastLoginAt}}</td>
                     <td>{{.LastLoginIp}}</td>
-                    <td>{{.Status}}</td>
+                    <td>{{mgrStatus .Status}}</td>
                     <td>
-                        <a href="/manager/enable/1">禁用</a>
+                        {{if eq .Status 1}}
+                        <a href="/manager/enable/{{.Mid}}/9">禁用</a>
+                        {{else}}
+                        <a href="/manager/enable/{{.Mid}}/1">启用</a>
+                        {{end}}
                         <a href="/manager/edit/{{.Mid}}">编辑</a>
                     </td>
                 </tr>
