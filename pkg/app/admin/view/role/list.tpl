@@ -51,11 +51,11 @@
                     <td>{{mgrStatus .Status}}</td>
                     <td>
                         {{if eq .Status 1}}
-                        <a href="/role/enable/{{.Mid}}/9">禁用</a>
+                        <a href="/role/enable/{{.Id}}/9">禁用</a>
                         {{else}}
-                        <a href="/role/enable/{{.Mid}}/1">启用</a>
+                        <a href="/role/enable/{{.Id}}/1">启用</a>
                         {{end}}
-                        <a href="/role/edit/{{.Mid}}">编辑</a>
+                        <a href="/role/edit/{{.Id}}">编辑</a>
                     </td>
                 </tr>
                 {{else}}

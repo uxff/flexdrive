@@ -51,8 +51,7 @@
           </a>
           <ul class="dropdown-menu">
             <li><a href="/manager/list">管理员账号</a></li>
-            <li><a href="/picset/folderName1/">角色管理</a></li>
-            <li><a href="/picset/55156/">权限管理</a></li>
+            <li><a href="/role/list">角色及权限管理</a></li>
           </ul>
         </li>
       </ul>

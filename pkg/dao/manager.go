@@ -65,12 +65,24 @@ func (t *Manager) IsSuperRole() bool {
 
 func GetManagerById(id int) (*Manager, error) {
 	m := &Manager{}
-	_, err := base.GetByCol("id", id, m)
+	exist, err := base.GetByCol("id", id, m)
+	if err != nil {
+		return nil, err
+	}
+	if !exist {
+		return nil, nil
+	}
 	return m, err
 }
 
 func GetManagerByEmail(email string) (*Manager, error) {
 	m := &Manager{}
-	_, err := base.GetByCol("email", email, m)
+	exist, err := base.GetByCol("email", email, m)
+	if err != nil {
+		return nil, err
+	}
+	if !exist {
+		return nil, nil
+	}
 	return m, err
 }

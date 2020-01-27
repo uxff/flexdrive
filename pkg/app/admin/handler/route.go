@@ -57,7 +57,7 @@ func StartHttpServer(addr string) error {
 
 	// 导出下载 基于登录cookie验证
 	authRouter := router.Group("/", TraceMiddleWare, AuthMiddleWare)
-	authRouter.POST("/changePwd", ManagerChangePwd)
+	authRouter.POST("/changePwd", ManagerChangePwd) // 修改自己的密码 不受角色限制
 	authRouter.GET("/", Index)
 
 	// 基础基于登录cookie并rabc授权的验证
@@ -65,9 +65,11 @@ func StartHttpServer(addr string) error {
 	// 也就是增加的接口必须以下面的group中的某一个路径开头
 	rbacRouter := router.Group("/", TraceMiddleWare, AuthMiddleWare, RbacAuthMiddleWare)
 
-	rbacRouter.POST("/role/add", RoleAdd)
-	rbacRouter.POST("/role/edit/:id", RoleAdd)
-	rbacRouter.POST("/role/enable/:id", RoleEnable)
+	rbacRouter.GET("/role/add", RoleAdd)
+	rbacRouter.POST("/role/add", RoleAddForm)
+	rbacRouter.GET("/role/edit/:id", RoleEdit)
+	rbacRouter.POST("/role/edit/:id", RoleAddForm)
+	rbacRouter.GET("/role/enable/:id", RoleEnable)
 	rbacRouter.GET("/role/list", RoleList)
 
 	//rbacRouter.POST("/role/rbac/edit/:roleid", RoleRbacSet)

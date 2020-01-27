@@ -27,11 +27,23 @@ func (t *Role) UpdateById(cols []string) error {
 
 func GetRoleById(id int) (*Role, error) {
 	ent := &Role{}
-	_, err := base.GetByCol("id", id, ent)
-	return ent, err
+	exist, err := base.GetByCol("id", id, ent)
+	if err != nil {
+		return nil, err
+	}
+	if !exist {
+		return nil, nil
+	}
+	return ent, nil
 }
 func GetRoleByName(name string) (*Role, error) {
 	ent := &Role{}
-	_, err := base.GetByCol("name", name, ent)
+	exist, err := base.GetByCol("name", name, ent)
+	if err != nil {
+		return nil, err
+	}
+	if !exist {
+		return nil, nil
+	}
 	return ent, err
 }

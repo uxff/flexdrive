@@ -30,7 +30,7 @@ type RoleAccess []*ResourceItem
 // 检查资源组中有没有路由权限
 func (r *RoleAccess) CheckRouteAccessable(apiRouteStr string) bool {
 	for _, rsItem := range *r {
-		if rsItem.PermitRoute != "" && strings.HasPrefix(apiRouteStr, rsItem.PermitRoute) && rsItem.Access == true {
+		if rsItem.PermitRoute != "" && strings.HasPrefix(apiRouteStr+"/", rsItem.PermitRoute+"/") && rsItem.Access == true {
 			return true
 		}
 
@@ -61,10 +61,10 @@ func matchAccessWithCustomizedItems(allItem, customizedRoleAccess RoleAccess) {
 }
 
 // 基于路由返回是否有权限
-func CheckAccessByRoute(customizedRoleAccess RoleAccess, apiRouteStr string) bool {
-	allRsItem := GetAllAccessItems(customizedRoleAccess)
-	return allRsItem.CheckRouteAccessable(apiRouteStr)
-}
+// func CheckAccessByRoute(customizedRoleAccess RoleAccess, apiRouteStr string) bool {
+// 	allRsItem := GetAllAccessItems(customizedRoleAccess)
+// 	return allRsItem.CheckRouteAccessable(apiRouteStr)
+// }
 
 // 10 以内的roleid是超级管理 拥有全部权限
 func GetMaxSuperRoleId() int {

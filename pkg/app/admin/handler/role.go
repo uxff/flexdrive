@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/uxff/flexdrive/pkg/app/admin/model/rbac"
+
 	"github.com/gin-gonic/gin"
 	"github.com/uxff/flexdrive/pkg/dao"
 	"github.com/uxff/flexdrive/pkg/dao/base"
@@ -45,12 +47,12 @@ func (r *RoleListRequest) ToCondition() (condition map[string]interface{}) {
 
 // 接口返回的元素
 type RoleItem struct {
-	Id      int    `json:"id"`
-	Name    string `json:"name"`
-	Permit  string `json:"permit"`
-	Created string `json:"created"`
-	Updated string `json:"updated"`
-	Status  int    `json:"status"`
+	Id          int               `json:"id"`
+	Name        string            `json:"name" form:"name"`
+	Created     string            `json:"created" form:"-"`
+	Updated     string            `json:"updated" form:"-"`
+	Status      int               `json:"status" form:"-"`
+	AccessRoute map[string]string `json:"accessRoute" form:"accessRoute"`
 }
 
 func RoleList(c *gin.Context) {
@@ -103,62 +105,85 @@ func (r *RoleAddRequest) ToEnt() *dao.Role {
 		// MgrLastLoginAt:time.Now(),
 		//Pwd: r.Pwd,
 	}
+
+	e.Permit = rbac.GetAllMenu()
+
+	for _, accessGroup := range e.Permit {
+		// 一级分组不用配置权限
+		for _, accessItem := range accessGroup.Sub {
+			accessItem.Access = false
+			for routeStr, isAccess := range r.AccessRoute {
+				if routeStr == accessItem.PermitRoute && isAccess == "1" {
+					accessItem.Access = true
+				}
+			}
+		}
+	}
+
 	//e.SetPwd(r.Pwd)
 	return e
 }
 
 func RoleAdd(c *gin.Context) {
-	c.HTML(http.StatusOK, "role/add.tpl", gin.H{
-		"LoginInfo": getLoginInfo(c),
-		"IsLogin":   isLoginIn(c),
+	allAccessItems := rbac.GetAllMenu()
+	c.HTML(http.StatusOK, "role/edit.tpl", gin.H{
+		"LoginInfo":      getLoginInfo(c),
+		"IsLogin":        isLoginIn(c),
+		"allAccessItems": allAccessItems,
 	})
 }
 
 func RoleEdit(c *gin.Context) {
-	roleId, _ := strconv.Atoi(c.Param("roleId"))
+	roleId, _ := strconv.Atoi(c.Param("id"))
 	if roleId <= 0 {
 		StdErrResponse(c, ErrInvalidParam)
 		return
 	}
 
-	mgrEnt, _ := dao.GetRoleById(roleId)
-	if mgrEnt == nil {
+	roleEnt, _ := dao.GetRoleById(roleId)
+	if roleEnt == nil {
 		StdErrResponse(c, ErrMgrNotExist)
 		return
 	}
 
-	if mgrEnt.Status == base.StatusDeleted {
+	if roleEnt.Status == base.StatusDeleted {
 		StdErrResponse(c, ErrMgrDisabled)
 		return
 	}
 
+	log.Debugf("roleEnt:%+v", roleEnt)
+	allAccessItems := rbac.GetAllAccessItems(roleEnt.Permit)
+
 	c.HTML(http.StatusOK, "role/edit.tpl", gin.H{
-		"LoginInfo": getLoginInfo(c),
-		"IsLogin":   isLoginIn(c),
-		"roleId":    roleId,
-		"MgrEnt":    mgrEnt,
+		"LoginInfo":      getLoginInfo(c),
+		"IsLogin":        isLoginIn(c),
+		"roleId":         roleId,
+		"RoleEnt":        roleEnt,
+		"allAccessItems": allAccessItems,
 	})
 }
 
 // 新增和修改
 func RoleAddForm(c *gin.Context) {
 	requestId := c.GetString(CtxKeyRequestId)
+	roleId, _ := strconv.ParseInt(c.Param("id"), 10, 64)
 
 	req := &RoleAddRequest{}
-	err := c.ShouldBindJSON(req)
+	err := c.ShouldBind(req)
+	req.AccessRoute = c.PostFormMap("accessRoute")
 	if err != nil {
 		StdErrResponse(c, ErrInvalidParam)
 		return
 	}
 
-	if req.Name == "" { // 用户名不能为空
+	if req.Name == "" { // 角色名不能为空
 		StdErrResponse(c, ErrInvalidParam)
 		return
 	}
 
 	// 去掉用户输入的字符串里开头结尾的不可见字符
 	req.Name = strings.TrimSpace(req.Name)
-	req.Permit = strings.TrimSpace(req.Permit)
+	//req.Permit = strings.TrimSpace(req.Permit)
 
 	log.Trace(requestId).Debugf("%+v", req)
 
@@ -171,13 +196,13 @@ func RoleAddForm(c *gin.Context) {
 	}
 
 	// 如果是添加 不能添加同名
-	if existEnt != nil && req.Id == 0 {
+	if existEnt != nil && roleId == 0 {
 		StdErrResponse(c, ErrNameDuplicate)
 		return
 	}
 
 	// 如果是修改 不能修改和已存在的冲突
-	if existEnt != nil && req.Id > 0 && req.Id != existEnt.Id {
+	if existEnt != nil && roleId > 0 && int(roleId) != existEnt.Id {
 		StdErrResponse(c, ErrNameDuplicate)
 		return
 	}
@@ -192,9 +217,9 @@ func RoleAddForm(c *gin.Context) {
 	ent := req.ToEnt()
 	ent.Status = base.StatusNormal
 
-	if req.Id > 0 {
-		cols := []string{"name"}
-		_, err = base.UpdateByCol("id", req.Id, ent, cols)
+	if roleId > 0 {
+		cols := []string{"name", "permit"}
+		_, err = base.UpdateByCol("id", roleId, ent, cols)
 		//base.CacheDelByEntity("mgrLoginName", req.Email, existEnt)
 	} else {
 		_, err = base.Insert(ent)
@@ -206,9 +231,6 @@ func RoleAddForm(c *gin.Context) {
 		return
 	}
 
-	// StdResponse(c, ErrSuccess, gin.H{
-	// 	"roleId": roleId,
-	// })
 	c.Redirect(http.StatusMovedPermanently, RouteRoleList)
 
 }
@@ -226,8 +248,8 @@ func RoleEnable(c *gin.Context) {
 
 	ent, err := dao.GetRoleById(int(roleId))
 
-	//_, err := base.GetByCol("id", roleId, mgrEnt)
-	// exist, err := base.GetByCol("roleId", roleId, mgrEnt)
+	//_, err := base.GetByCol("id", roleId, roleEnt)
+	// exist, err := base.GetByCol("roleId", roleId, roleEnt)
 	if err != nil {
 		log.Errorf("db error:%v", err)
 		StdErrResponse(c, ErrInternal)
@@ -254,8 +276,6 @@ func RoleEnable(c *gin.Context) {
 		// }
 		ent.Status = base.StatusDeleted
 	}
-
-	//base.CacheDelByEntity("mgrLoginName", mgrEnt.Email, mgrEnt)
 
 	_, err = base.UpdateByCol("id", roleId, ent, []string{"status"})
 	if err != nil {
