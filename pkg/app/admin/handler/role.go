@@ -9,6 +9,7 @@ import (
 	"github.com/uxff/flexdrive/pkg/dao"
 	"github.com/uxff/flexdrive/pkg/dao/base"
 	"github.com/uxff/flexdrive/pkg/log"
+	"github.com/uxff/flexdrive/pkg/utils/paginator"
 )
 
 type RoleListRequest struct {
@@ -56,7 +57,7 @@ func RoleList(c *gin.Context) {
 	requestId := c.GetString(CtxKeyRequestId)
 
 	// 请求参数校验
-	req := &ManagerListRequest{}
+	req := &RoleListRequest{}
 	err := c.ShouldBindQuery(req)
 	if err != nil {
 		StdErrResponse(c, ErrInvalidParam)
@@ -79,11 +80,14 @@ func RoleList(c *gin.Context) {
 	// parse permit
 	// }
 
-	StdResponse(c, ErrSuccess, map[string]interface{}{
-		"total":    total,
-		"page":     req.Page,
-		"pagesize": req.PageSize,
-		"data":     list,
+	c.HTML(http.StatusOK, "role/list.tpl", gin.H{
+		"LoginInfo": getLoginInfo(c),
+		"IsLogin":   isLoginIn(c),
+		"total":     total,
+		"page":      req.Page,
+		"pagesize":  req.PageSize,
+		"list":      list,
+		"paginator": paginator.NewPaginator(c.Request, 10, int64(total)),
 	})
 }
 
@@ -103,8 +107,41 @@ func (r *RoleAddRequest) ToEnt() *dao.Role {
 	return e
 }
 
-// 新增和修改
 func RoleAdd(c *gin.Context) {
+	c.HTML(http.StatusOK, "role/add.tpl", gin.H{
+		"LoginInfo": getLoginInfo(c),
+		"IsLogin":   isLoginIn(c),
+	})
+}
+
+func RoleEdit(c *gin.Context) {
+	roleId, _ := strconv.Atoi(c.Param("roleId"))
+	if roleId <= 0 {
+		StdErrResponse(c, ErrInvalidParam)
+		return
+	}
+
+	mgrEnt, _ := dao.GetRoleById(roleId)
+	if mgrEnt == nil {
+		StdErrResponse(c, ErrMgrNotExist)
+		return
+	}
+
+	if mgrEnt.Status == base.StatusDeleted {
+		StdErrResponse(c, ErrMgrDisabled)
+		return
+	}
+
+	c.HTML(http.StatusOK, "role/edit.tpl", gin.H{
+		"LoginInfo": getLoginInfo(c),
+		"IsLogin":   isLoginIn(c),
+		"roleId":    roleId,
+		"MgrEnt":    mgrEnt,
+	})
+}
+
+// 新增和修改
+func RoleAddForm(c *gin.Context) {
 	requestId := c.GetString(CtxKeyRequestId)
 
 	req := &RoleAddRequest{}
@@ -145,7 +182,7 @@ func RoleAdd(c *gin.Context) {
 		return
 	}
 
-	// mid := req.Mid // 如果有则是编辑
+	// roleId := req.roleId // 如果有则是编辑
 	// roleEnt, err := dao.GetRoleById(req.RoleId)
 	// if err != nil {
 	// 	log.Trace(requestId).Errorf("查询角色信息失败:%v roleId:%d", err, req.RoleId)
@@ -170,7 +207,7 @@ func RoleAdd(c *gin.Context) {
 	}
 
 	// StdResponse(c, ErrSuccess, gin.H{
-	// 	"mid": mid,
+	// 	"roleId": roleId,
 	// })
 	c.Redirect(http.StatusMovedPermanently, RouteRoleList)
 
@@ -189,8 +226,8 @@ func RoleEnable(c *gin.Context) {
 
 	ent, err := dao.GetRoleById(int(roleId))
 
-	//_, err := base.GetByCol("id", mid, mgrEnt)
-	// exist, err := base.GetByCol("mid", mid, mgrEnt)
+	//_, err := base.GetByCol("id", roleId, mgrEnt)
+	// exist, err := base.GetByCol("roleId", roleId, mgrEnt)
 	if err != nil {
 		log.Errorf("db error:%v", err)
 		StdErrResponse(c, ErrInternal)
