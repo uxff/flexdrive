@@ -1,4 +1,4 @@
-{{ define "manager/add.tpl" }}
+{{ define "role/add.tpl" }}
 
 {{template "common/head.tpl" .}}
 {{template "common/partheader.tpl" .}}
@@ -7,14 +7,14 @@
     <div class="row vertical-offset-75">
         <ul class="breadcrumb">
             <li><a href="/">首页</a></li>
-            <li><a href="/manager/list">管理员</a></li>
-            <li class="active">添加管理员账号</li>
+            <li><a href="/role/list">角色</a></li>
+            <li class="active">添加角色</li>
         </ul>
         <div class="col-md-6 col-md-offset-3">
     		<div class="panel panel-default">
 			  	<div class="panel-heading text-center">
 			    	<h3 class="panel-title"><strong>
-                        添加管理员账号
+                        添加角色
                     </strong></h3>
 			 	</div> 
 

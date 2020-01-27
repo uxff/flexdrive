@@ -1,39 +1,31 @@
-{{ define "manager/edit.tpl" }}
+{{ define "role/edit.tpl" }}
 
 {{template "common/head.tpl" .}}
 {{template "common/partheader.tpl" .}}
 
 <div class="container">
     <div class="row vertical-offset-75">
-        <ul class="breadcrumb">
-            <li><a href="/">首页</a></li>
-            <li><a href="/manager/list">管理员</a></li>
-            <li class="active">编辑管理员账号</li>
-        </ul>
-        <div class="col-md-6 col-md-offset-3">
+      <ul class="breadcrumb">
+          <li><a href="/">首页</a></li>
+          <li><a href="/role/list">角色</a></li>
+          <li class="active">编辑角色</li>
+      </ul>
+    	<div class="col-md-6 col-md-offset-3">
     		<div class="panel panel-default">
 			  	<div class="panel-heading text-center">
-			    	<h3 class="panel-title"><strong>
-                        编辑管理员账号
-                    </strong></h3>
+			    	<h3 class="panel-title"><strong>编辑角色</strong></h3>
 			 	</div> 
 
 			  	<div class="panel-body">
-			    	<form accept-charset="utf-8" role="form" class="form-horizontal" method="POST" action="/manager/edit/{{.Mid}}">
+			    	<form accept-charset="utf-8" role="form" class="form-horizontal" method="POST" action="/role/edit/{{.Id}}">
                       <div class="form-group">
-                        <label for="inputEmail" class="col-sm-3 control-label">邮箱地址</label>
+                        <label for="inputName" class="col-sm-3 control-label">名称</label>
                         <div class="col-sm-8">
-                          <input class="form-control" placeholder="例: admin@example.com" name="email" value="{{.MgrEnt.Email}}" type="email" required 
-                                    id="inputEmail" autocomplete="email"/>
+                          <input class="form-control" placeholder="例: 运营" name="name" value="{{.RoleEnt.Name}}" type="input" required 
+                                    id="inputName" />
                         </div>
                       </div>
-                      <div class="form-group" style="display: none">
-                        <label for="inputPassword" class="col-sm-3 control-label">密码</label>
-                        <div class="col-sm-8">
-			    		  <input class="form-control" placeholder="输入秘钥" name="pwd" type="password" value="" required
-                                    pattern=".{6,}" title="密码长度至少为6个字符" id="inputPassword"  />
-                        </div>
-                      </div>
+                      <!--下面编辑权限-->
                       <div class="form-group">
                             <label for="roleId" class="col-sm-3 control-label">角色</label>
                             <div class="col-sm-8">
@@ -55,6 +47,7 @@
 		</div>
 	</div>
 </div>
+
 {{template "common/partfooter.tpl"}}
 {{template "common/foot.tpl"}}
 
