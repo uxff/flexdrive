@@ -10,10 +10,11 @@ import (
 	"flag"
 	slog "log"
 	"os"
+	"sync"
 
 	"github.com/uxff/flexdrive/pkg/common"
 
-	"github.com/uxff/flexdrive/pkg/app/admin/handler"
+	adminhandler "github.com/uxff/flexdrive/pkg/app/admin/handler"
 	"github.com/uxff/flexdrive/pkg/envinit"
 	"github.com/uxff/flexdrive/pkg/log"
 	"go.uber.org/zap"
@@ -21,13 +22,13 @@ import (
 )
 
 var (
-	version     = "0.1"
-	showVersion bool
-	logLevel    = -1
-	serveAddr   = "127.0.0.1:10011"
-	serveAdmin  = "127.0.0.1:10011"
-	dataDsn     = "mysql://user:pass@tcp(127.0.0.1:3306)/flexdrive?charset=utf8mb4&parseTime=True&loc=Local"
-	cacheDsn    = ""
+	version       = "0.1"
+	showVersion   bool
+	logLevel      = -1
+	serveCustomer = "127.0.0.1:10012"
+	serveAdmin    = "127.0.0.1:10011"
+	dataDsn       = "mysql://user:pass@tcp(127.0.0.1:3306)/flexdrive?charset=utf8mb4&parseTime=True&loc=Local"
+	cacheDsn      = ""
 )
 
 func main() {
@@ -62,6 +63,11 @@ func main() {
 		serveAdmin = s
 	}
 
+	if s := os.Getenv("SERVECUSTOMER"); s != "" {
+		log.Debugf("the serveradmin from env: %s", s)
+		serveCustomer = s
+	}
+
 	err = envinit.InitDb(common.DBMysqlDrive, dataDsn)
 	if err != nil {
 		log.Fatalf("cannot init mysql, err:%s", err)
@@ -77,5 +83,20 @@ func main() {
 }
 
 func Serve(envMap map[string]string) error {
-	return handler.StartHttpServer(serveAdmin)
+	errCh := make(chan error, 1)
+
+	wg := &sync.WaitGroup{}
+	go func() {
+		wg.Add(1)
+		defer wg.Done()
+		errCh <- adminhandler.StartHttpServer(serveAdmin)
+	}()
+
+	select {
+	case e := <-errCh:
+		return e
+	}
+
+	wg.Wait()
+	return nil
 }
