@@ -211,6 +211,15 @@ func StdErrResponse(c *gin.Context, code string) {
 	})
 	//StdResponseJson(c, code, "", "")
 }
+func StdErrMsgResponse(c *gin.Context, code string, errMsg string) {
+	if errMsg == "" {
+		errMsg = CodeToMessage(code)
+	}
+	c.HTML(http.StatusOK, "common/error.tpl", gin.H{
+		"errMsg": errMsg,
+	})
+	//StdResponseJson(c, code, "", "")
+}
 
 func StdResponseJson(c *gin.Context, code, msg string, data interface{}) {
 	requestId := c.GetString(CtxKeyRequestId)

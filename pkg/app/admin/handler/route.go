@@ -69,7 +69,7 @@ func StartHttpServer(addr string) error {
 	rbacRouter.POST("/role/add", RoleAddForm)
 	rbacRouter.GET("/role/edit/:id", RoleEdit)
 	rbacRouter.POST("/role/edit/:id", RoleAddForm)
-	rbacRouter.GET("/role/enable/:id", RoleEnable)
+	rbacRouter.GET("/role/enable/:id/:enable", RoleEnable)
 	rbacRouter.GET("/role/list", RoleList)
 
 	//rbacRouter.POST("/role/rbac/edit/:roleid", RoleRbacSet)

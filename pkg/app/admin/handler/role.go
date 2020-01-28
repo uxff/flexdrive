@@ -267,11 +267,11 @@ func RoleEnable(c *gin.Context) {
 	} else if enable == 9 {
 		// 停用
 		if int(roleId) == loginInfo.RoleId {
-			StdResponseJson(c, ErrInternal, "不能停用自己的账号", "")
+			StdErrMsgResponse(c, ErrInternal, "不能停用自己的账号")
 			return
 		}
 		// if ent.IsSuperRole() {
-		// 	StdResponseJson(c, ErrInternal, "不能停用超级管理的账号", "")
+		// 	StdErrMsgResponse(c, ErrInternal, "不能停用超级管理的账号", "")
 		// 	return
 		// }
 		ent.Status = base.StatusDeleted

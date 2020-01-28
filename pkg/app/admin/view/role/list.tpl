@@ -3,6 +3,12 @@
 {{template "common/head.tpl" .}}
 {{template "common/partheader.tpl" .}}
 
+<!-- 时间选择器样式表 -->
+<link href="https://cdn.bootcss.com/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+<!-- 时间选择器前置脚本 -->
+<script src="https://cdn.bootcss.com/moment.js/2.22.1/moment-with-locales.min.js"></script>
+<!-- 时间选择器核心脚本 -->
+<script src="https://cdn.bootcss.com/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
 
 <div class="container">
 
@@ -17,16 +23,19 @@
             <div class="panel-body">
                 <form id="formSearch" class="form-horizontal" method="GET" action="/role/list">
                     <div class="form-group" >
-                        <label class="control-label col-sm-1" for="txt_search_departmentname">名称</label>
-                        <div class="col-sm-3">
-                            <input type="text" class="form-control" id="txt_search_departmentname">
+                        <label class="control-label col-sm-1" for="txt_search_name">名称</label>
+                        <div class="col-sm-2">
+                            <input type="text" class="form-control" id="txt_search_name" name="name">
                         </div>
-                        <label class="control-label col-sm-1" for="txt_search_statu">时间</label>
-                        <div class="col-sm-3">
-                            <input type="text" class="form-control" id="txt_search_statu">
+                        <label class="control-label col-sm-1" for="txt_search_created">时间</label>
+                        <div class="col-sm-2">
+                            <input type="text" class="form-control" id="txt_search_created_start" name="createdStart">
                         </div>
-                        <div class="col-sm-4" style="text-align:left;">
-                            <button type="button" style="margin-left:50px" class="btn btn-primary">查询</button>
+                        <div class="col-sm-2">
+                            <input type="text" class="form-control" id="txt_search_created_end" name="createdEnd">
+                        </div>
+                        <div class="col-sm-3" style="text-align:left;">
+                            <button type="submit" style="margin-left:50px" class="btn btn-primary">查询</button>
                             <a href="/role/add" type="button" style="margin-left:50px" class="btn btn-success">新增</a>
                         </div>
                     </div>
@@ -39,6 +48,7 @@
                 <tr class="info">
                     <th>id</th>
                     <th>名称</th>
+                    <th>创建时间</th>
                     <th>状态</th>
                     <th>操作</th>
                 </tr>
@@ -48,6 +58,7 @@
                 <tr>
                     <td>{{.Id}}</td>
                     <td>{{.Name}}</td>
+                    <td>{{.Created}}</td>
                     <td>{{mgrStatus .Status}}</td>
                     <td>
                         {{if eq .Status 1}}
@@ -72,6 +83,15 @@
     </div>
 
 </div>
+
+<script type="text/javascript">
+$("#txt_search_created_start").datetimepicker({
+    format: 'YYYY-MM-DD HH:mm'
+});
+$("#txt_search_created_end").datetimepicker({
+    format: 'YYYY-MM-DD HH:mm'
+});
+</script>
 
 {{template "common/partfooter.tpl"}}
 {{template "common/foot.tpl"}}
