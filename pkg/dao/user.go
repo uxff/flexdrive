@@ -19,8 +19,8 @@ type User struct {
 	FileCount   int64     `xorm:"not null default 0 comment('文件数量') BIGINT(20)"`
 	LastLoginAt time.Time `xorm:"not null default '0000-00-00 00:00:00' comment('最后登录时间') TIMESTAMP"`
 	LastLoginIp string    `xorm:"not null default '' comment('最后登录ip') VARCHAR(16)"`
-	Created     time.Time `xorm:"not null default '0000-00-00 00:00:00' comment('创建时间') TIMESTAMP"`
-	Updated     time.Time `xorm:"not null default 'CURRENT_TIMESTAMP' comment('更新时间') TIMESTAMP"`
+	Created     time.Time `xorm:"created not null default '0000-00-00 00:00:00' comment('创建时间') TIMESTAMP"`
+	Updated     time.Time `xorm:"updated not null default 'CURRENT_TIMESTAMP' comment('更新时间') TIMESTAMP"`
 	Status      int       `xorm:"not null default 1 comment('状态 1=正常启用 99=账户冻结 ') TINYINT(4)"`
 }
 

@@ -198,6 +198,31 @@ func CacheDelByEntity(colName string, colVal interface{}, entityPtr TableName) e
 }
 
 /**
+更新： 查找 where conditions 的记录 更新按照entityPtrWithValue中取cols指定的字段更新到数据库
+conditions = ["a = ?"=>1,"b like '%?%'"=>"bb"]
+// 允许conditions里key的value为空
+*/
+func UpdateByCondition(entityPtrWithValue interface{}, conditions map[string]interface{}, cols []string) (n int64, err error) {
+
+	whereVal := make([]interface{}, 0)
+	whereStr := "1 " // postgre 要求true开头; mysql 可以true或1; sqlite要求不能是true
+	for ck, cv := range conditions {
+		whereStr += " and " + ck
+		if cv == nil {
+			continue
+		}
+		whereVal = append(whereVal, cv)
+	}
+
+	dbname := common.DBMysqlDrive
+	if entityOfDb, ok := entityPtrWithValue.(DbNamespace); ok {
+		dbname = entityOfDb.DbNamespace()
+	}
+
+	return envinit.Dbs[dbname].Cols(cols...).Where(whereStr, whereVal...).Update(entityPtrWithValue)
+}
+
+/**
 conditions = ["a = ?"=>1,"b like '%?%'"=>"bb"]
 // 如果conditions map的key里不包含“?”，则默认认为value是slice,即使用where in
 // 允许conditions里key的value为空
@@ -212,7 +237,7 @@ func ListAndCountByCondition(entityPtr interface{}, conditions map[string]interf
 	}
 
 	whereVal := make([]interface{}, 0)
-	whereStr := "1 "
+	whereStr := "1 " // postgre 要求true开头; mysql 可以true或1; sqlite要求不能是true
 	whererInMap := make(map[string]interface{})
 	for ck, cv := range conditions {
 		if cv == nil {

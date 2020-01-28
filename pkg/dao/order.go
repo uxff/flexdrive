@@ -1,8 +1,9 @@
 package dao
 
 import (
-	"github.com/uxff/flexdrive/pkg/dao/base"
 	"time"
+
+	"github.com/uxff/flexdrive/pkg/dao/base"
 )
 
 type Order struct {
@@ -16,8 +17,8 @@ type Order struct {
 	TotalAmount   int       `xorm:"not null default 0 comment('订单价格 单位分') INT(11)"`
 	PayAmount     int       `xorm:"not null default 0 comment('实付款金额 单位分') INT(11)"`
 	Remark        string    `xorm:"not null comment('订单备注') TEXT"`
-	Created       time.Time `xorm:"not null default '0000-00-00 00:00:00' comment('创建时间') TIMESTAMP"`
-	Updated       time.Time `xorm:"not null default 'CURRENT_TIMESTAMP' TIMESTAMP"`
+	Created       time.Time `xorm:"created not null default '0000-00-00 00:00:00' comment('创建时间') TIMESTAMP"`
+	Updated       time.Time `xorm:"updated not null default 'CURRENT_TIMESTAMP' TIMESTAMP"`
 	Status        int       `xorm:"not null default 1 comment('状态 1=待付款 2=未付款关闭 3=已付款 4=已退款') TINYINT(4)"`
 }
 

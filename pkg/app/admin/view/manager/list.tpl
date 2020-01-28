@@ -23,16 +23,16 @@
             <div class="panel-body">
                 <form id="formSearch" class="form-horizontal" method="GET" action="/manager/list">
                     <div class="form-group" >
-                        <label class="control-label col-sm-1" for="txt_search_name">名称</label>
+                        <label class="control-label col-sm-1" for="txt_search_name">Email</label>
                         <div class="col-sm-3">
-                            <input type="text" class="form-control" id="txt_search_name" name="name">
+                            <input type="text" class="form-control" id="txt_search_name" name="email" value="{{.reqParam.Email}}">
                         </div>
                         <label class="control-label col-sm-1" for="txt_search_created">时间</label>
                         <div class="col-sm-2">
-                            <input type="text" class="form-control" id="txt_search_created_start" name="createdStart">
+                            <input type="text" class="form-control" id="txt_search_created_start" name="createStart" value="{{.reqParam.CreateStart}}">
                         </div>
                         <div class="col-sm-2">
-                            -<input type="text" class="form-control" id="txt_search_created_end" name="createdEnd">
+                            <input type="text" class="form-control" id="txt_search_created_end" name="createEnd" value="{{.reqParam.CreateEnd}}">
                         </div>
                         <div class="col-sm-3" style="text-align:left;">
                             <button type="submit" style="margin-left:50px" class="btn btn-primary">查询</button>

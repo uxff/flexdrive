@@ -37,7 +37,7 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="col-sm-3 control-label">价格(元)</label>
+                        <label class="col-sm-3 control-label">价格(分)</label>
                         <div class="col-sm-8">
                             <input class="form-control" name="price" value="{{.levelEnt.Price}}" type="number" required />
                         </div>
@@ -45,7 +45,7 @@
                     <div class="form-group">
                         <label class="col-sm-3 control-label">是否默认等级</label>
                         <div class="col-sm-8">
-                            <input class="form-control" name="isDefault" value="{{.levelEnt.isDefault}}" value="1" type="checkbox" required />
+                            <input class="form-control" name="isDefault" {{if eq .levelEnt.IsDefault 1}}checked{{end}} value="1" type="checkbox" />
                         </div>
                     </div>
                     

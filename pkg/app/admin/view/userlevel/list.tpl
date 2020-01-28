@@ -43,11 +43,12 @@
             </div>
         </div>       
 
-        <table id="table-manager-list" class="table table-striped table-bordered table-hover">
+        <table id="table-list" class="table table-striped table-bordered table-hover">
             <thead>
                 <tr class="info">
                     <th>id</th>
                     <th>等级名称</th>
+                    <th>是否默认</th>
                     <th>配额空间(KB)</th>
                     <th>价格(分)</th>
                     <th>创建时间</th>
@@ -60,6 +61,7 @@
                 <tr>
                     <td>{{.Id}}</td>
                     <td>{{.Name}}</td>
+                    <td>{{if eq .IsDefault 1}}是{{else}}否{{end}}</td>
                     <td>{{.QuotaSpace}}</td>
                     <td>{{.Price}}</td>
                     <td>{{.Created}}</td>

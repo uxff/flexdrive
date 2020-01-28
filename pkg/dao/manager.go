@@ -16,8 +16,8 @@ type Manager struct {
 	Phone       string    `xorm:"not null default '' comment('管理员手机号') VARCHAR(12)"`
 	Email       string    `xorm:"not null default '' comment('管理员email') VARCHAR(32)"`
 	Pwd         string    `xorm:"not null default '' comment('密码') VARCHAR(32)"`
-	Created     time.Time `xorm:"not null default '0000-00-00 00:00:00' comment('创建时间') TIMESTAMP"`
-	Updated     time.Time `xorm:"not null default 'CURRENT_TIMESTAMP' comment('更新时间') TIMESTAMP"`
+	Created     time.Time `xorm:"created not null default '0000-00-00 00:00:00' comment('创建时间') TIMESTAMP"`
+	Updated     time.Time `xorm:"updated not null default 'CURRENT_TIMESTAMP' comment('更新时间') TIMESTAMP"`
 	Status      int       `xorm:"not null default 1 comment('状态 1=正常 99=删除') TINYINT(4)"`
 	RoleId      int       `xorm:"not null default 0 comment('角色id') INT(11)"`
 	IsSuper     int       `xorm:"not null default 0 comment('是否是超管 1=超管') TINYINT(4)"`

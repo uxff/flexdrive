@@ -106,6 +106,7 @@ func (r *UserLevelAddRequest) ToEnt() *dao.UserLevel {
 		Name:       r.Name,
 		QuotaSpace: int64(r.QuotaSpace),
 		Price:      r.Price,
+		IsDefault:  r.IsDefault,
 		//levelId: r.levelId,
 		// MgrLastLoginAt:time.Now(),
 		//Pwd: r.Pwd,
@@ -197,9 +198,13 @@ func UserLevelAddForm(c *gin.Context) {
 	ent.Status = base.StatusNormal
 
 	if levelId > 0 {
-		cols := []string{"name", "quotaSpace", "price"}
+		if ent.IsDefault == 1 {
+			// 将其他的都设置为非默认
+			base.UpdateByCondition(&dao.UserLevel{IsDefault: 0}, map[string]interface{}{"status=?": 1}, []string{"isDefault"})
+		}
+
+		cols := []string{"name", "quotaSpace", "price", "isDefault"}
 		_, err = base.UpdateByCol("id", levelId, ent, cols)
-		//base.CacheDelByEntity("mgrLoginName", req.Email, existEnt)
 	} else {
 		_, err = base.Insert(ent)
 	}
