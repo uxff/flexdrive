@@ -16,6 +16,8 @@ const (
 	ErrMgrDisabled    = "18"
 	ErrRoleNotExist   = "19"
 	ErrInternal       = "101"
+	ErrLevelNotExist  = "21"
+	ErrLevelDisabled  = "22"
 )
 
 var errCodeMap = map[string]string{
@@ -30,6 +32,8 @@ var errCodeMap = map[string]string{
 	ErrInvalidCaptcha: "验证码错误",
 	ErrNameDuplicate:  "名称重复，请更换名称后重试",
 	ErrInternal:       "系统内部错误，请稍后再试",
+	ErrLevelDisabled:  "会员等级被禁用",
+	ErrLevelNotExist:  "会员等级不存在",
 }
 
 func CodeToMessage(code string) string {

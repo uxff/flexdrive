@@ -8,5 +8,5 @@ $GOPATH/src/github.com/go-xorm/cmd/xorm/xorm reverse mysql "user1:yourpass@tcp(1
 ```
 
 before you execute it, u must make sure the tables are already created in the db.
-after you execute that, u might mv codes to the dao dir.
+after you executed that, u might mv codes to the dao dir.
 

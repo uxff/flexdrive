@@ -18,12 +18,14 @@ import (
 )
 
 const (
-	RouteHome        = "/"
-	RouteLogin       = "/login"
-	RouteLogout      = "/logout"
-	RouteManagerList = "/manager/list"
-	RouteRoleList    = "/role/list"
-	RouteChangePwd   = "/changepwd"
+	RouteHome          = "/"
+	RouteLogin         = "/login"
+	RouteLogout        = "/logout"
+	RouteManagerList   = "/manager/list"
+	RouteRoleList      = "/role/list"
+	RouteUserList      = "/user/list"
+	RouteUserLevelList = "/userlevel/list"
+	RouteChangePwd     = "/changepwd"
 )
 
 var adminServer *http.Server
@@ -82,6 +84,16 @@ func StartHttpServer(addr string) error {
 	rbacRouter.POST("/manager/edit/:mid", ManagerAddForm)
 	//authRouter.POST("/manager/modifyPwd", ManagerChangePwd)
 	rbacRouter.GET("/manager/enable/:mid/:enable", ManagerEnable)
+
+	rbacRouter.GET("/user/list", UserList)
+	rbacRouter.GET("/user/enable/:id/:enable", UserEnable)
+
+	rbacRouter.GET("/userlevel/add", UserLevelAdd)
+	rbacRouter.POST("/userlevel/add", UserLevelAddForm)
+	rbacRouter.GET("/userlevel/edit/:id", UserLevelEdit)
+	rbacRouter.POST("/userlevel/edit/:id", UserLevelAddForm)
+	rbacRouter.GET("/userlevel/enable/:id/:enable", UserLevelEnable)
+	rbacRouter.GET("/userlevel/list", UserLevelList)
 
 	//rbacRouter.GET("/merchant/list", MerchantList)
 	//rbacRouter.POST("/merchant/add", MerchantAdd)

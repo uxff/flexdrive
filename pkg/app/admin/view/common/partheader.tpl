@@ -28,10 +28,10 @@
           </a>
           <ul class="dropdown-menu">
             <li role="presentation" class="dropdown-header">main route</li>
-            <li><a href="/picset">节点列表</a></li>
+            <li><a href="/node/list">节点列表</a></li>
             <li role="presentation" class="divider"></li>
             <li role="presentation" class="dropdown-header">selected picsets</li>
-            <li><a href="/picset/folderName1/">文件管理</a></li>
+            <li><a href="/file/list">文件管理</a></li>
           </ul>
         </li>
         <li>
@@ -39,10 +39,10 @@
             <span class="glyphicon glyphicon-list-alt"></span> 会员管理 <b class="caret"></b>
           </a>
           <ul class="dropdown-menu">
-            <li><a href="/picset">会员列表</a></li>
-            <li><a href="/picset/folderName1/">等级管理</a></li>
-            <li><a href="/picset/55156/">订单管理</a></li>
-            <li><a href="/picset/55156/">分享管理</a></li>
+            <li><a href="/user/list">会员列表</a></li>
+            <li><a href="/userlevel/list">等级管理</a></li>
+            <li><a href="/order/list">订单管理</a></li>
+            <li><a href="/share/list">分享管理</a></li>
           </ul>
         </li>
         <li>

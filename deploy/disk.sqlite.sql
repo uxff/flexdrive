@@ -8,7 +8,7 @@ CREATE TABLE `user` (
   `pwd` varchar(32) NOT NULL DEFAULT '' ,
   `levelId` integer NOT NULL DEFAULT '0' ,
   `totalCharge` integer NOT NULL DEFAULT '0' ,
-  `quataSpace` integer NOT NULL DEFAULT '0' , 
+  `quotaSpace` integer NOT NULL DEFAULT '0' , 
   `usedSpace` integer NOT NULL DEFAULT '0' , 
   `fileCount` integer NOT NULL DEFAULT '0' , 
   `lastLoginAt` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' , 
@@ -24,6 +24,7 @@ CREATE TABLE `user_level` (
   `name` varchar(32) NOT NULL , 
   `quotaSpace` integer NOT NULL DEFAULT '0' , 
   `price` integer NOT NULL DEFAULT '0' , 
+  "isDefault" integer NOT NULL DEFAULT '0',
   `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' , 
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP , 
   `status` integer NOT NULL DEFAULT '1' 
