@@ -49,6 +49,7 @@ func (r *UserListRequest) ToCondition() (condition map[string]interface{}) {
 type UserItem struct {
 	Id          int    `json:"id" form:"id"`
 	Email       string `json:"email" form:"email" binding:"required"`
+	Name        string `json:"name" form:"name"`
 	LastLoginAt string `json:"lastLoginAt"`
 	LastLoginIp string `json:"lastLoginIp"`
 	//Pwd         string `json:"pwd" form:"pwd"`
@@ -67,6 +68,7 @@ func NewUserItemFromEnt(userEnt *dao.User) *UserItem {
 	return &UserItem{
 		Id:          userEnt.Id,
 		Email:       userEnt.Email,
+		Name:        userEnt.Name,
 		LastLoginAt: userEnt.LastLoginAt.String(),
 		LastLoginIp: userEnt.LastLoginIp,
 		//RoleId:      mgruserEntEnt.RoleId,

@@ -41,7 +41,7 @@
                         <div class="form-group">
                             <label class="col-sm-3 control-label">是否默认等级</label>
                             <div class="col-sm-8">
-                                <input class="form-control" name="isDefault" value="1" type="checkbox" required />
+                                <input class="form-control" name="isDefault" value="1" type="checkbox" />
                             </div>
                         </div>
                             

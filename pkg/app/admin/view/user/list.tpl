@@ -25,7 +25,7 @@
                     <div class="form-group" >
                         <label class="control-label col-sm-1" for="txt_search_name">名称</label>
                         <div class="col-sm-2">
-                            <input type="text" class="form-control" id="txt_search_name" name="name" value="{{.reqParam.Name}}">
+                            <input type="text" class="form-control" id="txt_search_name" name="email" value="{{.reqParam.Email}}">
                         </div>
                         <label class="control-label col-sm-1" for="txt_search_created">时间</label>
                         <div class="col-sm-2">
