@@ -1,3 +1,4 @@
+{{ define "alart.tpl"}}
 {{if .flash}}
     {{if (index .flash "warning")}}
         <div class="alert alert-warning" role="alert">
@@ -21,4 +22,5 @@
             {{i18nja (index .flash "success")}}
         </div>
     {{end}}
+{{end}}
 {{end}}
