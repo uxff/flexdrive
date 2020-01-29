@@ -15,23 +15,22 @@
 			    	<form accept-charset="utf-8" role="form" class="form-horizontal" method="POST" action="/changePwd">
 
                       <div class="form-group">
-                        <label for="inputEmail" class="col-sm-3 control-label">输入我的邮箱地址</label>
+                        <label class="col-sm-3 control-label">请输入邮箱地址确认</label>
                         <div class="col-sm-8">
-                          <input class="form-control" placeholder="例: admin@example.com" name="email" value="" type="email" required 
-                                    id="inputEmail" />
+                          <input class="form-control" placeholder="例: admin@example.com" name="email" value="" type="email" required />
                         </div>
                       </div>
                       <div class="form-group">
                         <label class="col-sm-3 control-label">原密码</label>
                         <div class="col-sm-8">
-			    		          <input class="form-control" placeholder="输入秘钥" name="oldpassword" type="password" value="" required
+			    		          <input class="form-control" placeholder="输入秘钥" name="oldpwd" type="password" value="" required
                                     pattern=".{6,}" title="密码长度至少为6个字符"  />
                         </div>
                       </div>
                       <div class="form-group">
                         <label class="col-sm-3 control-label">新密码</label>
                         <div class="col-sm-8">
-			    		          <input class="form-control" placeholder="输入秘钥" name="newpassword" type="password" value="" required
+			    		          <input class="form-control" placeholder="输入秘钥" name="newpwd" type="password" value="" required
                                     pattern=".{6,}" title="密码长度至少为6个字符"  />
                         </div>
                       </div>

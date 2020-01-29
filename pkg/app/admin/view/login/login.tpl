@@ -13,10 +13,6 @@
 
 			  	<div class="panel-body">
 			    	<form accept-charset="utf-8" role="form" class="form-horizontal" method="POST" action="/login">
-                      { { .xsrfdata } }
-
-                      { {template "alert.tpl" .} }
-
                       <div class="form-group">
                         <label for="inputEmail" class="col-sm-3 control-label">邮箱地址</label>
                         <div class="col-sm-8">

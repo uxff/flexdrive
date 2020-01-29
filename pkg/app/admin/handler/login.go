@@ -182,7 +182,7 @@ func ChangePwdForm(c *gin.Context) {
 		return
 	}
 
-	if mgrEnt.IsPwdValid(req.Oldpwd) {
+	if !mgrEnt.IsPwdValid(req.Oldpwd) {
 		StdErrResponse(c, ErrInvalidPass)
 		return
 	}
