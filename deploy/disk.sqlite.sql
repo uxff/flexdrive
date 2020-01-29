@@ -86,6 +86,7 @@ CREATE TABLE `order` (
 CREATE TABLE `node` (
   `id` integer PRIMARY KEY AUTOINCREMENT , 
   `nodeName` varchar(16) NOT NULL , 
+  `nodeAddr` varchar(32) NOT NULL , 
   `totalSpace` integer NOT NULL DEFAULT '0' , 
   `usedSpace` integer NOT NULL DEFAULT '0' , 
   `fileCount` integer NOT NULL DEFAULT '0' , 

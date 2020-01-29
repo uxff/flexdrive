@@ -8,7 +8,8 @@ import (
 
 type Node struct {
 	Id             int       `xorm:"not null pk autoincr comment('主键id') INT(10)"`
-	NodeName       string    `xorm:"not null comment('节点号') VARCHAR(16)"`
+	NodeName       string    `xorm:"not null comment('节点名') VARCHAR(16)"`
+	NodeAddr       string    `xorm:"not null comment('节点在集群中的通信地址') VARCHAR(32)"`
 	TotalSpace     int64     `xorm:"not null default 0 comment('全部空间 单位KB') BIGINT(20)"`
 	UsedSpace      int64     `xorm:"not null default 0 comment('使用的空间 单位KB') BIGINT(20)"`
 	FileCount      int64     `xorm:"not null default 0 comment('文件数量') BIGINT(20)"`
