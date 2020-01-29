@@ -98,22 +98,14 @@ func StartHttpServer(addr string) error {
 	rbacRouter.GET("/userlevel/enable/:id/:enable", UserLevelEnable)
 	rbacRouter.GET("/userlevel/list", UserLevelList)
 
-	//rbacRouter.GET("/merchant/list", MerchantList)
-	//rbacRouter.POST("/merchant/add", MerchantAdd)
-	//// rbacRouter.POST("/merchant/edit/:merid", MerchantAdd)
-	//rbacRouter.POST("/merchant/enable/:merid/:enable", MerchantEnable)
-	//rbacRouter.GET("/merchant/export", MerchantExport)
-	//
-	//rbacRouter.GET("/agent/list", AgentList)
-	//rbacRouter.POST("/agent/add", AgentAdd)
-	//// rbacRouter.POST("/agent/edit/:agentid", AgentAdd)
-	//rbacRouter.POST("/agent/delete/:agentid", AgentDelete)
-	//
-	//rbacRouter.GET("/bizaccount/list", BizAccountList)
-	//rbacRouter.POST("/bizaccount/add", BizAccountAdd)
-	//// rbacRouter.POST("/bizaccount/edit/:baid", BizAccountAdd)
-	//rbacRouter.POST("/bizaccount/enable/:baid/:enable", BizAccountEnable)
-	//rbacRouter.GET("/bizaccount/thirdchannels/list", ThirdChannelsList)
+	rbacRouter.GET("/share/list", ShareList)
+	rbacRouter.GET("/share/enable/:id/:enable", ShareEnable)
+
+	rbacRouter.GET("/node/list", UserList)
+	// rbacRouter.GET("/share/enable/:id/:enable", UserEnable)
+
+	rbacRouter.GET("/fileindex/list", FileIndexList)
+	rbacRouter.GET("/fileindex/enable/:id/:enable", FileIndexEnable)
 
 	adminServer = &http.Server{
 		Addr:    addr,

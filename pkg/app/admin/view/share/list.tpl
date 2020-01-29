@@ -15,17 +15,17 @@
     <div class="row">
         <ul class="breadcrumb">
             <li><a href="/">首页</a></li>
-            <li><a href="/share/list">会员</a></li>
-            <li class="active">会员列表</li>
+            <li><a href="/share/list">分享</a></li>
+            <li class="active">分享列表</li>
         </ul>
         <div class="panel panel-default">
             <div class="panel-heading">查询条件</div>
             <div class="panel-body">
                 <form id="formSearch" class="form-horizontal" method="GET" action="/share/list">
                     <div class="form-group" >
-                        <label class="control-label col-sm-1" for="txt_search_name">名称</label>
+                        <label class="control-label col-sm-1" for="txt_search_name">文件名称</label>
                         <div class="col-sm-2">
-                            <input type="text" class="form-control" id="txt_search_name" name="email" value="{{.reqParam.Email}}">
+                            <input type="text" class="form-control" id="txt_search_name" name="name" value="{{.reqParam.Name}}">
                         </div>
                         <label class="control-label col-sm-1" for="txt_search_created">时间</label>
                         <div class="col-sm-2">
