@@ -101,7 +101,7 @@ func StartHttpServer(addr string) error {
 	rbacRouter.GET("/share/list", ShareList)
 	rbacRouter.GET("/share/enable/:id/:enable", ShareEnable)
 
-	rbacRouter.GET("/node/list", UserList)
+	rbacRouter.GET("/node/list", NodeList)
 	// rbacRouter.GET("/share/enable/:id/:enable", UserEnable)
 
 	rbacRouter.GET("/fileindex/list", FileIndexList)
