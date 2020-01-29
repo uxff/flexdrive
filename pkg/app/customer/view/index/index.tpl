@@ -1,5 +1,7 @@
-{{append . "HeadStyles" "/static/css/custom.css"}}
-{{append . "HeadScripts" "/static/js/custom.js"}}
+{{ define "index/index.tpl" }}
+
+{{template "common/head.tpl" .}}
+{{template "common/partheader.tpl" .}}
 
 
 <div class="container">
@@ -23,17 +25,22 @@
                 <div class="panel-body">
 
                     <div class="row clearfix">
-                        <div class="col-md-3">
-                            Here is the picset demo preview:
+                        <div class="col-md-8">
+                            Here is the flexdrive web ui demo preview:
                         </div>
                     </div>
 
-                    <img src="https://raw.githubusercontent.com/uxff/taniago/master/20181127073913.png">
+                    <img src="...">
                 </div>
             </div>
     </div>
 
     <div class="row">
-        <a href="https://github.com/uxff/taniago">view source</a>
+        <a href="https://github.com/uxff/flexdrive">view source</a>
     </div>
 </div>
+
+{{template "common/partfooter.tpl"}}
+{{template "common/foot.tpl"}}
+
+{{ end }}

@@ -1,3 +1,4 @@
+{{define "common/partfooter.tpl"}}
 <footer>
   <div class="container">
     <div class="clearfix">
@@ -64,3 +65,4 @@
 
   </div>
 </footer>
+{{end}}

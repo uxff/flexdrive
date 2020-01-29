@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/uxff/flexdrive/pkg/dao/base"
+	"github.com/uxff/flexdrive/pkg/log"
 )
 
 type Order struct {
@@ -20,6 +21,9 @@ type Order struct {
 	Created       time.Time `xorm:"created not null default '0000-00-00 00:00:00' comment('创建时间') TIMESTAMP"`
 	Updated       time.Time `xorm:"updated not null default 'CURRENT_TIMESTAMP' TIMESTAMP"`
 	Status        int       `xorm:"not null default 1 comment('状态 1=待付款 2=未付款关闭 3=已付款 4=已退款') TINYINT(4)"`
+
+	// after select
+	User *User `xorm:"-"`
 }
 
 func (t Order) TableName() string {
@@ -34,4 +38,14 @@ func (t *Order) GetById(id int) error {
 func (t *Order) UpdateById(cols []string) error {
 	_, err := base.UpdateByCol("id", t.Id, t, cols)
 	return err
+}
+
+func (t *Order) AfterSelect() {
+	var err error
+	t.User, err = GetUserById(t.UserId)
+	if err != nil {
+		log.Warnf("load order.User error:%v", err)
+	}
+
+	log.Debugf("load order.User ok")
 }

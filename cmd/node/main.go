@@ -15,6 +15,7 @@ import (
 	"github.com/uxff/flexdrive/pkg/common"
 
 	adminhandler "github.com/uxff/flexdrive/pkg/app/admin/handler"
+	customerhandler "github.com/uxff/flexdrive/pkg/app/customer/handler"
 	"github.com/uxff/flexdrive/pkg/envinit"
 	"github.com/uxff/flexdrive/pkg/log"
 	"go.uber.org/zap"
@@ -64,7 +65,7 @@ func main() {
 	}
 
 	if s := os.Getenv("SERVECUSTOMER"); s != "" {
-		log.Debugf("the serveradmin from env: %s", s)
+		log.Debugf("the servercustomer from env: %s", s)
 		serveCustomer = s
 	}
 
@@ -90,6 +91,11 @@ func Serve(envMap map[string]string) error {
 		wg.Add(1)
 		defer wg.Done()
 		errCh <- adminhandler.StartHttpServer(serveAdmin)
+	}()
+	go func() {
+		wg.Add(1)
+		defer wg.Done()
+		errCh <- customerhandler.StartHttpServer(serveCustomer)
 	}()
 
 	select {
