@@ -140,3 +140,64 @@ func ClearLogin(c *gin.Context) {
 	c.SetCookie(CookieKeyGpa, "", -1, "", "", false, false)
 	c.SetCookie(CookieKeySign, "", -1, "", "", false, false)
 }
+
+func ChangePwd(c *gin.Context) {
+	c.HTML(http.StatusOK, "login/changepwd.tpl", gin.H{
+		"LoginInfo": getLoginInfo(c),
+		"IsLogin":   isLoginIn(c),
+	})
+}
+
+type ChangePwdRequest struct {
+	Email  string `form:"email"`
+	Oldpwd string `form:"oldpwd"`
+	Newpwd string `form:"newpwd"`
+}
+
+// 修改自己的密码
+func ChangePwdForm(c *gin.Context) {
+	requestId := c.GetString(CtxKeyRequestId)
+
+	req := &ChangePwdRequest{}
+	err := c.ShouldBind(req)
+	if err != nil {
+		StdErrResponse(c, ErrInvalidParam)
+		return
+	}
+
+	loginEnt := getLoginInfo(c)
+	if loginEnt == nil || loginEnt.Mid <= 0 {
+		StdErrResponse(c, ErrNotLogin)
+		return
+	}
+
+	mgrEnt, err := dao.GetManagerById(loginEnt.Mid)
+	if err != nil {
+		StdErrResponse(c, ErrMgrNotExist)
+		return
+	}
+
+	if req.Email != mgrEnt.Email {
+		StdErrMsgResponse(c, ErrInvalidParam, "请提交自己的邮箱")
+		return
+	}
+
+	if mgrEnt.IsPwdValid(req.Oldpwd) {
+		StdErrResponse(c, ErrInvalidPass)
+		return
+	}
+
+	mgrEnt.SetPwd(req.Newpwd)
+
+	// _, err = base.UpdateByCol("mid", loginEnt.Mid, mgrDbEnt, []string{"mgrPwd"})
+	err = mgrEnt.UpdateById([]string{"pwd"})
+
+	if err != nil {
+		log.Trace(requestId).Errorf("db error:%v", err)
+		StdErrResponse(c, ErrInternal)
+		return
+	}
+
+	//StdResponse(c, ErrSuccess, nil)
+	c.Redirect(http.StatusMovedPermanently, RouteManagerList)
+}

@@ -62,7 +62,8 @@ func StartHttpServer(addr string) error {
 
 	// 导出下载 基于登录cookie验证
 	authRouter := router.Group("/", TraceMiddleWare, AuthMiddleWare)
-	authRouter.POST("/changePwd", ManagerChangePwd) // 修改自己的密码 不受角色限制
+	authRouter.GET("/changePwd", ChangePwd)      // 修改自己的密码 不受角色限制
+	authRouter.POST("/changePwd", ChangePwdForm) // 修改自己的密码 不受角色限制
 	authRouter.GET("/", Index)
 
 	// 基础基于登录cookie并rabc授权的验证
@@ -111,9 +112,6 @@ func StartHttpServer(addr string) error {
 		Addr:    addr,
 		Handler: router,
 	}
-
-	//fnMap := template.FuncMap{}
-	//fnMap[""] =
 
 	router.SetFuncMap(tplFuncMap)
 
