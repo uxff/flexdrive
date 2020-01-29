@@ -1,8 +1,8 @@
 /**
 	分布式(distributed)
     运行方式：
- 	APPENV=beta SERVEADMIN=127.0.0.1:10011 DATADSN='mysql://yourusername:yourpwd@tcp(yourmysqlhost)/yourdbname?charset=utf8mb4&parseTime=True&loc=Local' ./main
- 	APPENV=beta SERVEADMIN=127.0.0.1:10011 DATADSN='sqlite3://./flexdrive.db' ./main
+ 	APPENV=beta SERVEADMIN=127.0.0.1:10011 SERVECUSTOMER=127.0.0.1:10012 DATADSN='mysql://yourusername:yourpwd@tcp(yourmysqlhost)/yourdbname?charset=utf8mb4&parseTime=True&loc=Local' ./main
+ 	APPENV=beta SERVEADMIN=127.0.0.1:10011 SERVECUSTOMER=127.0.0.1:10012 DATADSN='sqlite3://./flexdrive.db' ./main
 */
 package main
 

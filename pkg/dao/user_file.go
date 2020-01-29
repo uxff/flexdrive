@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/uxff/flexdrive/pkg/dao/base"
+	"github.com/uxff/flexdrive/pkg/log"
 )
 
 type UserFile struct {
@@ -22,6 +23,9 @@ type UserFile struct {
 	Size        int       `xorm:"not null default 0 comment('大小 单位Byte 目录则记录0') INT(11)"`
 	Space       int       `xorm:"not null default 0 comment('占用空间单位 单位KB 目录则记录0') INT(11)"`
 	Desc        string    `xorm:"not null comment('描述信息') TEXT"`
+
+	// after select
+	User *User `xorm:"-"`
 }
 
 func (t UserFile) TableName() string {
@@ -48,4 +52,14 @@ func GetUserFileById(id int) (*UserFile, error) {
 		return nil, nil
 	}
 	return e, err
+}
+
+func (t *UserFile) AfterSelect() {
+	var err error
+	t.User, err = GetUserById(t.UserId)
+	if err != nil {
+		log.Warnf("load userFile.User error:%v", err)
+	}
+
+	log.Debugf("load userFile.User ok")
 }

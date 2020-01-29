@@ -3,6 +3,8 @@ package dao
 import (
 	"time"
 
+	"github.com/uxff/flexdrive/pkg/log"
+
 	"github.com/uxff/flexdrive/pkg/dao/base"
 )
 
@@ -17,6 +19,10 @@ type Share struct {
 	Updated    time.Time `xorm:"updated not null default 'CURRENT_TIMESTAMP' comment('更新时间') TIMESTAMP"`
 	Status     int       `xorm:"not null default 1 comment('状态 1=正常 2=隐藏 99=已删除') TINYINT(4)"`
 	Expired    time.Time `xorm:"not null default '0000-00-00 00:00:00' comment('分享有效期') TIMESTAMP"`
+
+	// after select
+	User     *User     `xorm:"-"`
+	UserFile *UserFile `xorm:"-"`
 }
 
 func (t Share) TableName() string {
@@ -43,4 +49,18 @@ func GetShareById(id int) (*Share, error) {
 		return nil, nil
 	}
 	return e, err
+}
+
+func (t *Share) AfterSelect() {
+	var err error
+	t.User, err = GetUserById(t.UserId)
+	if err != nil {
+		log.Warnf("load share.User error:%v", err)
+	}
+	t.UserFile, err = GetUserFileById(t.UserFileId)
+	if err != nil {
+		log.Warnf("load share.UserFile error:%v", err)
+	}
+
+	log.Debugf("load share.User, share.UserFile ok")
 }
