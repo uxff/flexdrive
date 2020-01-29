@@ -91,7 +91,7 @@ CREATE TABLE `order` (
 CREATE TABLE `node` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键id',
   `nodeName` varchar(16) NOT NULL COMMENT '节点名',
-  `nodeAddr` varchar(32) NOT NULL COMMENT '节点地址 集群中通信地址',
+  `nodeAddr` varchar(32) NOT NULL COMMENT '节点地址 集群中服务地址',
   `totalSpace` bigint(20) NOT NULL DEFAULT '0' COMMENT '全部空间 单位KB',
   `usedSpace` bigint(20) NOT NULL DEFAULT '0' COMMENT '使用的空间 单位KB',
   `fileCount` bigint(20) NOT NULL DEFAULT '0' COMMENT '文件数量',

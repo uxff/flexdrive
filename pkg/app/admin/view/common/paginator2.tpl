@@ -1,5 +1,5 @@
 {{define "paginator2.tpl"}}
-<ul class="pagination">
+<ul class="pagination" style="margin: 0px">
 {{if gt .paginator.PageNums 1}}
 {{if .paginator.HasPrev}}
     <li><a href="{{.paginator.PageLinkFirst}}" title="首页"><i class="glyphicon glyphicon-step-backward"></i></a></li>

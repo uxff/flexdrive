@@ -31,7 +31,7 @@
             <li><a href="/node/list">节点列表</a></li>
             <li role="presentation" class="divider"></li>
             <li role="presentation" class="dropdown-header">selected picsets</li>
-            <li><a href="/file/list">文件管理</a></li>
+            <li><a href="/fileindex/list">文件管理</a></li>
           </ul>
         </li>
         <li>

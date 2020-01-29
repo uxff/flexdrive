@@ -47,7 +47,7 @@
                 <tr class="info">
                     <th>id</th>
                     <th>名称</th>
-                    <th>通信地址</th>
+                    <th>服务地址</th>
                     <th>总空间(MB)</th>
                     <th>已用空间(MB)</th>
                     <th>文件量</th>
