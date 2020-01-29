@@ -11,10 +11,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mattn/go-runewidth"
-	"github.com/uxff/flexdrive/pkg/log"
-
 	"github.com/gin-gonic/gin"
+	"github.com/mattn/go-runewidth"
+	"github.com/uxff/flexdrive/pkg/dao/base"
+	"github.com/uxff/flexdrive/pkg/log"
 )
 
 const (
@@ -207,5 +207,8 @@ func loadFuncMap() {
 	}
 	tplFuncMap["captchaUrl"] = func() string {
 		return fmt.Sprintf("/captcha?t=%d", time.Now().Unix())
+	}
+	tplFuncMap["mgrStatus"] = func(status int) string {
+		return base.StatusMap[status]
 	}
 }

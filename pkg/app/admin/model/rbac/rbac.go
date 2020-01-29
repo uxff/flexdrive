@@ -27,7 +27,7 @@ type RoleAccess []*ResourceItem
 // 	return string(b)
 // }
 
-// 检查资源组中有没有路由权限
+// 检查资源组中有没有路由权限 在判断权限的时候需要调用本方法
 func (r *RoleAccess) CheckRouteAccessable(apiRouteStr string) bool {
 	for _, rsItem := range *r {
 		if rsItem.PermitRoute != "" && strings.HasPrefix(apiRouteStr+"/", rsItem.PermitRoute+"/") && rsItem.Access == true {
@@ -41,7 +41,7 @@ func (r *RoleAccess) CheckRouteAccessable(apiRouteStr string) bool {
 	return false
 }
 
-// 获取所有菜单并注明是否有权限 获取角色的资源组
+// 获取所有菜单并注明是否有权限 获取角色的资源组 在编辑角色权限时候需要全部列出 在判断权限的时候不需要调用本方法
 func GetAllAccessItems(customizedRoleAccess RoleAccess) RoleAccess {
 	// 模板menu
 	allItem := GetAllMenu()

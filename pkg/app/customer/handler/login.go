@@ -199,5 +199,5 @@ func ChangePwdForm(c *gin.Context) {
 	}
 
 	//StdResponse(c, ErrSuccess, nil)
-	c.Redirect(http.StatusMovedPermanently, RouteManagerList)
+	c.Redirect(http.StatusMovedPermanently, RouteHome)
 }

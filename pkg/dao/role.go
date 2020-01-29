@@ -47,3 +47,7 @@ func GetRoleByName(name string) (*Role, error) {
 	}
 	return ent, err
 }
+
+func (t *Role) IsSuper() bool {
+	return t.Id == 1
+}

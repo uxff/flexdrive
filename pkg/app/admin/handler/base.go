@@ -166,33 +166,34 @@ func AuthMiddleWare(c *gin.Context) {
 func RbacAuthMiddleWare(c *gin.Context) {
 	requestId := c.GetString(CtxKeyRequestId)
 
-	//gpaToken := getLoginInfo(c)
-	// if gpaToken.IsSuperRole {
-	// 	c.Next()
-	// 	return
-	// }
+	gpaToken := getLoginInfo(c)
+	if gpaToken.MgrEnt.IsSuper == 1 {
+		c.Next()
+		return
+	}
 
 	// 基于角色鉴权
 	//roleEnt, err := roles.QueryByRid(gpaToken.RoleId)
-	//if err != nil || roleEnt == nil || roleEnt.RStatus != base.StatusNormal {
-	//	log.Trace(requestId).Errorf("get role(%d) failed:%v", gpaToken.RoleId, err)
-	//	StdErrResponse(c, errcodes.MgrRoleDeleted)
-	//	c.Abort()
-	//	return
-	//}
+	roleEnt, err := dao.GetRoleById(gpaToken.MgrEnt.RoleId)
+	if err != nil || roleEnt == nil || roleEnt.Status != base.StatusNormal {
+		log.Trace(requestId).Errorf("get role(%d) failed:%v", gpaToken.RoleId, err)
+		StdErrResponse(c, ErrRoleNotExist)
+		c.Abort()
+		return
+	}
 	//
-	//if roleEnt.IsSuper() {
-	//	// 超级管理忽略权限
-	//	c.Next()
-	//	return
-	//}
+	if roleEnt.IsSuper() {
+		// 超级管理忽略权限
+		c.Next()
+		return
+	}
 	//
-	//if !rbac.CheckAccessByRoute(roleEnt, c.Request.RequestURI) {
-	//	log.Trace(requestId).Errorf("no access, roleid:%d route:%s", gpaToken.RoleId, c.Request.RequestURI)
-	//	StdErrResponse(c, errcodes.NoAccessAllowed)
-	//	c.Abort()
-	//	return
-	//}
+	if !roleEnt.Permit.CheckRouteAccessable(c.Request.RequestURI) {
+		log.Trace(requestId).Errorf("no access, roleid:%d route:%s", gpaToken.RoleId, c.Request.RequestURI)
+		StdErrResponse(c, ErrNoPermit)
+		c.Abort()
+		return
+	}
 	log.Trace(requestId).Debugf("access allowed")
 
 	c.Next()

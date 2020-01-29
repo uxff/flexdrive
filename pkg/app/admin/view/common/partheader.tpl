@@ -10,7 +10,7 @@
         <span class="icon-bar"></span>
       </button>
       <a style="font-size: 14px;" class="navbar-brand" rel="home" href="/" >
-        <strong>{{.appname}}</strong>
+        <strong>云盘管理后台</strong>
       </a>
     </div>
 
@@ -19,7 +19,7 @@
       <ul class="nav navbar-nav">
         <li>
           <a href='/'>
-            <span class="glyphicon glyphicon-home"></span> 云盘管理后台首页
+            <span class="glyphicon glyphicon-home"></span> 首页
           </a>
         </li>
         <li>
