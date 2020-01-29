@@ -104,13 +104,14 @@ CREATE TABLE `node` (
 
 -- todo 分库分表 by hash
 CREATE TABLE `file_index` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '文件id',
-  `fileName` varchar(32) NOT NULL DEFAULT '' COMMENT '文件名',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '文件索引id',
+  `fileName` varchar(32) NOT NULL DEFAULT '' COMMENT '文件名 无用',
   `fileHash` varchar(32) NOT NULL DEFAULT '' COMMENT '文件内容哈希',
   `nodeId` int(11) NOT NULL DEFAULT '0' COMMENT '所在节点名 第一副本所在节点',
   `nodeId2` int(11) NOT NULL DEFAULT '0' COMMENT '所在节点名 第二副本所在节点',
   `nodeId3` int(11) NOT NULL DEFAULT '0' COMMENT '所在节点名 第三副本所在节点',
-  `filePath` varchar(256) NOT NULL DEFAULT '' COMMENT '文件路径',
+  `innerPath` varchar(256) NOT NULL DEFAULT '' COMMENT '文件在服务器路径',
+  `outerPath` varchar(256) NOT NULL DEFAULT '' COMMENT '文件外部访问路径',
   `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '创建时间',
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态 0=未就绪 1=就绪 98=上传失败 99=删除',
@@ -124,7 +125,8 @@ CREATE TABLE `file_index` (
 -- todo 分库分表 by uid
 CREATE TABLE `user_file` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '文件id',
-  `userId` varchar(32) NOT NULL DEFAULT '' COMMENT '用户id',
+  `fileIndexId` int(10) NOT NULL DEFAULT '' COMMENT '文件索引id',
+  `userId` int(11) NOT NULL DEFAULT '' COMMENT '用户id',
   `filePath` varchar(256) NOT NULL DEFAULT '' COMMENT '文件路径 ',
   `fileName` varchar(256) NOT NULL DEFAULT '' COMMENT '文件名',
   `pathHash` varchar(32) NOT NULL DEFAULT '' COMMENT '路径哈希，hash(filePath+fileName)，用户下唯一',
@@ -144,9 +146,9 @@ CREATE TABLE `share` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '文件id',
   `fileHash` varchar(32) NOT NULL DEFAULT '' COMMENT '文件哈希',
   `userId` int(11) NOT NULL DEFAULT '0' COMMENT '分享者用户id',
+  `userFileId` int(11) NOT NULL DEFAULT '0' COMMENT '分享者用户文件索引id',
   `nodeId` int(11) NOT NULL DEFAULT '0' COMMENT '所在节点名',
   `fileName` varchar(32) NOT NULL DEFAULT '' COMMENT '文件名',
-  `filePath` varchar(256) NOT NULL DEFAULT '' COMMENT '文件路径',
   `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '创建时间',
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态 1=正常 2=隐藏 99=已删除',

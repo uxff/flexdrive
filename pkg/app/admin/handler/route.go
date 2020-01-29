@@ -24,6 +24,8 @@ const (
 	RouteManagerList   = "/manager/list"
 	RouteRoleList      = "/role/list"
 	RouteUserList      = "/user/list"
+	RouteUserList      = "/user/list"
+	RouteUserList      = "/user/list"
 	RouteUserLevelList = "/userlevel/list"
 	RouteChangePwd     = "/changepwd"
 )

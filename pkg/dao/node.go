@@ -32,3 +32,15 @@ func (t *Node) UpdateById(cols []string) error {
 	_, err := base.UpdateByCol("id", t.Id, t, cols)
 	return err
 }
+
+func GetNodeById(id int) (*Node, error) {
+	e := &Node{}
+	exist, err := base.GetByCol("id", id, e)
+	if err != nil {
+		return nil, err
+	}
+	if !exist {
+		return nil, nil
+	}
+	return e, err
+}
