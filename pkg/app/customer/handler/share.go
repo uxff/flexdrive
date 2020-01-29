@@ -110,7 +110,7 @@ func ShareEnable(c *gin.Context) {
 	}
 
 	if shareEnt == nil {
-		StdErrResponse(c, ErrMgrNotExist)
+		StdErrResponse(c, ErrUserNotExist)
 		return
 	}
 

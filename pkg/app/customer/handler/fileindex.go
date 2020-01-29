@@ -123,7 +123,7 @@ func FileIndexEnable(c *gin.Context) {
 	}
 
 	if shareEnt == nil {
-		StdErrResponse(c, ErrMgrNotExist)
+		StdErrResponse(c, ErrUserNotExist)
 		return
 	}
 

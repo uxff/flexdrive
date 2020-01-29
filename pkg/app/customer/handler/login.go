@@ -17,8 +17,8 @@ type LoginRequst struct {
 }
 
 type LoginResponse struct {
-	Email string `json:"email"`
-	Mid   int    `json:"mid"`
+	Email  string `json:"email"`
+	UserId int    `json:"mid"`
 }
 
 func Login(c *gin.Context) {
@@ -31,8 +31,8 @@ func Login(c *gin.Context) {
 // 提交登录的处理
 func LoginForm(c *gin.Context) {
 	// 如果已经登录 则跳到成功页
-	//gpaToken, _ := verifyFromCookie(c)
-	//if gpaToken == nil {
+	//cuaToken, _ := verifyFromCookie(c)
+	//if cuaToken == nil {
 	//	// 未登录
 	//}
 
@@ -50,33 +50,33 @@ func LoginForm(c *gin.Context) {
 		return
 	}
 
-	mgrEnt, err := dao.GetManagerByEmail(req.Email)
+	userEnt, err := dao.GetUserByEmail(req.Email)
 	if err != nil {
 		log.Errorf("query by email:%s failed:%v", req.Email, err)
-		StdErrResponse(c, ErrMgrNotExist)
+		StdErrResponse(c, ErrUserNotExist)
 		return
 	}
 
-	if mgrEnt.Id == 0 {
+	if userEnt.Id == 0 {
 		log.Warnf("email:%s not exist, verify failed", req.Email)
-		StdErrResponse(c, ErrMgrNotExist)
+		StdErrResponse(c, ErrUserNotExist)
 		return
 	}
 
-	if !mgrEnt.IsPwdValid(req.Pwd) {
+	if !userEnt.IsPwdValid(req.Pwd) {
 		log.Warnf("mgr pwd not matched, verify failed. email:%s", req.Email)
 		StdErrResponse(c, ErrInvalidPass)
 		return
 	}
 
 	// 判断账号是否已被禁用
-	if mgrEnt.Status != base.StatusNormal {
-		StdErrResponse(c, ErrMgrDisabled)
+	if userEnt.Status != base.StatusNormal {
+		StdErrResponse(c, ErrUserDisabled)
 		return
 	}
 
 	// 登录成功 种下cookie
-	AcceptLogin(c, mgrEnt)
+	AcceptLogin(c, userEnt)
 
 	c.Redirect(http.StatusMovedPermanently, RouteHome)
 	//StdResponse(c, ErrSuccess, "/")
@@ -84,9 +84,9 @@ func LoginForm(c *gin.Context) {
 
 //// 获取一些全局配置 比如登录信息 菜单列表
 //func GetAppConfig(c *gin.Context) {
-//	gpaToken, _ := verifyFromCookie(c)
+//	cuaToken, _ := verifyFromCookie(c)
 //
-//	roleId := gpaToken.RoleId
+//	roleId := cuaToken.RoleId
 //
 //	roleEnt := &roles.Role{}
 //	_, err := base.GetByColWithCache("rid", roleId, roleEnt)
@@ -99,7 +99,7 @@ func LoginForm(c *gin.Context) {
 //	if !roleEnt.IsSuper() {
 //		roleMenu := rbac.GetMenuByRoleEnt(roleEnt)
 //		StdResponse(c, ErrSuccess, gin.H{
-//			"loginInfo": gpaToken,
+//			"loginInfo": cuaToken,
 //			"nav":       menu.GetAllMenu(),
 //			"rolenav":   roleMenu,
 //			"access":    rbac.GetAccessMenuByRoleEnt(roleEnt),
@@ -108,7 +108,7 @@ func LoginForm(c *gin.Context) {
 //	}
 //
 //	StdResponse(c, ErrSuccess, gin.H{
-//		"loginInfo": gpaToken,
+//		"loginInfo": cuaToken,
 //		"nav":       menu.GetAllMenu(),
 //	})
 //}
@@ -120,25 +120,23 @@ func Logout(c *gin.Context) {
 }
 
 // 受理登录
-func AcceptLogin(c *gin.Context, mgrEnt *dao.Manager) {
-	mgrEnt.LastLoginIp = c.Request.Header.Get("X-Real-IP")
-	mgrEnt.LastLoginAt = time.Now() //util.JsonTime(time.Now()) // time.Now().Format("2006-01-02 15:04:05")
+func AcceptLogin(c *gin.Context, userEnt *dao.User) {
+	userEnt.LastLoginIp = c.Request.Header.Get("X-Real-IP")
+	userEnt.LastLoginAt = time.Now() //util.JsonTime(time.Now()) // time.Now().Format("2006-01-02 15:04:05")
 
-	_, tokenStr, sign, err := genGpaFromMgrEnt(mgrEnt)
+	_, tokenStr, _, err := genCuaFromUserEnt(userEnt)
 	if err != nil {
 		log.Errorf("gen gpatoken failed:%v", err)
 		return
 	}
-	c.SetCookie(CookieKeyGpa, tokenStr, 3600*24*7, "", "", false, false)
-	c.SetCookie(CookieKeySign, sign, 3600*24*7, "", "", false, false)
+	c.SetCookie(CookieKeyAuth, tokenStr, 3600*24*7, "", "", false, false)
 
 	// record login
-	//go managermodel.RecordLoginStatus(mgrEnt)
+	//go managermodel.RecordLoginStatus(userEnt)
 }
 
 func ClearLogin(c *gin.Context) {
-	c.SetCookie(CookieKeyGpa, "", -1, "", "", false, false)
-	c.SetCookie(CookieKeySign, "", -1, "", "", false, false)
+	c.SetCookie(CookieKeyAuth, "", -1, "", "", false, false)
 }
 
 func ChangePwd(c *gin.Context) {
@@ -166,31 +164,31 @@ func ChangePwdForm(c *gin.Context) {
 	}
 
 	loginEnt := getLoginInfo(c)
-	if loginEnt == nil || loginEnt.Mid <= 0 {
+	if loginEnt == nil || loginEnt.UserId <= 0 {
 		StdErrResponse(c, ErrNotLogin)
 		return
 	}
 
-	mgrEnt, err := dao.GetManagerById(loginEnt.Mid)
+	userEnt, err := dao.GetUserById(loginEnt.UserId)
 	if err != nil {
-		StdErrResponse(c, ErrMgrNotExist)
+		StdErrResponse(c, ErrUserNotExist)
 		return
 	}
 
-	if req.Email != mgrEnt.Email {
+	if req.Email != userEnt.Email {
 		StdErrMsgResponse(c, ErrInvalidParam, "请提交自己的邮箱")
 		return
 	}
 
-	if !mgrEnt.IsPwdValid(req.Oldpwd) {
+	if !userEnt.IsPwdValid(req.Oldpwd) {
 		StdErrResponse(c, ErrInvalidPass)
 		return
 	}
 
-	mgrEnt.SetPwd(req.Newpwd)
+	userEnt.SetPwd(req.Newpwd)
 
-	// _, err = base.UpdateByCol("mid", loginEnt.Mid, mgrDbEnt, []string{"mgrPwd"})
-	err = mgrEnt.UpdateById([]string{"pwd"})
+	// _, err = base.UpdateByCol("mid", loginEnt.UserId, mgrDbEnt, []string{"mgrPwd"})
+	err = userEnt.UpdateById([]string{"pwd"})
 
 	if err != nil {
 		log.Trace(requestId).Errorf("db error:%v", err)

@@ -149,7 +149,7 @@ func UserEnable(c *gin.Context) {
 	}
 
 	if userEnt == nil {
-		StdErrResponse(c, ErrMgrNotExist)
+		StdErrResponse(c, ErrUserNotExist)
 		return
 	}
 

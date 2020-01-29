@@ -1,9 +1,12 @@
 package dao
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"time"
 
 	"github.com/uxff/flexdrive/pkg/dao/base"
+	"github.com/uxff/flexdrive/pkg/log"
 )
 
 type User struct {
@@ -31,6 +34,22 @@ func (t User) TableName() string {
 func (t *User) UpdateById(cols []string) error {
 	_, err := base.UpdateByCol("id", t.Id, t, cols)
 	return err
+}
+
+func (t *User) IsPwdValid(p string) bool {
+	enc := md5.New()
+	enc.Write([]byte(p))
+
+	s := hex.EncodeToString(enc.Sum(nil))
+	log.Debugf("IsPwdValid: p:%s p.md5:%s expected t.md5:%s t==s:%v", p, s, t.Pwd, s == t.Pwd)
+	return s == t.Pwd
+}
+
+func (t *User) SetPwd(p string) {
+	enc := md5.New()
+	enc.Write([]byte(p))
+
+	t.Pwd = hex.EncodeToString(enc.Sum(nil))
 }
 
 func GetUserById(id int) (*User, error) {

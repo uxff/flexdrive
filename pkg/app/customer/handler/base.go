@@ -21,46 +21,43 @@ import (
 
 // cookie中使用
 const (
-	CookieKeyGpa  = "t"
-	CookieKeySign = "s"
+	CookieKeyAuth = "ua"
 	CookieKeySalt = "TmhMbU52YlM1amJp"
 )
 
 // 代码内使用 http协议中不可见
 const (
-	CtxKeyGpa          = "_gpa"
+	CtxKeyCua          = "_cua"
 	CtxKeyRequestId    = "_requestId"
 	CtxKeyURI          = "_uri"
 	CookieKeyCaptchaId = "_captchaId"
 )
 
-// 后台登录关键信息
-type GpaToken struct {
-	Mid int
-	//Name     string // 没有值
-	RoleId int
-	//RoleName string // 没有值
+// 登录关键信息 Customer User Auth Token
+type CuaToken struct {
+	UserId  int
 	LoginAt int
+	Sign    string
 
-	MgrEnt *dao.Manager
+	UserEnt *dao.User
 }
 
-func (t *GpaToken) ToString() string {
-	return fmt.Sprintf("%d.%d.%d", t.Mid, t.RoleId, t.LoginAt)
+func (t *CuaToken) ToString() string {
+	return fmt.Sprintf("%d.%d.%s", t.UserId, t.LoginAt, t.Sign)
 }
 
-func (t *GpaToken) FromString(str string) {
-	t.Mid = 0
+func (t *CuaToken) FromString(str string) {
+	t.UserId = 0
 	cols := strings.Split(str, ".")
 	if len(cols) != 3 {
 		return
 	}
-	t.Mid, _ = strconv.Atoi(cols[0])
-	t.RoleId, _ = strconv.Atoi(cols[1])
-	t.LoginAt, _ = strconv.Atoi(cols[2])
+	t.UserId, _ = strconv.Atoi(cols[0])
+	t.LoginAt, _ = strconv.Atoi(cols[1])
+	t.Sign = cols[2]
 }
 
-func (t *GpaToken) MakeSign() string {
+func (t *CuaToken) MakeSign() string {
 
 	enc := md5.New()
 	enc.Write([]byte(t.ToString() + CookieKeySalt))
@@ -68,32 +65,33 @@ func (t *GpaToken) MakeSign() string {
 	return hex.EncodeToString(enc.Sum(nil))
 }
 
-func decodeGpaFromToken(gpaTokenStr string, sign string) (g *GpaToken, err error) {
+func decodeCuaFromToken(cuaTokenStr string) (g *CuaToken, err error) {
 
-	g = &GpaToken{}
-	g.FromString(gpaTokenStr)
+	g = &CuaToken{}
+	g.FromString(cuaTokenStr)
 
-	if g.Mid <= 0 {
-		return nil, errors.New("gpatoken has no mid")
+	if g.UserId <= 0 {
+		return nil, errors.New("cuaToken has no userId")
 	}
 
-	if g.MakeSign() != sign {
-		return nil, errors.New("gpatoken sign not expected")
+	if g.MakeSign() != g.Sign {
+		return nil, errors.New("cuaToken sign not expected")
 	}
 
 	return g, nil
 }
 
-func genGpaFromMgrEnt(mgrEnt *dao.Manager) (g *GpaToken, gpaTokenStr, sign string, err error) {
-	g = &GpaToken{
-		Mid: mgrEnt.Id,
-		//Name:   mgrEnt.Name,
-		RoleId: mgrEnt.RoleId,
-		//RoleName: 	 mgrEnt.RoleName,
-		LoginAt: int(mgrEnt.LastLoginAt.Unix()),
+func genCuaFromUserEnt(userEnt *dao.User) (g *CuaToken, cuaTokenStr, sign string, err error) {
+	g = &CuaToken{
+		UserId:  userEnt.Id,
+		LoginAt: int(userEnt.LastLoginAt.Unix()),
+		UserEnt: userEnt,
 	}
 
-	return g, g.ToString(), g.MakeSign(), nil
+	// toString 之前必须把签名赋值给g.Sign
+	g.Sign = g.MakeSign()
+
+	return g, g.ToString(), g.Sign, nil
 }
 
 func TraceMiddleWare(c *gin.Context) {
@@ -113,49 +111,44 @@ func TraceMiddleWare(c *gin.Context) {
 // 所有交易相关接口调用前的认证中间件
 func AuthMiddleWare(c *gin.Context) {
 	// 验证cookie签名是否合法
-	gpaToken, err := verifyFromCookie(c)
+	cuaToken, err := verifyFromCookie(c)
 	if err != nil {
-		log.Trace(c.GetString(CtxKeyRequestId)).Warnf("illegal gpaToken , reject request, error:%v gpatoken:%+v", err, gpaToken)
-		c.SetCookie(CookieKeyGpa, "", -1, "", "", true, false)
+		log.Trace(c.GetString(CtxKeyRequestId)).Warnf("illegal cuaToken , reject request, error:%v cuatoken:%+v", err, cuaToken)
+		c.SetCookie(CookieKeyAuth, "", -1, "", "", true, false)
 		StdErrResponse(c, ErrNotLogin)
 		c.Abort()
 		return
 	}
 
-	if gpaToken.LoginAt < int(time.Now().Add(-time.Hour*24).Unix()) {
+	if cuaToken.LoginAt < int(time.Now().Add(-time.Hour*24).Unix()) {
 		ClearLogin(c)
 		StdErrResponse(c, ErrLoginExpired)
 		c.Abort()
 		return
 	}
 
-	//mgrEnt := &dao.Manager{}
-	mgrEnt, err := dao.GetManagerById(gpaToken.Mid)
+	userEnt, err := dao.GetUserById(cuaToken.UserId)
 	if err != nil {
-		log.Errorf("query by mid:%d failed:%v", gpaToken.Mid, err)
-		StdErrResponse(c, ErrMgrNotExist)
+		log.Errorf("query by mid:%d failed:%v", cuaToken.UserId, err)
+		StdErrResponse(c, ErrUserNotExist)
 		c.Abort()
 		return
 	}
-	if mgrEnt == nil {
-		log.Warnf("登陆账号%d不存在", gpaToken.Mid)
-		StdErrResponse(c, ErrMgrNotExist)
+	if userEnt == nil {
+		log.Warnf("登陆账号%d不存在", cuaToken.UserId)
+		StdErrResponse(c, ErrUserNotExist)
 		c.Abort()
 		return
 	}
 
-	gpaToken.RoleId = mgrEnt.RoleId
-	gpaToken.MgrEnt = mgrEnt
-	//gpaToken.RoleName = mgrEnt.RoleName
-	// gpaToken.IsSuper = mgrEnt.IsSuper()
-	// gpaToken.IsSuperRole = mgrEnt.IsSuperRole()
+	cuaToken.UserEnt = userEnt
 
-	c.Set(CtxKeyGpa, gpaToken)
+	c.Set(CtxKeyCua, cuaToken)
 
 	// 判断账号是否已被禁用
-	if mgrEnt.Status != base.StatusNormal {
-		log.Warnf("登陆账号(%d)已被禁用", gpaToken.Mid)
-		StdErrResponse(c, ErrMgrDisabled)
+	if userEnt.Status != base.StatusNormal {
+		log.Warnf("登陆账号(%d)已被禁用", cuaToken.UserId)
+		StdErrResponse(c, ErrUserDisabled)
 		c.Abort()
 		return
 	}
@@ -211,14 +204,14 @@ func StdResponseJson(c *gin.Context, code, msg string, data interface{}) {
 }
 
 // 此方法必须提前验证cookie 就是前文必须调用过verifyFromCookie，此方法才有效
-func getLoginInfo(c *gin.Context) *GpaToken {
-	loginInfoIf, _ := c.Get(CtxKeyGpa)
-	loginInfo, ok := loginInfoIf.(*GpaToken)
+func getLoginInfo(c *gin.Context) *CuaToken {
+	loginInfoIf, _ := c.Get(CtxKeyCua)
+	loginInfo, ok := loginInfoIf.(*CuaToken)
 	if !ok {
-		log.Warnf("gpatoken not exist, invalid type")
+		log.Warnf("cuaToken not exist, invalid type")
 	}
 	if loginInfo == nil {
-		log.Warnf("gpatoken not exist, empty value")
+		log.Warnf("cuaToken not exist, empty value")
 	}
 	return loginInfo
 }
@@ -228,23 +221,18 @@ func isLoginIn(c *gin.Context) bool {
 }
 
 // 验证cookie合法性 并返回有效的登录信息
-func verifyFromCookie(c *gin.Context) (*GpaToken, error) {
-	// gopay admin token
-	gpaTokenStr, err := c.Cookie(CookieKeyGpa)
-	if gpaTokenStr == "" {
+func verifyFromCookie(c *gin.Context) (*CuaToken, error) {
+	// customer admin token
+	cuaTokenStr, err := c.Cookie(CookieKeyAuth)
+	if cuaTokenStr == "" {
 		return nil, err
 	}
 
-	// gopay admin sign
-	gpaSignStr, err := c.Cookie(CookieKeySign)
-	if err != nil {
-		return nil, err
-	}
-	gpaToken, err := decodeGpaFromToken(gpaTokenStr, gpaSignStr)
+	cuaToken, err := decodeCuaFromToken(cuaTokenStr)
 	if err != nil {
 		log.Warnf("cookie has invalid sign, error:%v", err)
 		return nil, err
 	}
 
-	return gpaToken, nil
+	return cuaToken, nil
 }
