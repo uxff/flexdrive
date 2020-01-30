@@ -84,7 +84,7 @@ CREATE TABLE `order` (
   `remark` text NOT NULL COMMENT '订单备注',
   `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '创建时间',
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态 1=待付款 2=未付款关闭 3=已付款 4=已退款',
+  `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态 1=待付款 2=未付款关闭 3=已付款 4=退款中 5=已退款',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
