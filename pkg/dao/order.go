@@ -7,6 +7,22 @@ import (
 	"github.com/uxff/flexdrive/pkg/log"
 )
 
+const (
+	OrderStatusPaying    = 1
+	OrderStatusClosed    = 2
+	OrderStatusPaid      = 3
+	OrderStatusRefunding = 4
+	OrderStatusRefended  = 5
+)
+
+var OrderStatusMap = map[int]string{
+	OrderStatusPaying:    "待付款",
+	OrderStatusClosed:    "未付款关闭",
+	OrderStatusPaid:      "支付完成",
+	OrderStatusRefunding: "退款中",
+	OrderStatusRefended:  "退款完成",
+}
+
 type Order struct {
 	Id            int       `xorm:"not null pk autoincr comment('订单id') INT(10)"`
 	UserId        int       `xorm:"not null comment('用户id') INT(11)"`
@@ -20,7 +36,7 @@ type Order struct {
 	Remark        string    `xorm:"not null comment('订单备注') TEXT"`
 	Created       time.Time `xorm:"created not null default '0000-00-00 00:00:00' comment('创建时间') TIMESTAMP"`
 	Updated       time.Time `xorm:"updated not null default 'CURRENT_TIMESTAMP' TIMESTAMP"`
-	Status        int       `xorm:"not null default 1 comment('状态 1=待付款 2=未付款关闭 3=已付款 4=已退款') TINYINT(4)"`
+	Status        int       `xorm:"not null default 1 comment('状态 1=待付款 2=未付款关闭 3=已付款 4=退款中 5=已退款') TINYINT(4)"`
 
 	// after select
 	User *User `xorm:"-"`
@@ -38,6 +54,18 @@ func (t *Order) GetById(id int) error {
 func (t *Order) UpdateById(cols []string) error {
 	_, err := base.UpdateByCol("id", t.Id, t, cols)
 	return err
+}
+
+func GetOrderById(id int) (*Order, error) {
+	e := &Order{}
+	exist, err := base.GetByCol("id", id, e)
+	if err != nil {
+		return nil, err
+	}
+	if !exist {
+		return nil, nil
+	}
+	return e, err
 }
 
 func (t *Order) AfterSelect() {

@@ -28,6 +28,7 @@ const (
 	RouteNodeList      = "/node/list"
 	RouteShareList     = "/share/list"
 	RouteUserLevelList = "/userlevel/list"
+	RouteOrderList     = "/order/list"
 	RouteChangePwd     = "/changepwd"
 )
 
