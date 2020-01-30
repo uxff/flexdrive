@@ -10,7 +10,7 @@ import (
 	"github.com/uxff/flexdrive/pkg/log"
 )
 
-type LoginRequst struct {
+type LoginRequest struct {
 	Email   string `form:"email"`
 	Pwd     string `form:"password"`
 	Captcha string `form:"captcha"`
@@ -37,7 +37,7 @@ func LoginForm(c *gin.Context) {
 	//}
 
 	// 参数是否正确
-	req := &LoginRequst{}
+	req := &LoginRequest{}
 	err := c.ShouldBind(req)
 	if err != nil {
 		StdErrResponse(c, ErrInvalidParam)

@@ -17,6 +17,7 @@ const (
 	ErrInternal       = "101"
 	ErrLevelNotExist  = "21"
 	ErrLevelDisabled  = "22"
+	ErrEmailDuplicate = "23"
 )
 
 var errCodeMap = map[string]string{

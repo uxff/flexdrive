@@ -50,6 +50,8 @@ func StartHttpServer(addr string) error {
 	// 登录
 	router.GET("/login", TraceMiddleWare, Login)
 	router.POST("/login", TraceMiddleWare, LoginForm)
+	router.GET("/signup", TraceMiddleWare, Signup)
+	router.POST("/signup", TraceMiddleWare, SignupForm)
 	router.GET("/logout", TraceMiddleWare, Logout)
 	//router.GET("/app/config", TraceMiddleWare, GetAppConfig)
 	router.GET("/", TraceMiddleWare, Index)

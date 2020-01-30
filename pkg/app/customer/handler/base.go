@@ -60,7 +60,7 @@ func (t *CuaToken) FromString(str string) {
 func (t *CuaToken) MakeSign() string {
 
 	enc := md5.New()
-	enc.Write([]byte(t.ToString() + CookieKeySalt))
+	enc.Write([]byte(fmt.Sprintf("%d.%d", t.UserId, t.LoginAt) + CookieKeySalt))
 
 	return hex.EncodeToString(enc.Sum(nil))
 }
@@ -104,6 +104,24 @@ func TraceMiddleWare(c *gin.Context) {
 	rawBody, _ := httputil.DumpRequest(c.Request, true)
 	log.Trace(requestId).Debugf("原始请求体：%s", rawBody)
 
+	// detect user from cookie
+	cuaToken, err := verifyFromCookie(c)
+	if err != nil {
+		log.Trace(c.GetString(CtxKeyRequestId)).Warnf("illegal cuaToken , reject request, error:%v cuatoken:%+v", err, cuaToken)
+	} else {
+		if cuaToken != nil {
+			userEnt, err := dao.GetUserById(cuaToken.UserId)
+			if err != nil {
+				log.Warnf("query by userid:%d failed:%v", cuaToken.UserId, err)
+			}
+			if userEnt != nil {
+				// 成功将用户实体注入到登录信息回话
+				cuaToken.UserEnt = userEnt
+				c.Set(CtxKeyCua, cuaToken)
+			}
+		}
+	}
+
 	c.Next()
 }
 
@@ -111,10 +129,9 @@ func TraceMiddleWare(c *gin.Context) {
 // 所有交易相关接口调用前的认证中间件
 func AuthMiddleWare(c *gin.Context) {
 	// 验证cookie签名是否合法
-	cuaToken, err := verifyFromCookie(c)
-	if err != nil {
-		log.Trace(c.GetString(CtxKeyRequestId)).Warnf("illegal cuaToken , reject request, error:%v cuatoken:%+v", err, cuaToken)
-		c.SetCookie(CookieKeyAuth, "", -1, "", "", true, false)
+	cuaToken := getLoginInfo(c)
+	if cuaToken == nil {
+		log.Warnf("尚未登录")
 		StdErrResponse(c, ErrNotLogin)
 		c.Abort()
 		return
@@ -127,26 +144,8 @@ func AuthMiddleWare(c *gin.Context) {
 		return
 	}
 
-	userEnt, err := dao.GetUserById(cuaToken.UserId)
-	if err != nil {
-		log.Errorf("query by mid:%d failed:%v", cuaToken.UserId, err)
-		StdErrResponse(c, ErrUserNotExist)
-		c.Abort()
-		return
-	}
-	if userEnt == nil {
-		log.Warnf("登陆账号%d不存在", cuaToken.UserId)
-		StdErrResponse(c, ErrUserNotExist)
-		c.Abort()
-		return
-	}
-
-	cuaToken.UserEnt = userEnt
-
-	c.Set(CtxKeyCua, cuaToken)
-
 	// 判断账号是否已被禁用
-	if userEnt.Status != base.StatusNormal {
+	if cuaToken.UserEnt.Status != base.StatusNormal {
 		log.Warnf("登陆账号(%d)已被禁用", cuaToken.UserId)
 		StdErrResponse(c, ErrUserDisabled)
 		c.Abort()
@@ -222,7 +221,7 @@ func isLoginIn(c *gin.Context) bool {
 
 // 验证cookie合法性 并返回有效的登录信息
 func verifyFromCookie(c *gin.Context) (*CuaToken, error) {
-	// customer admin token
+	// customer auth token
 	cuaTokenStr, err := c.Cookie(CookieKeyAuth)
 	if cuaTokenStr == "" {
 		return nil, err

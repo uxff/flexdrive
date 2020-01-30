@@ -15,9 +15,6 @@ import (
 )
 
 func init() {
-	tplFuncMap["mgrStatus"] = func(status int) string {
-		return base.StatusMap[status]
-	}
 }
 
 type ManagerListRequest struct {

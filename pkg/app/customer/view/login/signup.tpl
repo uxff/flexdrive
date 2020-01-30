@@ -1,5 +1,7 @@
-{{append . "HeadStyles" "/static/css/custom.css"}}
-{{append . "HeadScripts" "/static/js/custom.js"}}
+{{ define "login/signup.tpl" }}
+
+{{template "common/head.tpl" .}}
+{{template "common/partheader.tpl" .}}
 
 <div class="container">
     <div class="row vertical-offset-50">
@@ -10,40 +12,36 @@
 			 	</div> 
 
 			  	<div class="panel-body">
-			    	<form accept-charset="utf-8" role="form" class="form-horizontal" method="POST" action='{{urlfor "UsersController.Signup"}}'>
-                      {{ .xsrfdata }}
-
-                      {{template "alert.tpl" .}}
+			    	<form accept-charset="utf-8" role="form" class="form-horizontal" method="POST" action='/signup'>
 
                       <div class="form-group">
-                        <label for="inputEmail" class="col-sm-3 control-label">邮箱地址</label>
+                        <label class="col-sm-3 control-label">邮箱地址</label>
                         <div class="col-sm-8">
-                          <input class="form-control" placeholder="例: admin@example.com" name="Email" value="{{index .Params "Email"}}" type="email" required 
-                                    id="inputEmail" />
+                          <input class="form-control" placeholder="例: admin@example.com" name="email" value="" type="email" required />
                         </div>
                       </div>
                       <div class="form-group">
-                        <label for="inputPassword" class="col-sm-3 control-label">秘钥</label>
+                        <label class="col-sm-3 control-label">密码</label>
                         <div class="col-sm-8">
-			    		  <input class="form-control" placeholder="输入秘钥" name="Password" type="password" value="" required
-                                    pattern=".{6,}" title="秘钥长度至少为6个字符" id="inputPassword"  />
-                          <input class="form-control" placeholder="确认秘钥" name="Repassword" type="password" required
-                                    pattern=".{6,}" title="秘钥长度至少为6个字符" />
+			    		            <input class="form-control" placeholder="输入密码" name="pwd" type="password" value="" required
+                                    pattern=".{6,}" title="密码长度至少为6个字符" />
+                          <input class="form-control" placeholder="确认密码" name="repwd" type="password" required
+                                    pattern=".{6,}" title="密码长度至少为6个字符" />
                         </div>
                       </div>
                       <div class="form-group">
                           <label for="inputCaptcha" class="col-sm-3 control-label">验证码</label>
                           <div class="col-sm-4">
-                              <input class="form-control" name="captcha" type="text">
+                            <input class="form-control" name="captcha" type="text">
                           </div>
-                      { {create_captcha} }
+                          <img src="{{captchaUrl}}" style="max-width:150px">
                       </div>
                       <div class="form-group text-center">
                           <label for="isCheckedProtocol"><input type="checkbox" id="isCheckedProtocol"/>我同意<a href="javascript:;">注册协议</a></label>
                       </div>
                       <div class="form-group">
                         <div class="col-sm-12">
-			    		    <input class="btn btn-lg btn-success btn-block" type="submit" value="注册">
+			    		            <input class="btn btn-lg btn-success btn-block" type="submit" value="注册">
                         </div>
                       </div>
                     </form>
@@ -55,3 +53,7 @@
 		</div>
 	</div>
 </div>
+{{template "common/partfooter.tpl"}}
+{{template "common/foot.tpl"}}
+
+{{ end }}

@@ -57,7 +57,7 @@
           <a href="javascript:;" role="button" class="dropdown-toggle" data-hover="dropdown">
             <span class='glyphicon glyphicon-user'></span> 
             {{if .IsLogin}}
-              {{.LoginInfo.MgrEnt.Email}} 
+              {{.LoginInfo.UserEnt.Email}} 
             {{else}}
               账户
             {{end}}

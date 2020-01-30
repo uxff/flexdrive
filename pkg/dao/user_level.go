@@ -49,3 +49,15 @@ func GetUserLevelByName(name string) (*UserLevel, error) {
 	}
 	return e, err
 }
+
+func GetDefaultUserLevel() (*UserLevel, error) {
+	e := &UserLevel{}
+	exist, err := base.GetByCol("isdefault", 1, e)
+	if err != nil {
+		return nil, err
+	}
+	if !exist {
+		return nil, nil
+	}
+	return e, err
+}
