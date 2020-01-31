@@ -1,6 +1,6 @@
 {{define "common/partheader.tpl"}}
 
-<header id="topbar" class="navbar navbar-default bs-docs-nav" role="banner">
+<header id="topbar" class="navbar navbar-inverse bs-docs-nav" role="banner">
   <div class="container">
     <div class="row">
     <div class="navbar-header">
@@ -25,17 +25,17 @@
         </li>
         <li>
           <a href="/f" class="dropdown-toggle" data-hover="dropdown" >
-            <span class="glyphicon glyphicon-th-large"></span> 文件 
+            <span class="glyphicon glyphicon-briefcase"></span> 文件 
           </a>
         </li>
         <li>
           <a href="/upload" class="dropdown-toggle" data-hover="dropdown">
-            <span class="glyphicon glyphicon-list-alt"></span> 上传 
+            <span class="glyphicon glyphicon-cloud-upload"></span> 上传 
           </a>
         </li>
         <li>
           <a href="/share/search" class="dropdown-toggle" data-hover="dropdown" >
-            <span class="glyphicon glyphicon-cog"></span> 分享市场 
+            <span class="glyphicon glyphicon-search"></span> 分享市场 
           </a>
         </li>
         <li>
