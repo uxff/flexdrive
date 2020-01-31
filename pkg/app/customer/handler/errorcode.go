@@ -18,6 +18,7 @@ const (
 	ErrLevelNotExist  = "21"
 	ErrLevelDisabled  = "22"
 	ErrEmailDuplicate = "23"
+	ErrItemNotExist   = "24"
 )
 
 var errCodeMap = map[string]string{
@@ -34,6 +35,8 @@ var errCodeMap = map[string]string{
 	ErrInternal:       "系统内部错误，请稍后再试",
 	ErrLevelDisabled:  "会员等级被禁用",
 	ErrLevelNotExist:  "会员等级不存在",
+	ErrEmailDuplicate: "邮箱重复",
+	ErrItemNotExist:   "该条目不存在",
 }
 
 func CodeToMessage(code string) string {

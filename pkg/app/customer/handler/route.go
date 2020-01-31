@@ -53,6 +53,7 @@ func StartHttpServer(addr string) error {
 	router.GET("/signup", TraceMiddleWare, Signup)
 	router.POST("/signup", TraceMiddleWare, SignupForm)
 	router.GET("/logout", TraceMiddleWare, Logout)
+	router.GET("/share/search", TraceMiddleWare, ShareSearch)
 	//router.GET("/app/config", TraceMiddleWare, GetAppConfig)
 	router.GET("/", TraceMiddleWare, Index)
 
@@ -64,11 +65,11 @@ func StartHttpServer(addr string) error {
 	authRouter.GET("/changePwd", ChangePwd)      // 修改自己的密码 不受角色限制
 	authRouter.POST("/changePwd", ChangePwdForm) // 修改自己的密码 不受角色限制
 
-	authRouter.GET("/user/list", UserList)
-	authRouter.GET("/user/enable/:id/:enable", UserEnable)
+	// authRouter.GET("/user/list", UserList)
+	// authRouter.GET("/user/enable/:id/:enable", UserEnable)
 
-	authRouter.GET("/share/list", ShareList)
-	authRouter.GET("/share/enable/:id/:enable", ShareEnable)
+	authRouter.GET("/my/share/list", ShareList)
+	authRouter.GET("/my/share/enable/:id/:enable", ShareEnable)
 
 	authRouter.GET("/fileindex/list", FileIndexList)
 	authRouter.GET("/fileindex/enable/:id/:enable", FileIndexEnable)

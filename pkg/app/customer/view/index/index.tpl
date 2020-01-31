@@ -56,7 +56,7 @@
                     <h3 class="text-center">白银会员</h3>
                 </div>
                 <div class="panel-body">
-                    <ul>
+                    <ul style="margin-left: 10%">
                         <li>空间：5GB</li>
                         <li class="active ">支持离线下载</li>
                     </ul>
@@ -71,7 +71,7 @@
                     <h3 class="text-center">黄金会员</h3>
                 </div>
                 <div class="panel-body">
-                    <ul>
+                    <ul style="margin-left: 10%">
                         <li>空间：50GB</li>
                         <li class="active">支持离线下载</li>
                     </ul>
@@ -86,7 +86,7 @@
                     <h3 class="text-center">钻石会员</h3>
                 </div>
                 <div class="panel-body">
-                    <ul>
+                    <ul style="margin-left: 10%">
                         <li>空间：500GB</li>
                         <li class="active">支持离线下载</li>
                     </ul>
