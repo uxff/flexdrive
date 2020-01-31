@@ -123,7 +123,7 @@ CREATE TABLE `user_file` (
   `userId` integer NOT NULL DEFAULT '0' , 
   `filePath` varchar(256) NOT NULL DEFAULT '' , 
   `fileName` varchar(256) NOT NULL DEFAULT '' , 
-  `pathHash` varchar(32) NOT NULL DEFAULT '' , 
+  `pathHash` varchar(40) NOT NULL DEFAULT '' , 
   `fileHash` varchar(32) NOT NULL DEFAULT '' , 
   `nodeId` integer NOT NULL DEFAULT '0' , 
   `isDir` tinyint(4) NOT NULL DEFAULT '0' , 

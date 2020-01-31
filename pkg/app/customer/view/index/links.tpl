@@ -27,7 +27,7 @@
                     <div class="row clearfix">
                     {{range $k, $site := $lister.Links}}
                         <div class="col-md-3">
-                            <a href="{{$site.Url}}" target="_blank">{{$site.Name}}</a>
+                            <a href="/" target="_blank">{{$site.Name}}</a>
                         </div>
                     {{end}}
                     </div>

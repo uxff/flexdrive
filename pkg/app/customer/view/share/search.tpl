@@ -15,12 +15,11 @@
     <div class="row">
         <ul class="breadcrumb">
             <li><a href="/">首页</a></li>
-            <li><a href="/share/search">分享</a></li>
             <li class="active">分享搜索</li>
         </ul>
 
         <form class="form-horizontal" method="GET" action="/share/search">
-            <div class="input-group col-md-6" style="margin-top:0px; positon:relative">
+            <div class="input-group col-md-6" style="margin-top:0px; position:relative">
                 <span class="input-group-addon">分享搜索</span>
                 <input type="text" class="form-control" name="name" placeholder="请输入关键字" value="{{.reqParam.Name}}" />
                 <span class="input-group-btn">

@@ -8,31 +8,56 @@
         </a>
       </div>
       <dl class="footer-nav">
-        <dt class="nav-title">GALLERY</dt>
+        <dt class="nav-title">导航</dt>
         <dd class="nav-item">
           <a href="#">
-            <span class="glyphicon glyphicon-credit-card"> Donate</span>
+            <span class="glyphicon glyphicon-home"> 首页</span>
           </a>
         </dd>
         <dd class="nav-item">
           <a href="#" target="_blank">
-            <span class='glyphicon glyphicon-bullhorn'> Present</span>
+            <span class='glyphicon glyphicon-briefcase'> 文件</span>
+          </a>
+        </dd>
+        <dd class="nav-item">
+          <a href="#" target="_blank">
+            <span class='glyphicon glyphicon-upload'> 上传</span>
+          </a>
+        </dd>
+        <dd class="nav-item">
+          <a href="#" target="_blank">
+            <span class='glyphicon glyphicon-search'> 分享市场</span>
           </a>
         </dd>
       </dl>
       <dl class="footer-nav">
-        <dt class="nav-title">ABOUT</dt>
+        <dt class="nav-title">相关技术</dt>
 
         <dd class="nav-item">
           <a href="#">
-            <span class='glyphicon glyphicon-info-sign'> </span>
+            <span class='glyphicon glyphicon-info-sign'> Golang</span>
+          </a>
+        </dd>
+        <dd class="nav-item">
+          <a href="#">
+            <span class='glyphicon glyphicon-info-sign'> gRPC</span>
+          </a>
+        </dd>
+        <dd class="nav-item">
+          <a href="#">
+            <span class='glyphicon glyphicon-info-sign'> gin</span>
+          </a>
+        </dd>
+        <dd class="nav-item">
+          <a href="#">
+            <span class='glyphicon glyphicon-info-sign'> Bootstrap</span>
           </a>
         </dd>
 
       </dl>
 
       <dl class="footer-nav hidden">
-        <dt class="nav-title">SOCIAL</dt>
+        <dt class="nav-title">合作伙伴</dt>
         <dd class="nav-item">
           <a href="#" target="_blank">
             <span class='glyphicon glyphicon-globe'></span> 
@@ -41,22 +66,16 @@
       </dl>
 
       <dl class="footer-nav">
-        <dt class="nav-title">CONTACT</dt>
+        <dt class="nav-title">联系我们</dt>
         <dd class="nav-item">
-          <a href="#">
-            <span class='glyphicon glyphicon-comment'></span>
+          <a href="https://github.com/uxff/flexdrive" target="_blank">
+            <span class='glyphicon glyphicon-comment'> view source</span>
           </a>
         </dd>
       </dl>
 
     </div>
 
-    <div class="footer-copyright text-center">
-      友情链接:
-      {{range $k, $link := .friendlyLinks}}
-          <a href="{{$link.Url}}" target="_blank">{{$link.Name}}</a> &nbsp;
-      {{end}}
-    </div>
     <div class="footer-copyright text-center">
       Copyright <span class="glyphicon glyphicon-copyright-mark"></span>
       2014-{{datenow "2006"}} <strong>{{.appname}}</strong>

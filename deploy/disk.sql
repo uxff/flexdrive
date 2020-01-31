@@ -130,7 +130,7 @@ CREATE TABLE `user_file` (
   `userId` int(11) NOT NULL DEFAULT '' COMMENT '用户id',
   `filePath` varchar(256) NOT NULL DEFAULT '' COMMENT '文件路径 ',
   `fileName` varchar(256) NOT NULL DEFAULT '' COMMENT '文件名',
-  `pathHash` varchar(32) NOT NULL DEFAULT '' COMMENT '路径哈希，hash(filePath+fileName)，用户下唯一',
+  `pathHash` varchar(40) NOT NULL DEFAULT '' COMMENT '路径哈希，hash(filePath)',
   `fileHash` varchar(32) NOT NULL DEFAULT '' COMMENT '文件哈希',
   `nodeId` int(11) NOT NULL DEFAULT '0' COMMENT '所在节点名 第一副本所在节点',
   `isDir` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否是目录',
@@ -140,7 +140,8 @@ CREATE TABLE `user_file` (
   `size` int(11) NOT NULL DEFAULT '0' COMMENT '大小 单位Byte 目录则记录0',
   `space` int(11) NOT NULL DEFAULT '0' COMMENT '占用空间单位 单位KB 目录则记录0',
   `desc` text NOT NULL COMMENT '描述信息',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  INDEX IDX_User_PathHash (`userId`, `pathHash`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `share` (

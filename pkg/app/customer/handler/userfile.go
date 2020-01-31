@@ -14,18 +14,17 @@ import (
 func init() {
 }
 
-type FileIndexListRequest struct {
+type UserFileListRequest struct {
 	CreateStart string `form:"createStart"`
 	CreateEnd   string `form:"createEnd"`
-	Name        string `form:"fileName"`
-	FileHash    string `form:"fileHash"`
-	NodeId      int    `form:"nodeId"`
-	Status      int    `form:"status"`
+	FileName    string `form:"fileName"`
+	Dir         string `form:"dir"`
+	SearchDir   int    `form:"searchDir"` // 是否在当前目录下搜索 默认搜索全部目录
 	Page        int    `form:"page"`
 	PageSize    int    `form:"pagesize"`
 }
 
-func (r *FileIndexListRequest) ToCondition() (condition map[string]interface{}) {
+func (r *UserFileListRequest) ToCondition() (condition map[string]interface{}) {
 	condition = make(map[string]interface{})
 
 	if r.CreateStart != "" {
@@ -36,16 +35,15 @@ func (r *FileIndexListRequest) ToCondition() (condition map[string]interface{}) 
 		condition["created<=?"] = r.CreateEnd
 	}
 
-	if r.Name != "" {
-		condition["fileName like ?"] = "%" + r.Name + "%"
+	if r.FileName != "" {
+		condition["fileName like ?"] = "%" + r.FileName + "%"
 	}
 
-	if r.FileHash != "" {
-		condition["fileHash = ?"] = r.FileHash
-	}
-
-	if r.NodeId != 0 {
-		condition["node = ?"] = r.NodeId
+	if r.SearchDir == 1 {
+		fileIdxTmp := &dao.UserFile{
+			FilePath: r.Dir,
+		}
+		condition["pathHash= ?"] = fileIdxTmp.MakePathHash()
 	}
 
 	log.Debugf("r=%+v tocondition:%+v", r, condition)
@@ -53,30 +51,33 @@ func (r *FileIndexListRequest) ToCondition() (condition map[string]interface{}) 
 }
 
 // 接口返回的元素
-type FileIndexItem struct {
-	dao.FileIndex
+type UserFileItem struct {
+	dao.UserFile
 }
 
-func NewFileIndexItemFromEnt(fileIndexEnt *dao.FileIndex) *FileIndexItem {
-	return &FileIndexItem{
-		FileIndex: *fileIndexEnt,
+func NewUserFileItemFromEnt(fileIndexEnt *dao.UserFile) *UserFileItem {
+	return &UserFileItem{
+		UserFile: *fileIndexEnt,
 	}
 }
 
-func FileIndexList(c *gin.Context) {
+func UserFileList(c *gin.Context) {
 	requestId := c.GetString(CtxKeyRequestId)
 
 	// 请求参数校验
-	req := &FileIndexListRequest{}
+	req := &UserFileListRequest{}
 	err := c.ShouldBindQuery(req)
 	if err != nil {
 		StdErrResponse(c, ErrInvalidParam)
 		return
 	}
 
+	condition := req.ToCondition()
+	condition["status=?"] = base.StatusNormal // 只查询未删除
+
 	// 列表查询
-	list := make([]*dao.FileIndex, 0)
-	total, err := base.ListAndCountByCondition(&dao.FileIndex{}, req.ToCondition(), req.Page, req.PageSize, "", &list)
+	list := make([]*dao.UserFile, 0)
+	total, err := base.ListAndCountByCondition(&dao.UserFile{}, condition, req.Page, req.PageSize, "", &list)
 	if err != nil {
 		log.Trace(requestId).Errorf("list failed:%v", err)
 		StdErrResponse(c, ErrInternal)
@@ -84,12 +85,12 @@ func FileIndexList(c *gin.Context) {
 	}
 
 	// 从数据库结构转换成返回结构
-	resItems := make([]*FileIndexItem, 0)
+	resItems := make([]*UserFileItem, 0)
 	for _, v := range list {
-		resItems = append(resItems, NewFileIndexItemFromEnt(v))
+		resItems = append(resItems, NewUserFileItemFromEnt(v))
 	}
 
-	c.HTML(http.StatusOK, "fileindex/list.tpl", gin.H{
+	c.HTML(http.StatusOK, "userfile/list.tpl", gin.H{
 		"LoginInfo": getLoginInfo(c),
 		"IsLogin":   isLoginIn(c),
 		"total":     total,
@@ -101,7 +102,7 @@ func FileIndexList(c *gin.Context) {
 	})
 }
 
-func FileIndexEnable(c *gin.Context) {
+func UserFileEnable(c *gin.Context) {
 	fileIndexId, _ := strconv.ParseInt(c.Param("id"), 10, 64)
 	if fileIndexId <= 0 {
 		StdErrResponse(c, ErrInvalidParam)
@@ -112,10 +113,8 @@ func FileIndexEnable(c *gin.Context) {
 
 	//loginInfo := getLoginInfo(c)
 
-	shareEnt, err := dao.GetFileIndexById(int(fileIndexId))
+	shareEnt, err := dao.GetUserFileById(int(fileIndexId))
 
-	//_, err := base.GetByCol("id", mid, shareEnt)
-	// exist, err := base.GetByCol("mid", mid, shareEnt)
 	if err != nil {
 		log.Errorf("db error:%v", err)
 		StdErrResponse(c, ErrInternal)
@@ -143,5 +142,5 @@ func FileIndexEnable(c *gin.Context) {
 	}
 
 	//StdResponse(c, ErrSuccess, nil)
-	c.Redirect(http.StatusMovedPermanently, RouteFileIndexList)
+	c.Redirect(http.StatusMovedPermanently, RouteUserFileList)
 }

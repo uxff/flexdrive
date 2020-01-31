@@ -18,13 +18,13 @@ import (
 )
 
 const (
-	RouteHome          = "/"
-	RouteLogin         = "/login"
-	RouteLogout        = "/logout"
-	RouteUserList      = "/user/list"
-	RouteFileIndexList = "/file/list"
-	RouteShareList     = "/share/list"
-	RouteChangePwd     = "/changePwd"
+	RouteHome         = "/"
+	RouteLogin        = "/login"
+	RouteLogout       = "/logout"
+	RouteUserList     = "/user/list"
+	RouteUserFileList = "/my/file/list"
+	RouteShareList    = "/share/list"
+	RouteChangePwd    = "/changePwd"
 )
 
 var customerServer *http.Server
@@ -71,8 +71,8 @@ func StartHttpServer(addr string) error {
 	authRouter.GET("/my/share/list", ShareList)
 	authRouter.GET("/my/share/enable/:id/:enable", ShareEnable)
 
-	authRouter.GET("/fileindex/list", FileIndexList)
-	authRouter.GET("/fileindex/enable/:id/:enable", FileIndexEnable)
+	authRouter.GET("/my/file/list", UserFileList)
+	authRouter.GET("/my/file/enable/:id/:enable", UserFileEnable)
 
 	customerServer = &http.Server{
 		Addr:    addr,
@@ -136,13 +136,6 @@ func loadFuncMap() {
 
 	tplFuncMap["truncate"] = func(in string, length int) string {
 		return runewidth.Truncate(in, length, "...")
-	}
-
-	tplFuncMap["noname"] = func(in string) string {
-		if in == "" {
-			return "(未入力)"
-		}
-		return in
 	}
 
 	tplFuncMap["cleanurl"] = func(in string) string {
