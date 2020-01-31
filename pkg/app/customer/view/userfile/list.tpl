@@ -23,7 +23,7 @@
     <!--当前排版方式1-->
     <div class="row" style="margin-bottom: 4px;">
         <div class="col-md-3" style="padding: 5px;">
-            我的空间：已用{{.LoginInfo.UserEnt.UsedSpace}} kB / 总共{{.LoginInfo.UserEnt.QuotaSpace}} kB
+            我的空间：已用{{kBforHuman .LoginInfo.UserEnt.UsedSpace}} / 总共{{kBforHuman .LoginInfo.UserEnt.QuotaSpace}}
         </div>
         <div class="col-md-3">
             <div class="progress " style="width:100%; margin: 5px; float: left;">
@@ -46,7 +46,7 @@
         </div>
         <div class="col-md-3">
             <button class="btn btn-info " type="button">新建文件夹</button>
-            <button class="btn btn-info " type="button">上传</button>
+            <a href="javascript:;" class="btn btn-info " type="button"><span class="glyphicon glyphicon-cloud-upload"></span>上传</a>
             <button class="btn btn-info " type="button">离线下载</button>
         </div>
     </div>
@@ -57,7 +57,7 @@
             <div class="container-fluid"> 
                 <div class="navbar-header">
                     <button class="btn btn-info navbar-btn" type="button">新建文件夹</button>
-                    <button class="btn btn-info navbar-btn" type="button">上传</button>
+                    <a href="javascript:;" class="btn btn-info navbar-btn" type="button"><span class="glyphicon glyphicon-cloud-upload"></span>上传</a>
                     <button class="btn btn-info navbar-btn" type="button">离线下载</button>
                 </div> 
 
@@ -123,6 +123,33 @@
     </div>
 
 </div>
+
+<!-- 模态框（Modal） -->
+<div class="modal fade" id="newFolderModal" tabindex="-1" role="dialog" aria-labelledby="newFolderLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" 
+                        aria-hidden="true">×
+                </button>
+                <h4 class="modal-title" id="newFolderLabel">
+                    新建文件夹
+                </h4>
+            </div>
+            <div class="modal-body">
+                当前路径：
+                <input type="">
+                请输入文件夹名称：
+                <input type="">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal">提交</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+    
 
 <script type="text/javascript">
     $("#txt_search_created_start").datetimepicker({

@@ -19,9 +19,9 @@ type FileIndex struct {
 	Updated    time.Time `xorm:"updated not null default 'CURRENT_TIMESTAMP' comment('更新时间') TIMESTAMP"`
 	Status     int       `xorm:"not null default 1 comment('状态 0=未就绪 1=就绪 98=上传失败 99=删除') TINYINT(4)"`
 	ReferCount int       `xorm:"not null default 0 comment('被引用数量') INT(11)"`
-	Size       int       `xorm:"not null default 0 comment('大小 单位Byte') INT(11)"`
-	Space      int       `xorm:"not null default 0 comment('占用空间单位 单位KB') INT(11)"`
-	Desc       string    `xorm:"not null comment('描述信息') TEXT"`
+	Size       int64     `xorm:"not null default 0 comment('大小 单位Byte') BIGINT(20)"`
+	Space      int64     `xorm:"not null default 0 comment('占用空间单位 单位KB') BIGINT(20)"`
+	Desc       string    `xorm:"not null comment('描述信息 无用') TEXT"`
 }
 
 func (t FileIndex) TableName() string {

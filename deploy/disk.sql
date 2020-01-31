@@ -117,8 +117,8 @@ CREATE TABLE `file_index` (
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态 0=未就绪 1=就绪 98=上传失败 99=删除',
   `referCount` int(11) NOT NULL DEFAULT '0' COMMENT '被引用数量',
-  `size` int(11) NOT NULL DEFAULT '0' COMMENT '大小 单位Byte',
-  `space` int(11) NOT NULL DEFAULT '0' COMMENT '占用空间单位 单位KB',
+  `size` bigint(20) NOT NULL DEFAULT '0' COMMENT '大小 单位Byte',
+  `space` bigint(20) NOT NULL DEFAULT '0' COMMENT '占用空间单位 单位KB',
   `desc` text NOT NULL COMMENT '描述信息',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -137,8 +137,8 @@ CREATE TABLE `user_file` (
   `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '创建时间',
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态 1=正常 2=隐藏 99=下架',
-  `size` int(11) NOT NULL DEFAULT '0' COMMENT '大小 单位Byte 目录则记录0',
-  `space` int(11) NOT NULL DEFAULT '0' COMMENT '占用空间单位 单位KB 目录则记录0',
+  `size` bigint(20) NOT NULL DEFAULT '0' COMMENT '大小 单位Byte 目录则记录0',
+  `space` bigint(20) NOT NULL DEFAULT '0' COMMENT '占用空间单位 单位KB 目录则记录0',
   `desc` text NOT NULL COMMENT '描述信息',
   PRIMARY KEY (`id`),
   INDEX IDX_User_PathHash (`userId`, `pathHash`)

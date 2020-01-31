@@ -28,7 +28,7 @@
             <span class="glyphicon glyphicon-briefcase"></span> 文件 
           </a>
         </li>
-        <li>
+        <li class="hidden">
           <a href="/upload" class="dropdown-toggle" data-hover="dropdown">
             <span class="glyphicon glyphicon-cloud-upload"></span> 上传 
           </a>

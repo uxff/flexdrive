@@ -22,8 +22,8 @@ type UserFile struct {
 	Created     time.Time `xorm:"created not null default '0000-00-00 00:00:00' comment('创建时间') TIMESTAMP"`
 	Updated     time.Time `xorm:"updated not null default 'CURRENT_TIMESTAMP' comment('更新时间') TIMESTAMP"`
 	Status      int       `xorm:"not null default 1 comment('状态 1=正常 2=隐藏 99=下架') TINYINT(4)"`
-	Size        int       `xorm:"not null default 0 comment('大小 单位Byte 目录则记录0') INT(11)"`
-	Space       int       `xorm:"not null default 0 comment('占用空间单位 单位KB 目录则记录0') INT(11)"`
+	Size        int64     `xorm:"not null default 0 comment('大小 单位Byte 目录则记录0') BIGINT(20)"`
+	Space       int64     `xorm:"not null default 0 comment('占用空间单位 单位KB 目录则记录0') BIGINT(20)"`
 	Desc        string    `xorm:"not null comment('描述信息') TEXT"`
 
 	// after select
