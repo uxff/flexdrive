@@ -106,8 +106,8 @@ CREATE TABLE `node` (
 -- todo 分库分表 by hash
 CREATE TABLE `file_index` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '文件索引id',
-  `fileName` varchar(32) NOT NULL DEFAULT '' COMMENT '文件名 无用',
-  `fileHash` varchar(32) NOT NULL DEFAULT '' COMMENT '文件内容哈希',
+  `fileName` varchar(64) NOT NULL DEFAULT '' COMMENT '文件名 无用',
+  `fileHash` varchar(40) NOT NULL DEFAULT '' COMMENT '文件内容哈希',
   `nodeId` int(11) NOT NULL DEFAULT '0' COMMENT '所在节点名 第一副本所在节点',
   `nodeId2` int(11) NOT NULL DEFAULT '0' COMMENT '所在节点名 第二副本所在节点',
   `nodeId3` int(11) NOT NULL DEFAULT '0' COMMENT '所在节点名 第三副本所在节点',
@@ -128,10 +128,10 @@ CREATE TABLE `user_file` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '文件id',
   `fileIndexId` int(10) NOT NULL DEFAULT '' COMMENT '文件索引id',
   `userId` int(11) NOT NULL DEFAULT '' COMMENT '用户id',
-  `filePath` varchar(256) NOT NULL DEFAULT '' COMMENT '文件路径 ',
+  `filePath` varchar(256) NOT NULL DEFAULT '' COMMENT '文件父路径 /结尾',
   `fileName` varchar(256) NOT NULL DEFAULT '' COMMENT '文件名',
   `pathHash` varchar(40) NOT NULL DEFAULT '' COMMENT '路径哈希，hash(filePath)',
-  `fileHash` varchar(32) NOT NULL DEFAULT '' COMMENT '文件哈希',
+  `fileHash` varchar(40) NOT NULL DEFAULT '' COMMENT '文件内容哈希',
   `nodeId` int(11) NOT NULL DEFAULT '0' COMMENT '所在节点名 第一副本所在节点',
   `isDir` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否是目录',
   `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '创建时间',
@@ -146,11 +146,11 @@ CREATE TABLE `user_file` (
 
 CREATE TABLE `share` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '文件id',
-  `fileHash` varchar(32) NOT NULL DEFAULT '' COMMENT '文件哈希',
+  `fileHash` varchar(40) NOT NULL DEFAULT '' COMMENT '文件内容哈希',
   `userId` int(11) NOT NULL DEFAULT '0' COMMENT '分享者用户id',
   `userFileId` int(11) NOT NULL DEFAULT '0' COMMENT '分享者用户文件索引id',
   `nodeId` int(11) NOT NULL DEFAULT '0' COMMENT '所在节点名',
-  `fileName` varchar(32) NOT NULL DEFAULT '' COMMENT '文件名',
+  `fileName` varchar(64) NOT NULL DEFAULT '' COMMENT '文件名',
   `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '创建时间',
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态 1=正常 2=隐藏 99=已删除',

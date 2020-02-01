@@ -10,11 +10,11 @@ import (
 
 type Share struct {
 	Id         int       `xorm:"not null pk autoincr comment('文件id') INT(10)"`
-	FileHash   string    `xorm:"not null default '' comment('文件哈希') VARCHAR(32)"`
+	FileHash   string    `xorm:"not null default '' comment('文件哈希') VARCHAR(40)"`
 	UserId     int       `xorm:"not null default 0 comment('分享者用户id') INT(11)"`
 	UserFileId int       `xorm:"not null default 0 comment('分享者文件索引id') INT(11)"`
 	NodeId     int       `xorm:"not null default 0 comment('所在节点id') INT(11)"`
-	FileName   string    `xorm:"not null default '' comment('文件名') VARCHAR(32)"`
+	FileName   string    `xorm:"not null default '' comment('文件名') VARCHAR(64)"`
 	Created    time.Time `xorm:"created not null default '0000-00-00 00:00:00' comment('创建时间') TIMESTAMP"`
 	Updated    time.Time `xorm:"updated not null default 'CURRENT_TIMESTAMP' comment('更新时间') TIMESTAMP"`
 	Status     int       `xorm:"not null default 1 comment('状态 1=正常 2=隐藏 99=已删除') TINYINT(4)"`

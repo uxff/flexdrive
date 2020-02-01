@@ -3,6 +3,8 @@ package dao
 import (
 	"crypto/sha1"
 	"encoding/hex"
+	"path"
+	"strings"
 	"time"
 
 	"github.com/uxff/flexdrive/pkg/dao/base"
@@ -13,10 +15,10 @@ type UserFile struct {
 	Id          int       `xorm:"not null pk autoincr comment('用户文件索引id') INT(10)"`
 	FileIndexId int       `xorm:"not null default '0' comment('文件索引id') INT(11)"`
 	UserId      int       `xorm:"not null default '0' comment('用户id') index(IDX_userId_pathhash) int(11)"`
-	FilePath    string    `xorm:"not null default '' comment('文件路径 用户展示路径 ') VARCHAR(256)"`
+	FilePath    string    `xorm:"not null default '' comment('文件父路径 用户展示路径 /结尾 ') VARCHAR(256)"`
 	FileName    string    `xorm:"not null default '' comment('文件名 如果是目录则空 用户可改名') VARCHAR(256)"`
 	PathHash    string    `xorm:"not null comment('路径哈希，hash(filePath)') index(IDX_userId_pathhash) VARCHAR(40)"`
-	FileHash    string    `xorm:"not null default '' comment('文件哈希 如果是目录则空') VARCHAR(32)"`
+	FileHash    string    `xorm:"not null default '' comment('文件内容哈希 如果是目录则空') VARCHAR(40)"`
 	NodeId      int       `xorm:"not null default 0 comment('所在节点名 第一副本所在节点') INT(11)"`
 	IsDir       int       `xorm:"not null default 0 comment('是否是目录') TINYINT(4)"`
 	Created     time.Time `xorm:"created not null default '0000-00-00 00:00:00' comment('创建时间') TIMESTAMP"`
@@ -45,6 +47,7 @@ func (t *UserFile) UpdateById(cols []string) error {
 	return err
 }
 
+// FilePath指的是文件父目录
 func (t *UserFile) MakePathHash() string {
 	encSha1 := sha1.New()
 	encSha1.Write([]byte(t.FilePath))
@@ -62,6 +65,62 @@ func GetUserFileById(id int) (*UserFile, error) {
 		return nil, nil
 	}
 	return e, err
+}
+
+// 获取目录一级的UserFile对象 查看一个对象是否存在
+// 如果是目录 则查看 t.filePath=path.Dir(filePath) and t.FileName=path.Base(filePath)
+// 如果filePath=/abc/ 则查看/abc这个目录是否存在
+// 如果filePath=/abc/efg 则查看/abc/下efg这个目录或者文件是否存在
+func GetUserFileByPath(userId int, filePath string) (*UserFile, error) {
+
+	// 在本系统中filePath要以/结尾
+	parentPath := path.Dir(strings.TrimRight(filePath, "/"))
+	if len(parentPath) > 1 {
+		parentPath += "/"
+	}
+	baseName := path.Base(strings.TrimRight(filePath, "/"))
+	log.Debugf("filePath:%s parentPath:%s baseName:%s", filePath, parentPath, baseName)
+
+	e := &UserFile{
+		FilePath: parentPath,
+	}
+
+	list := make([]*UserFile, 0)
+	err := base.ListByCondition(e, map[string]interface{}{
+		"userId=?":   userId,
+		"pathHash=?": e.MakePathHash(),
+		"filePath=?": parentPath,
+		"fileName=?": baseName,
+		"status=?":   base.StatusNormal,
+	}, 1, 1000, "id", &list)
+
+	if err != nil {
+		return nil, err
+	}
+	if len(list) == 0 {
+		return nil, nil
+	}
+	item := list[0]
+	return item, err
+}
+
+// 创建目录一级的UserFile对象 filePath需要自己补充
+func MakeUserFilePath(userId int, filePath, name string) (*UserFile, error) {
+	e := &UserFile{
+		FilePath: filePath,
+		FileName: name,
+		IsDir:    1,
+		Status:   1,
+		UserId:   userId,
+	}
+
+	e.MakePathHash()
+
+	_, err := base.Insert(e)
+	if err != nil {
+		return nil, err
+	}
+	return e, nil
 }
 
 func (t *UserFile) AfterSelect() {

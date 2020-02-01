@@ -8,8 +8,8 @@ import (
 
 type FileIndex struct {
 	Id         int       `xorm:"not null pk autoincr comment('文件索引id') INT(10)"`
-	FileName   string    `xorm:"not null default '' comment('文件名 无用') VARCHAR(32)"`
-	FileHash   string    `xorm:"not null default '' comment('文件内容哈希') VARCHAR(32)"`
+	FileName   string    `xorm:"not null default '' comment('文件名 无用') VARCHAR(64)"`
+	FileHash   string    `xorm:"not null default '' comment('文件内容哈希') VARCHAR(40)"`
 	NodeId     int       `xorm:"not null default 0 comment('所在节点名 第一副本所在节点') INT(11)"`
 	NodeId2    int       `xorm:"not null default 0 comment('所在节点名 第二副本所在节点') INT(11)"`
 	NodeId3    int       `xorm:"not null default 0 comment('所在节点名 第三副本所在节点') INT(11)"`

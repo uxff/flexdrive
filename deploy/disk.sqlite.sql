@@ -101,7 +101,7 @@ CREATE TABLE `node` (
 CREATE TABLE `file_index` (
   `id` integer PRIMARY KEY AUTOINCREMENT , 
   `fileName` varchar(32) NOT NULL DEFAULT '' , 
-  `fileHash` varchar(32) NOT NULL DEFAULT '' , 
+  `fileHash` varchar(40) NOT NULL DEFAULT '' , 
   `nodeId` integer NOT NULL DEFAULT '0' , 
   `nodeId2` integer NOT NULL DEFAULT '0' , 
   `nodeId3` integer NOT NULL DEFAULT '0' , 
@@ -124,7 +124,7 @@ CREATE TABLE `user_file` (
   `filePath` varchar(256) NOT NULL DEFAULT '' , 
   `fileName` varchar(256) NOT NULL DEFAULT '' , 
   `pathHash` varchar(40) NOT NULL DEFAULT '' , 
-  `fileHash` varchar(32) NOT NULL DEFAULT '' , 
+  `fileHash` varchar(40) NOT NULL DEFAULT '' , 
   `nodeId` integer NOT NULL DEFAULT '0' , 
   `isDir` tinyint(4) NOT NULL DEFAULT '0' , 
   `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' , 
@@ -137,7 +137,7 @@ CREATE TABLE `user_file` (
 
 CREATE TABLE `share` (
   `id` integer PRIMARY KEY AUTOINCREMENT , 
-  `fileHash` varchar(32) NOT NULL DEFAULT '' , 
+  `fileHash` varchar(40) NOT NULL DEFAULT '' , 
   `userId` integer NOT NULL DEFAULT '0' , 
   `userFileId` integer NOT NULL DEFAULT '0' , 
   `nodeId` integer NOT NULL DEFAULT '0' , 

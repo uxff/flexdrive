@@ -45,8 +45,8 @@
             </form>
         </div>
         <div class="col-md-3">
-            <button class="btn btn-info " type="button">新建文件夹</button>
-            <a href="javascript:;" class="btn btn-info " type="button"><span class="glyphicon glyphicon-cloud-upload"></span>上传</a>
+            <button class="btn btn-info " type="button" data-toggle="modal" data-target="#newFolderModal">新建文件夹</button>
+            <a href="javascript:;" class="btn btn-info " type="button" data-toggle="modal" data-target="#uploadModal"><span class="glyphicon glyphicon-cloud-upload"></span>上传</a>
             <button class="btn btn-info " type="button">离线下载</button>
         </div>
     </div>
@@ -75,10 +75,14 @@
 
     <div class="row">
         <ul class="breadcrumb" style="margin: 0px;">
-            位置：
-            <li><a href="/">全部文件</a></li>
-            <li><a href="/my/file/list">文件</a></li>
-            <li class="active">文件列表</li>
+            <a href="/my/file/list?dir={{.parentPath}}"><span class="glyphicon glyphicon-circle-arrow-left"></span>返回上一级</a>&nbsp;
+                位置：
+            <li><a href="/my/file/list">全部文件</a></li>
+            {{range $lk, $lv := .dirLis}}
+            {{if $lv}} 
+            <li><a href="/my/file/list?dir={{$lv.Parent}}{{$lv.Dir}}">{{$lv.Dir}}</a></li>
+            {{end}}
+            {{end}}
         </ul>
     </div>
     <div class="row">
@@ -95,12 +99,15 @@
             <tbody>
                 {{range .list}}
                 <tr data-id="{{.Id}}" data-hash="{{.FileHash}}" data-pathhash={{.PathHash}}>
-                    <td>{{.FileName}}</td>
+                    <td>
+                        {{if .IsDir}}<span class="glyphicon glyphicon-folder-close"></span>{{else}}<span class="glyphicon glyphicon-file"></span>{{end}}
+                        <a href="/my/file/list?dir={{.FilePath}}{{.FileName}}">{{.FileName}}</a>
+                    </td>
                     <td>{{.Created }}</td>
                     <td>{{.Size }}</td>
                     <td>
                         {{if eq .Status 1}}
-                        <a href="/fileindex/enable/{{.Id}}/9">删除</a>
+                        <a href="/my/file/enable/{{.Id}}/9">删除</a>
                         {{end}}
                         <a href="/">分享</a>
                         <a href="/">下载</a>
@@ -120,6 +127,7 @@
         {{template "paginator2.tpl" .}}
 
 
+        <input type="text" id="dirPath" value="{{.reqParam.Dir}}" readonly>
     </div>
 
 </div>
@@ -136,11 +144,53 @@
                     新建文件夹
                 </h4>
             </div>
+            <form id="newFolderForm" accept-charset="utf-8" role="form" class="form-horizontal" method="POST" action='/my/file/newfolder'>
+
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-4 text-right">
+                        当前路径：
+                    </div>
+                    <div class="col-md-6">
+                        全部文件<span id="dirPathTextInNewFolderModal"></span>
+                        <input type="text" name="parentDir" id="dirPathInNewFolderModal" readonly value="{{.reqParam.Dir}}">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 text-right">
+                        请输入文件夹名称：
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text" name="dirName" id="nameInNewFolderModal">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="submit" class="btn btn-primary" id="newFolderSubmit">提交</button>
+            </div>
+            </form>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+    
+<!-- 模态框（Modal） -->
+<div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" 
+                        aria-hidden="true">×
+                </button>
+                <h4 class="modal-title" id="uploadLabel">
+                    新建文件夹
+                </h4>
+            </div>
             <div class="modal-body">
                 当前路径：
-                <input type="">
-                请输入文件夹名称：
-                <input type="">
+                <input type="hidden" name="dirName" id="dirPathInUploadModal" readonly>
+                请选择文件：
+                <input type="file" name="file" id="fileInUploadModal">
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
@@ -152,12 +202,24 @@
     
 
 <script type="text/javascript">
-    $("#txt_search_created_start").datetimepicker({
-        format: 'YYYY-MM-DD HH:mm'
+$("#txt_search_created_start").datetimepicker({
+    format: 'YYYY-MM-DD HH:mm'
+});
+$("#txt_search_created_end").datetimepicker({
+    format: 'YYYY-MM-DD HH:mm'
+});
+
+$(function () {
+    $('#newFolderModal').on('show.bs.modal', function () {
+        //alert('嘿，我听说您喜欢模态框xxxxxxxxx...');})
+        $('#dirPathTextInNewFolderModal').html($('#dirPath').val());
     });
-    $("#txt_search_created_end").datetimepicker({
-        format: 'YYYY-MM-DD HH:mm'
+    $('#newFolderSubmit').on('click', function(){
+        $('#newFolderForm').submit();
+        $('#myModal').modal('hide');
     });
+});
+
 </script>
     
 {{template "common/partfooter.tpl"}}
