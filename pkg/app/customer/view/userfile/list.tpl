@@ -83,6 +83,7 @@
             <li><a href="/my/file/list?dir={{$lv.Parent}}{{$lv.Dir}}">{{$lv.Dir}}</a></li>
             {{end}}
             {{end}}
+            <li><input type="hidden" id="dirPath" value="{{.reqParam.Dir}}" readonly></li>
         </ul>
     </div>
     <div class="row">
@@ -127,7 +128,7 @@
         {{template "paginator2.tpl" .}}
 
 
-        <input type="text" id="dirPath" value="{{.reqParam.Dir}}" readonly>
+        
     </div>
 
 </div>
@@ -153,7 +154,7 @@
                     </div>
                     <div class="col-md-6">
                         全部文件<span id="dirPathTextInNewFolderModal"></span>
-                        <input type="text" name="parentDir" id="dirPathInNewFolderModal" readonly value="{{.reqParam.Dir}}">
+                        <input type="hidden" name="parentDir" id="dirPathInNewFolderModal" readonly value="{{.reqParam.Dir}}">
                     </div>
                 </div>
                 <div class="row">
@@ -183,19 +184,34 @@
                         aria-hidden="true">×
                 </button>
                 <h4 class="modal-title" id="uploadLabel">
-                    新建文件夹
+                    上传文件
                 </h4>
             </div>
+            <form id="uploadForm" accept-charset="utf-8" role="form" class="form-horizontal" method="POST" action='/my/file/upload' enctype="multipart/form-data">
             <div class="modal-body">
-                当前路径：
-                <input type="hidden" name="dirName" id="dirPathInUploadModal" readonly>
-                请选择文件：
-                <input type="file" name="file" id="fileInUploadModal">
+                <div class="row">
+                    <div class="col-md-4 text-right">
+                        当前路径：
+                    </div>
+                    <div class="col-md-6">
+                        全部文件<span id="dirPathTextInUploadModal"></span>
+                        <input type="text" name="dirName" id="dirPathInUploadModal" readonly value="{{.reqParam.Dir}}">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        请选择文件：
+                    </div>
+                    <div class="col-md-6">
+                        <input type="file" name="file" id="fileInUploadModal">
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                <button type="button" class="btn btn-primary" data-dismiss="modal">提交</button>
+                <button type="button" class="btn btn-primary" id="uploadSubmit">提交</button>
             </div>
+            </form>
         </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
@@ -216,7 +232,15 @@ $(function () {
     });
     $('#newFolderSubmit').on('click', function(){
         $('#newFolderForm').submit();
-        $('#myModal').modal('hide');
+        $('#newFolderModal').modal('hide');
+    });
+    $('#uploadModal').on('show.bs.modal', function () {
+        //alert('嘿，我听说您喜欢模态框xxxxxxxxx...');})
+        $('#dirPathTextInUploadModal').html($('#dirPath').val());
+    });
+    $('#uploadSubmit').on('click', function(){
+        $('#uploadForm').submit();
+        $('#uploadModal').modal('hide');
     });
 });
 

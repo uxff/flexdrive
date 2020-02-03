@@ -73,6 +73,7 @@ func StartHttpServer(addr string) error {
 
 	authRouter.GET("/my/file/list", UserFileList)
 	authRouter.POST("/my/file/newfolder", UserFileNewFolder)
+	authRouter.POST("/my/file/upload", UploadForm)
 	authRouter.GET("/my/file/enable/:id/:enable", UserFileEnable)
 
 	customerServer = &http.Server{
