@@ -65,7 +65,7 @@ func UploadForm(c *gin.Context) {
 	}
 	// 尾巴上补充上/
 	if len(parentDir) > 1 && parentDir[len(parentDir)-1] != '/' {
-		rparentDir += "/"
+		parentDir += "/"
 	}
 
 	header, err := c.FormFile(uploadFileKey)

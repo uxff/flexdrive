@@ -129,6 +129,7 @@ func UserFileList(c *gin.Context) {
 	})
 }
 
+// 展示页面目录层级的一个等级结构
 type DirLi struct {
 	Dir    string
 	Parent string
