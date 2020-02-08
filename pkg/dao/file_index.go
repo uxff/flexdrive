@@ -9,7 +9,7 @@ import (
 type FileIndex struct {
 	Id         int       `xorm:"not null pk autoincr comment('文件索引id') INT(10)"`
 	FileName   string    `xorm:"not null default '' comment('文件名 无用') VARCHAR(64)"`
-	FileHash   string    `xorm:"not null default '' comment('文件内容哈希') VARCHAR(40)"`
+	FileHash   string    `xorm:"not null default '' comment('文件内容哈希 唯一') VARCHAR(40)"` // 唯一
 	NodeId     int       `xorm:"not null default 0 comment('所在节点名 第一副本所在节点') INT(11)"`
 	NodeId2    int       `xorm:"not null default 0 comment('所在节点名 第二副本所在节点') INT(11)"`
 	NodeId3    int       `xorm:"not null default 0 comment('所在节点名 第三副本所在节点') INT(11)"`
@@ -41,6 +41,18 @@ func (t *FileIndex) UpdateById(cols []string) error {
 func GetFileIndexById(id int) (*FileIndex, error) {
 	e := &FileIndex{}
 	exist, err := base.GetByCol("id", id, e)
+	if err != nil {
+		return nil, err
+	}
+	if !exist {
+		return nil, nil
+	}
+	return e, err
+}
+
+func GetFileIndexByFileHash(fileHash string) (*FileIndex, error) {
+	e := &FileIndex{}
+	exist, err := base.GetByCol("fileHash", fileHash, e)
 	if err != nil {
 		return nil, err
 	}
