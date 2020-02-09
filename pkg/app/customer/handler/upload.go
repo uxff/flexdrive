@@ -175,6 +175,8 @@ func UploadForm(c *gin.Context) {
 		return
 	}
 
+	log.Trace(requestId).Debugf("upload success: %+v", *userFile)
+
 	// 同步到其他节点上
 
 	c.Redirect(http.StatusMovedPermanently, RouteUserFileList)

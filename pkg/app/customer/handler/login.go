@@ -129,14 +129,14 @@ func AcceptLogin(c *gin.Context, userEnt *dao.User) {
 		log.Errorf("gen gpatoken failed:%v", err)
 		return
 	}
-	c.SetCookie(CookieKeyAuth, tokenStr, 3600*24*7, "", "", false, false)
+	c.SetCookie(CookieKeyAuth, tokenStr, 3600*24*7, "", "", http.SameSiteDefaultMode, false, false)
 
 	// record login
 	//go managermodel.RecordLoginStatus(userEnt)
 }
 
 func ClearLogin(c *gin.Context) {
-	c.SetCookie(CookieKeyAuth, "", -1, "", "", false, false)
+	c.SetCookie(CookieKeyAuth, "", -1, "", "", http.SameSiteDefaultMode, false, false)
 }
 
 func ChangePwd(c *gin.Context) {

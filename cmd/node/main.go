@@ -23,13 +23,15 @@ import (
 )
 
 var (
-	version       = "0.1"
-	showVersion   bool
-	logLevel      = -1
+	version     = "0.1"
+	showVersion bool
+	logLevel    = -1
+	// default values, you can set these with env
 	serveCustomer = "127.0.0.1:10012"
 	serveAdmin    = "127.0.0.1:10011"
 	dataDsn       = "mysql://user:pass@tcp(127.0.0.1:3306)/flexdrive?charset=utf8mb4&parseTime=True&loc=Local"
 	cacheDsn      = ""
+	storageDir    = "/tmp/flexdrive/"
 )
 
 func main() {
