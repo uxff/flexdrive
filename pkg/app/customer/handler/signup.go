@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/uxff/flexdrive/pkg/dao"
@@ -88,14 +89,16 @@ func SignupForm(c *gin.Context) {
 	initialLevelEnt, err := dao.GetDefaultUserLevel()
 	if err != nil {
 		log.Errorf("get default userlevel failed:%v", err)
-		// StdErrMsgResponse(c, ErrInternal, "没有默认等级")
-		// return
+		StdErrMsgResponse(c, ErrInternal, "没有默认等级，请联系管理员创建会员等级")
+		return
 	}
 
 	// 初始等级及空间
 	userEnt.LevelId = initialLevelEnt.Id
 	userEnt.QuotaSpace = initialLevelEnt.QuotaSpace
 	userEnt.Status = base.StatusNormal
+	userEnt.LastLoginAt = time.Now()
+	userEnt.LastLoginIp = ""
 
 	_, err = base.Insert(userEnt)
 	if err != nil {
