@@ -12,6 +12,8 @@ import (
 	"os"
 	"sync"
 
+	"github.com/uxff/flexdrive/pkg/app/nodestorage/model/storagemodel"
+
 	"github.com/uxff/flexdrive/pkg/common"
 
 	adminhandler "github.com/uxff/flexdrive/pkg/app/admin/handler"
@@ -73,7 +75,7 @@ func main() {
 
 	err = envinit.InitDb(common.DBMysqlDrive, dataDsn)
 	if err != nil {
-		log.Fatalf("cannot init mysql, err:%s", err)
+		log.Fatalf("cannot init db, err:%s", err)
 	}
 
 	log.Infof("db %s init ok", dataDsn)
@@ -98,6 +100,12 @@ func Serve(envMap map[string]string) error {
 		wg.Add(1)
 		defer wg.Done()
 		errCh <- customerhandler.StartHttpServer(serveCustomer)
+	}()
+
+	go func() {
+		wg.Add(1)
+		defer wg.Done()
+		storagemodel.StartNode("me", storageDir)
 	}()
 
 	select {

@@ -119,6 +119,11 @@ func UploadForm(c *gin.Context) {
 		headerFileHandle.Seek(0, io.SeekStart)
 		log.Trace(requestId).Warnf("filehash(%s) not exist, try build new", fileHash)
 		fileIndex, err = curNode.SaveFileHandler(headerFileHandle, fileHash, header.Filename, header.Size)
+		if err != nil {
+			log.Trace(requestId).Errorf("save file(%s) to node(%+v) error:%v", fileHash, curNode.NodeEnt, err)
+			StdErrResponse(c, ErrInternal)
+			return
+		}
 	}
 
 	//os.MkdirAll("/tmp/flexdirve/", os.ModePerm)

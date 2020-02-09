@@ -107,14 +107,14 @@
                     <td>{{.Created }}</td>
                     <td>{{.Size }}</td>
                     <td>
+                        <a href="/">移动到</a>
+                        <a href="/">复制到</a>
+                        <a href="/">重命名</a>
                         {{if eq .Status 1}}
                         <a href="/my/file/enable/{{.Id}}/9">删除</a>
                         {{end}}
                         <a href="/">分享</a>
                         <a href="/">下载</a>
-                        <a href="/">移动到</a>
-                        <a href="/">复制到</a>
-                        <a href="/">重命名</a>
                     </td>
                 </tr>
                 {{else}}

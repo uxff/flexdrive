@@ -204,7 +204,7 @@ func UserFileNewFolder(c *gin.Context) {
 
 	// 父目录是否存在
 	parentDirEnt, _ := dao.GetUserFileByPath(userInfo.UserId, req.ParentDir)
-	if parentDirEnt == nil {
+	if req.ParentDir != "/" && parentDirEnt == nil {
 		StdErrMsgResponse(c, ErrInvalidParam, "选择的父目录("+req.ParentDir+")不存在")
 		return
 		//dao.MakeUserFilePath(userInfo.UserId, req.ParentDir)

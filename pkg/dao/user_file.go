@@ -72,9 +72,15 @@ func GetUserFileById(id int) (*UserFile, error) {
 // 如果filePath=/abc/ 则查看/abc这个目录是否存在
 // 如果filePath=/abc/efg 则查看/abc/下efg这个目录或者文件是否存在
 func GetUserFileByPath(userId int, filePath string) (*UserFile, error) {
+	if filePath == "/" {
+		return &UserFile{
+			FilePath: "/",
+		}, nil
+	}
 
 	// 在本系统中filePath要以/结尾
 	parentPath := path.Dir(strings.TrimRight(filePath, "/"))
+
 	if len(parentPath) > 1 {
 		parentPath += "/"
 	}

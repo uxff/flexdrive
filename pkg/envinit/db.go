@@ -11,7 +11,7 @@ import (
 	"github.com/uxff/flexdrive/pkg/log"
 
 	_ "github.com/go-sql-driver/mysql"
-	//_ "github.com/mattn/go-sqlite3"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 // Dbs 分库分表数据库名称映射
@@ -49,7 +49,7 @@ func InitDb(namespace, dsn string) error {
 
 	// eng, err := ConnectMysql(dsnPath)
 	if err != nil {
-		log.Errorf("connect mysql %s error:%v", dsn, err)
+		log.Errorf("connect db %s error:%v", dsn, err)
 		return err
 	}
 
