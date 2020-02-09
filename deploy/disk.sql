@@ -1,8 +1,8 @@
 
 
 CREATE TABLE `user` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '用户id',
-  `name` varchar(32) NOT NULL DEFAULT '' COMMENT '用户姓名',
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '会员id',
+  `name` varchar(32) NOT NULL DEFAULT '' COMMENT '会员姓名',
   `email` varchar(32) NOT NULL COMMENT '邮箱',
   `phone` varchar(12) NOT NULL DEFAULT '' COMMENT '手机号 ',
   `pwd` varchar(32) NOT NULL DEFAULT '' COMMENT '密码',
@@ -23,9 +23,9 @@ CREATE TABLE `user` (
 CREATE TABLE `user_level` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '会员级别id',
   `name` varchar(32) NOT NULL COMMENT '会员级别名称',
-  `quotaSpace` bigint(20) NOT NULL DEFAULT '0' COMMENT '会员级别的用户空间 单位KB',
+  `quotaSpace` bigint(20) NOT NULL DEFAULT '0' COMMENT '会员级别的会员空间 单位KB',
   `price` int(11) NOT NULL DEFAULT '0' COMMENT '会员级别的价格 单位分',
-  `isDefault` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否新用户默认等级 1=是',
+  `isDefault` tinyint(4) NOT NULL DEFAULT '0' COMMENT '是否新会员默认等级 1=是',
   `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '创建时间',
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
   `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态 1=启用 99=删除',
@@ -73,11 +73,11 @@ CREATE TABLE `oper_log` (
 
 CREATE TABLE `order` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '订单id',
-  `userId` int(11) NOT NULL COMMENT '用户id',
-  `originLevelId` int(11) NOT NULL COMMENT '用户原等级id',
-  `awardLevelId` int(11) NOT NULL DEFAULT '0' COMMENT '用户购买的等级id',
+  `userId` int(11) NOT NULL COMMENT '会员id',
+  `originLevelId` int(11) NOT NULL COMMENT '会员原等级id',
+  `awardLevelId` int(11) NOT NULL DEFAULT '0' COMMENT '会员购买的等级id',
   `awardSpace` bigint(11) NOT NULL DEFAULT '0' COMMENT '本次购买的容量空间 单位KB',
-  `phone` varchar(12) NOT NULL DEFAULT '' COMMENT '用户手机号',
+  `phone` varchar(12) NOT NULL DEFAULT '' COMMENT '会员手机号',
   `levelName` varchar(12) NOT NULL DEFAULT '' COMMENT '等级名',
   `totalAmount` int(11) NOT NULL DEFAULT '0' COMMENT '订单价格 单位分',
   `payAmount` int(11) NOT NULL DEFAULT '0' COMMENT '实付款金额 单位分',
@@ -126,8 +126,8 @@ CREATE TABLE `file_index` (
 -- todo 分库分表 by uid
 CREATE TABLE `user_file` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '文件id',
-  `fileIndexId` int(10) NOT NULL DEFAULT '' COMMENT '文件索引id',
-  `userId` int(11) NOT NULL DEFAULT '' COMMENT '用户id',
+  `fileIndexId` int(10) NOT NULL DEFAULT '0' COMMENT '文件索引id',
+  `userId` int(11) NOT NULL DEFAULT '0' COMMENT '会员id',
   `filePath` varchar(256) NOT NULL DEFAULT '' COMMENT '文件父路径 /结尾',
   `fileName` varchar(256) NOT NULL DEFAULT '' COMMENT '文件名',
   `pathHash` varchar(40) NOT NULL DEFAULT '' COMMENT '路径哈希，hash(filePath)',
@@ -147,8 +147,8 @@ CREATE TABLE `user_file` (
 CREATE TABLE `share` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '文件id',
   `fileHash` varchar(40) NOT NULL DEFAULT '' COMMENT '文件内容哈希',
-  `userId` int(11) NOT NULL DEFAULT '0' COMMENT '分享者用户id',
-  `userFileId` int(11) NOT NULL DEFAULT '0' COMMENT '分享者用户文件索引id',
+  `userId` int(11) NOT NULL DEFAULT '0' COMMENT '分享者会员id',
+  `userFileId` int(11) NOT NULL DEFAULT '0' COMMENT '分享者会员文件索引id',
   `nodeId` int(11) NOT NULL DEFAULT '0' COMMENT '所在节点名',
   `fileName` varchar(64) NOT NULL DEFAULT '' COMMENT '文件名',
   `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '创建时间',
