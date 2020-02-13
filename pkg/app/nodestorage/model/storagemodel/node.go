@@ -116,6 +116,21 @@ func GetCurrentNode() *NodeStorage {
 }
 
 func (n *NodeStorage) FileHashToStoragePath(fileHash string) string {
-	return node.StorageDir + fileHash
+	//return node.StorageDir + fileHash
+
+	splitDeep := 2
+	curDir := node.StorageDir
+
+	for deepIdx := 0; deepIdx < splitDeep; deepIdx++ {
+
+		prefix1 := fileHash[deepIdx : deepIdx+1]
+		//prefix2 := fileHash[1:2]
+		curDir = curDir + prefix1 + "/"
+		if !DirExist(curDir) {
+			os.MkdirAll(curDir, os.ModeDir)
+		}
+	}
+
+	return curDir + fileHash
 
 }
