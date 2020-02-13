@@ -28,7 +28,7 @@ func init() {
 }
 
 //
-func StartNode(name string, storageDir string) {
+func StartNode(name string, storageDir string) error {
 	if storageDir == "" {
 		storageDir = DefaultStorageDir
 	}
@@ -46,8 +46,13 @@ func StartNode(name string, storageDir string) {
 	// 准备makedir
 
 	if !DirExist(node.StorageDir) {
-		os.MkdirAll(node.StorageDir, os.ModeDir)
+		err := os.MkdirAll(node.StorageDir, os.ModeDir)
+		if err != nil {
+			return err
+		}
 	}
+
+	return nil
 }
 
 // func Register() {
