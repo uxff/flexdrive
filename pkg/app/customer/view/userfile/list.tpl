@@ -133,7 +133,7 @@
 
 </div>
 
-<!-- 模态框（Modal） -->
+<!-- 模态框（Modal） newFolder -->
 <div class="modal fade" id="newFolderModal" tabindex="-1" role="dialog" aria-labelledby="newFolderLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -175,7 +175,7 @@
     </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
     
-<!-- 模态框（Modal） -->
+<!-- 模态框（Modal） upload -->
 <div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -199,7 +199,7 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-4 text-right">
                         请选择文件：
                     </div>
                     <div class="col-md-6">

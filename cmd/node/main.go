@@ -1,8 +1,8 @@
 /**
 	分布式(distributed)
     运行方式：
- 	APPENV=beta SERVEADMIN=127.0.0.1:10011 SERVECUSTOMER=127.0.0.1:10012 DATADSN='mysql://yourusername:yourpwd@tcp(yourmysqlhost)/yourdbname?charset=utf8mb4&parseTime=True&loc=Local' ./main
- 	APPENV=beta SERVEADMIN=127.0.0.1:10011 SERVECUSTOMER=127.0.0.1:10012 DATADSN='sqlite3://./flexdrive.db' ./main
+ 	APPENV=beta SERVEADMIN=127.0.0.1:10011 SERVECUSTOMER=127.0.0.1:10012 DATADSN='mysql://yourusername:yourpwd@tcp(yourmysqlhost)/yourdbname?charset=utf8mb4&parseTime=True&loc=Local'  STORAGEDIR=./data/ ./main
+ 	APPENV=beta SERVEADMIN=127.0.0.1:10011 SERVECUSTOMER=127.0.0.1:10012 DATADSN='sqlite3://./flexdrive.db'  STORAGEDIR=./data/ ./main
 */
 package main
 
@@ -71,6 +71,11 @@ func main() {
 	if s := os.Getenv("SERVECUSTOMER"); s != "" {
 		log.Debugf("the servercustomer from env: %s", s)
 		serveCustomer = s
+	}
+
+	if s := os.Getenv("STORAGEDIR"); s != "" {
+		log.Debugf("the storageDir from env: %s", s)
+		storageDir = s
 	}
 
 	err = envinit.InitDb(common.DBMysqlDrive, dataDsn)

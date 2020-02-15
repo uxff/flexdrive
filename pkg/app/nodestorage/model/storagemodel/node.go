@@ -4,6 +4,8 @@ import (
 	"io"
 	"os"
 
+	"github.com/uxff/flexdrive/pkg/log"
+
 	"github.com/uxff/flexdrive/pkg/dao"
 	"github.com/uxff/flexdrive/pkg/dao/base"
 )
@@ -52,6 +54,8 @@ func StartNode(name string, storageDir string) error {
 		}
 	}
 
+	log.Debugf("start node, storageDir=%s", node.StorageDir)
+
 	return nil
 }
 
@@ -83,18 +87,23 @@ func (n *NodeStorage) SaveFile(filepath string, fileHash string) (*dao.FileIndex
 // fileName 可空
 func (n *NodeStorage) SaveFileHandler(inputFileHandler io.Reader, fileHash string, fileName string, size int64) (*dao.FileIndex, error) {
 
-	fileInStorage := "/tmp/flexdrive/" + fileHash
+	fileInStorage := n.StorageDir + fileHash
 
 	// 将inputFileHandler 的保存在节点存储系统中
-	fileInStorageHandle, err := os.Open(fileInStorage)
+	fileInStorageHandle, err := os.OpenFile(fileInStorage, os.O_CREATE|os.O_WRONLY, os.ModePerm)
 	if err != nil {
 		// 不能打开临时分拣
+		log.Errorf("open %s failed:%v", fileInStorage, err)
 		return nil, err
 	}
 
 	defer fileInStorageHandle.Close()
 
 	_, err = io.Copy(fileInStorageHandle, inputFileHandler)
+	if err != nil {
+		log.Errorf("file copy from uploaded tmp handle to %s failed:%v", fileInStorage, err)
+		return nil, err
+	}
 
 	fileIndex := &dao.FileIndex{
 		FileName:  fileName,
@@ -108,6 +117,7 @@ func (n *NodeStorage) SaveFileHandler(inputFileHandler io.Reader, fileHash strin
 
 	_, err = base.Insert(fileIndex)
 	if err != nil {
+		log.Errorf("insert %s failed:%v", fileInStorage, err)
 		return nil, err
 	}
 
