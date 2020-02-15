@@ -87,7 +87,7 @@ func (n *NodeStorage) SaveFile(filepath string, fileHash string) (*dao.FileIndex
 // fileName 可空
 func (n *NodeStorage) SaveFileHandler(inputFileHandler io.Reader, fileHash string, fileName string, size int64) (*dao.FileIndex, error) {
 
-	fileInStorage := n.StorageDir + fileHash
+	fileInStorage := n.FileHashToStoragePath(fileHash) //n.StorageDir + fileHash
 
 	// 将inputFileHandler 的保存在节点存储系统中
 	fileInStorageHandle, err := os.OpenFile(fileInStorage, os.O_CREATE|os.O_WRONLY, os.ModePerm)
@@ -121,13 +121,14 @@ func (n *NodeStorage) SaveFileHandler(inputFileHandler io.Reader, fileHash strin
 		return nil, err
 	}
 
+	log.Infof("a file stored, %s", fileInStorage)
 	// todo distribute to other node
 
 	return fileIndex, nil
 }
 
 func GetCurrentNode() *NodeStorage {
-	return &NodeStorage{}
+	return node
 }
 
 func (n *NodeStorage) FileHashToStoragePath(fileHash string) string {
