@@ -7,7 +7,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/uxff/flexdrive/pkg/common"
 	"github.com/uxff/flexdrive/pkg/dao/base"
+	"github.com/uxff/flexdrive/pkg/envinit"
 	"github.com/uxff/flexdrive/pkg/log"
 )
 
@@ -142,4 +144,21 @@ func (t *UserFile) AfterSelect() {
 	}
 
 	log.Debugf("load userFile.User ok")
+}
+
+// 统计用户的使用空间
+func (t *UserFile) SumSpace() int64 {
+	dbname := common.DBMysqlDrive // t.DbNamespace()
+	// if entityOfDb, ok := t.(base.DbNamespace); ok {
+	// 	dbname = entityOfDb.DbNamespace()
+	// }
+
+	// total, err := engine.Where("id >?", 1).SumInt(ss, "money")
+	total, err := envinit.Dbs[dbname].Where("userId=? and status=?", t.UserId, t.Status).SumInt(&UserFile{}, "space")
+
+	if err != nil {
+		log.Errorf("sum user(%d).usedSpace failed:%v", t.UserId, err)
+		return 0
+	}
+	return total
 }

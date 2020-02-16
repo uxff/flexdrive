@@ -22,17 +22,20 @@
 
     <!--当前排版方式1-->
     <div class="row" style="margin-bottom: 4px;">
-        <div class="col-md-3" style="padding: 5px;">
-            我的空间：已用{{kBforHuman .LoginInfo.UserEnt.UsedSpace}} / 总共{{kBforHuman .LoginInfo.UserEnt.QuotaSpace}}
-        </div>
-        <div class="col-md-3">
-            <div class="progress " style="width:100%; margin: 5px; float: left;">
+        <div class="col-md-5" style="padding: 5px;">
+            当前等级：黄金会员 &nbsp;&nbsp;
+            当前空间：已用 {{space4Human .LoginInfo.UserEnt.UsedSpace}} / 总共 {{space4Human .LoginInfo.UserEnt.QuotaSpace}}
+            &nbsp;&nbsp;
+            <a href="/" style="text-align: right;" >扩容</a>
+            <div class="progress " style="width:100%; float: left; height: 4px; margin-bottom: 10px;">
                 <div class="progress-bar progress-bar-success" role="progressbar"
                         aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"
-                        style="width: 0%;">
-                    <span class="sr-only">0% 已用</span>
+                        style="width: {{spaceRate .LoginInfo.UserEnt.UsedSpace .LoginInfo.UserEnt.QuotaSpace}}%;">
+                    <span class="sr-only">{{spaceRate .LoginInfo.UserEnt.UsedSpace .LoginInfo.UserEnt.QuotaSpace}}% 已用</span>
                 </div>
             </div>
+        </div>
+        <div class="col-md-1">
         </div>
         <div class="col-md-3">
             <form class="form-horizontal" method="GET" action="/my/file/list">
@@ -195,7 +198,7 @@
                     </div>
                     <div class="col-md-6">
                         全部文件<span id="dirPathTextInUploadModal"></span>
-                        <input type="text" name="dirName" id="dirPathInUploadModal" readonly value="{{.reqParam.Dir}}">
+                        <input type="hidden" name="parentDir" id="dirPathInUploadModal" readonly value="{{.reqParam.Dir}}">
                     </div>
                 </div>
                 <div class="row">
@@ -229,6 +232,7 @@ $(function () {
     $('#newFolderModal').on('show.bs.modal', function () {
         //alert('嘿，我听说您喜欢模态框xxxxxxxxx...');})
         $('#dirPathTextInNewFolderModal').html($('#dirPath').val());
+        $('#nameInNewFolderModal').focus();// 未生效
     });
     $('#newFolderSubmit').on('click', function(){
         $('#newFolderForm').submit();

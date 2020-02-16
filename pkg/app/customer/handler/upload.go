@@ -118,6 +118,7 @@ func UploadForm(c *gin.Context) {
 	if fileIndex == nil {
 		headerFileHandle.Seek(0, io.SeekStart)
 		log.Trace(requestId).Warnf("filehash(%s) not exist, try build new", fileHash)
+		// 保存进集群节点
 		fileIndex, err = curNode.SaveFileHandler(headerFileHandle, fileHash, header.Filename, header.Size)
 		if err != nil {
 			log.Trace(requestId).Errorf("save file(%s) to node(%+v) error:%v", fileHash, curNode.NodeEnt, err)
@@ -169,7 +170,7 @@ func UploadForm(c *gin.Context) {
 		FileHash:    fileIndex.FileHash,
 		IsDir:       0,
 		Size:        header.Size,
-		Space:       header.Size / 1000,
+		Space:       header.Size/1000 + 1,
 		Status:      1,
 	}
 
@@ -195,6 +196,7 @@ func UploadForm(c *gin.Context) {
 		return
 	}
 
+	// 保存在用户目录
 	_, err = base.Insert(userFile)
 	if err != nil {
 		log.Trace(requestId).Errorf("insert userFile error:%v", err)
@@ -204,7 +206,17 @@ func UploadForm(c *gin.Context) {
 
 	log.Trace(requestId).Debugf("upload success: %+v", *userFile)
 
+	// 更新用户自己的空间使用记录
+	go func(userId int) {
+		usedSpace := userFile.SumSpace()
+		userInfo.UserEnt.UsedSpace = usedSpace
+		err := userInfo.UserEnt.UpdateById([]string{"usedSpace"})
+		if err != nil {
+			log.Trace(requestId).Debugf("update user(%d) usedSpace failed:%v", userInfo.UserEnt.Id, err)
+		}
+	}(userInfo.UserId)
+
 	// 同步到其他节点上
 
-	c.Redirect(http.StatusMovedPermanently, RouteUserFileList)
+	c.Redirect(http.StatusMovedPermanently, RouteUserFileList+"?dir="+parentDir)
 }

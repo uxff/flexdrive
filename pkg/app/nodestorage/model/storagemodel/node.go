@@ -48,7 +48,7 @@ func StartNode(name string, storageDir string) error {
 	// 准备makedir
 
 	if !DirExist(node.StorageDir) {
-		err := os.MkdirAll(node.StorageDir, os.ModeDir)
+		err := os.MkdirAll(node.StorageDir, os.ModeDir|os.ModePerm)
 		if err != nil {
 			return err
 		}
@@ -143,7 +143,7 @@ func (n *NodeStorage) FileHashToStoragePath(fileHash string) string {
 		//prefix2 := fileHash[1:2]
 		curDir = curDir + prefix1 + "/"
 		if !DirExist(curDir) {
-			os.MkdirAll(curDir, os.ModeDir)
+			os.MkdirAll(curDir, os.ModeDir|os.ModePerm)
 		}
 	}
 
