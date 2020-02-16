@@ -27,7 +27,7 @@
             当前空间：已用 {{space4Human .LoginInfo.UserEnt.UsedSpace}} / 总共 {{space4Human .LoginInfo.UserEnt.QuotaSpace}}
             &nbsp;&nbsp;
             <a href="/" style="text-align: right;" >扩容</a>
-            <div class="progress " style="width:100%; float: left; height: 4px; margin-bottom: 10px;">
+            <div class="progress " style="width:100%; float: left; height: 5px; margin-bottom: 10px; background-color: #dff0d8;">
                 <div class="progress-bar progress-bar-success" role="progressbar"
                         aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"
                         style="width: {{spaceRate .LoginInfo.UserEnt.UsedSpace .LoginInfo.UserEnt.QuotaSpace}}%;">
@@ -151,7 +151,7 @@
             <form id="newFolderForm" accept-charset="utf-8" role="form" class="form-horizontal" method="POST" action='/my/file/newfolder'>
 
             <div class="modal-body">
-                <div class="row">
+                <div class="row" style="margin: 10px;">
                     <div class="col-md-4 text-right">
                         当前路径：
                     </div>
@@ -160,7 +160,7 @@
                         <input type="hidden" name="parentDir" id="dirPathInNewFolderModal" readonly value="{{.reqParam.Dir}}">
                     </div>
                 </div>
-                <div class="row">
+                <div class="row" style="margin: 10px;">
                     <div class="col-md-4 text-right">
                         请输入文件夹名称：
                     </div>
@@ -192,7 +192,7 @@
             </div>
             <form id="uploadForm" accept-charset="utf-8" role="form" class="form-horizontal" method="POST" action='/my/file/upload' enctype="multipart/form-data">
             <div class="modal-body">
-                <div class="row">
+                <div class="row" style="margin: 10px;">
                     <div class="col-md-4 text-right">
                         当前路径：
                     </div>
@@ -201,7 +201,7 @@
                         <input type="hidden" name="parentDir" id="dirPathInUploadModal" readonly value="{{.reqParam.Dir}}">
                     </div>
                 </div>
-                <div class="row">
+                <div class="row" style="margin: 10px;">
                     <div class="col-md-4 text-right">
                         请选择文件：
                     </div>
