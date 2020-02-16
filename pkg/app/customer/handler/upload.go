@@ -173,6 +173,28 @@ func UploadForm(c *gin.Context) {
 		Status:      1,
 	}
 
+	userFile.MakePathHash()
+
+	// todo 如果用户目录下已经有该文件名 则不上传
+	existUserFileCount, err := base.CountByCondition(&dao.UserFile{}, map[string]interface{}{
+		"userId=?":   userInfo.UserId,
+		"pathHash=?": userFile.PathHash,
+		"fileName=?": userFile.FileName,
+		"isDir=?":    userFile.IsDir,
+		"status":     base.StatusNormal,
+	})
+
+	if err != nil {
+		log.Trace(requestId).Errorf("count user(%d) %s%s error:%v", userInfo.UserId, userFile.FilePath, userFile.FileName, err)
+		StdErrResponse(c, ErrInternal)
+		return
+	}
+
+	if existUserFileCount > 0 {
+		StdErrMsgResponse(c, ErrInternal, "同名文件已存在，不能覆盖上传:"+userFile.FilePath+userFile.FileName)
+		return
+	}
+
 	_, err = base.Insert(userFile)
 	if err != nil {
 		log.Trace(requestId).Errorf("insert userFile error:%v", err)
