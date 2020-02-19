@@ -64,3 +64,15 @@ func (t *Share) AfterSelect() {
 
 	log.Debugf("load share.User, share.UserFile ok")
 }
+
+func GetShareByUserFile(userFileId int) (*Share, error) {
+	e := &Share{}
+	exist, err := base.GetByCol("userFileId", userFileId, e)
+	if err != nil {
+		return nil, err
+	}
+	if !exist {
+		return nil, nil
+	}
+	return e, nil
+}

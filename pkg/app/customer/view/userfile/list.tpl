@@ -215,6 +215,45 @@
         </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
+
+<!-- 模态框（Modal） share -->
+<div class="modal fade" id="shareModal" tabindex="-1" role="dialog" aria-labelledby="shareLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title" id="shareLabel">
+                    分享
+                </h4>
+            </div>
+            <form id="uploadForm" accept-charset="utf-8" role="form" class="form-horizontal" method="POST" action='/my/file/upload' enctype="multipart/form-data">
+            <div class="modal-body">
+                <div class="row" style="margin: 10px;">
+                    <div class="col-md-4 text-right">
+                        当前文件：
+                    </div>
+                    <div class="col-md-6">
+                        全部文件<span id="dirPathTextInShareModal"></span>
+                        <input type="hidden" name="parentDir" id="dirPathInShareModal" readonly value="{{.reqParam.Dir}}">
+                    </div>
+                </div>
+                <div class="row" style="margin: 10px;">
+                    <div class="col-md-4 text-right">
+                        选择有效期：
+                    </div>
+                    <div class="col-md-6">
+                        <input type="radio" name="file" id="fileInUploadModal">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="shareSubmit">提交</button>
+            </div>
+            </form>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
     
 
 <script type="text/javascript">
@@ -242,6 +281,13 @@ $(function () {
     $('#uploadSubmit').on('click', function(){
         $('#uploadForm').submit();
         $('#uploadModal').modal('hide');
+    });
+    $('#shareModal').on('show.bs.modal', function () {
+        $('#dirPathTextInShareModal').html($('#dirPath').val());
+    });
+    $('#shareSubmit').on('click', function(){
+        $('#shareForm').submit();
+        $('#shareModal').modal('hide');
     });
 });
 

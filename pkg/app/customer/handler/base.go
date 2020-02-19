@@ -43,7 +43,7 @@ type CuaToken struct {
 }
 
 func (t *CuaToken) ToString() string {
-	return fmt.Sprintf("%d.%d.%s", t.UserId, t.LoginAt, t.Sign)
+	return fmt.Sprintf("%d.%d.%s", t.LoginAt/79, t.UserId, t.Sign)
 }
 
 func (t *CuaToken) FromString(str string) {
@@ -52,15 +52,16 @@ func (t *CuaToken) FromString(str string) {
 	if len(cols) != 3 {
 		return
 	}
-	t.UserId, _ = strconv.Atoi(cols[0])
-	t.LoginAt, _ = strconv.Atoi(cols[1])
+	t.UserId, _ = strconv.Atoi(cols[1])
+	t.LoginAt, _ = strconv.Atoi(cols[0])
+	t.LoginAt *= 79
 	t.Sign = cols[2]
 }
 
 func (t *CuaToken) MakeSign() string {
 
 	enc := md5.New()
-	enc.Write([]byte(fmt.Sprintf("%d.%d", t.UserId, t.LoginAt) + CookieKeySalt))
+	enc.Write([]byte(fmt.Sprintf("%d.%d", t.UserId, t.LoginAt/79) + CookieKeySalt))
 
 	return hex.EncodeToString(enc.Sum(nil))
 }

@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/uxff/flexdrive/pkg/dao"
@@ -88,6 +89,73 @@ func ShareList(c *gin.Context) {
 		"reqParam":  req,
 		"paginator": paginator.NewPaginator(c.Request, 10, int64(total)),
 	})
+}
+
+type ShareAddRequest struct {
+	UserFileId int `form:"userFileId"` // 文件
+	ExpiredSec int `form:"expiredSec"` // 有效期秒数
+}
+
+func ShareAdd(c *gin.Context) {
+	// 已经分享的不做分享
+	requestId := c.GetString(CtxKeyRequestId)
+
+	// 请求参数校验
+	req := &ShareAddRequest{}
+	err := c.ShouldBindQuery(req)
+	if err != nil {
+		StdErrResponse(c, ErrInvalidParam)
+		return
+	}
+
+	existShare, err := dao.GetShareByUserFile(req.UserFileId)
+	if err != nil {
+		log.Trace(requestId).Errorf("db error:%v", err)
+		StdErrMsgResponse(c, ErrInternal, "获取分享文件失败")
+		return
+	}
+
+	loginInfo := getLoginInfo(c)
+
+	userFile, err := dao.GetUserFileById(req.UserFileId)
+	if err != nil {
+		log.Trace(requestId).Errorf("db error:%v", err)
+		StdErrMsgResponse(c, ErrInternal, "要分享的文件不存在")
+		return
+	}
+
+	if userFile.UserId != loginInfo.UserId {
+		StdErrMsgResponse(c, ErrInternal, "只能分享自己的文件")
+		return
+	}
+
+	if existShare != nil {
+		//if existShare.Expired =
+		StdResponse(c, ErrSuccess, existShare)
+		return
+	} else {
+		shareItem := &dao.Share{
+			UserId:     loginInfo.UserId,
+			UserFileId: req.UserFileId,
+			FileName:   userFile.FileName,
+			FileHash:   userFile.FileHash,
+			NodeId:     userFile.NodeId,
+			//FilePath:   userFile.FilePath,
+			Status: base.StatusNormal,
+		}
+
+		if req.ExpiredSec > 0 {
+			shareItem.Expired = time.Now().Add(time.Second * time.Duration(req.ExpiredSec))
+		}
+
+		_, err = base.Insert(shareItem)
+		if err != nil {
+			log.Trace(requestId).Errorf("db insert error:%v", err)
+			StdErrMsgResponse(c, ErrInternal, "创建分享失败")
+			return
+		}
+	}
+
 }
 
 func ShareEnable(c *gin.Context) {
