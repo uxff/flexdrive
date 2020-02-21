@@ -113,8 +113,10 @@
                         {{if eq .Status 1}}
                         <a href="/my/file/enable/{{.Id}}/9">删除</a>
                         {{end}}
-                        <a href="/">分享</a>
+                        {{if eq .IsDir 0}}
+                        <a href="javascript:void(0);" onclick="checkShare({{.Id}},'{{.FileName}}');" data-id="{{.Id}}" data-toggle="modal" data-target="#shareModal">分享</a>
                         <a href="/">下载</a>
+                        {{end}}
                     </td>
                 </tr>
                 {{else}}
@@ -229,20 +231,35 @@
             <form id="uploadForm" accept-charset="utf-8" role="form" class="form-horizontal" method="POST" action='/my/file/upload' enctype="multipart/form-data">
             <div class="modal-body">
                 <div class="row" style="margin: 10px;">
-                    <div class="col-md-4 text-right">
+                    <div class="col-md-3 text-right">
                         当前文件：
                     </div>
-                    <div class="col-md-6">
-                        全部文件<span id="dirPathTextInShareModal"></span>
+                    <div class="col-md-7">
+                        全部文件<span id="dirPathTextInShareModal"></span><span id="fileNameTextInShareModal"></span>
                         <input type="hidden" name="parentDir" id="dirPathInShareModal" readonly value="{{.reqParam.Dir}}">
+                        <input type="hidden" name="fileName" id="fileNameInShareModal" readonly value="">
+                        <input type="hidden" name="userFileId" id="userFileIdInShareModal" readonly value="">
                     </div>
                 </div>
                 <div class="row" style="margin: 10px;">
-                    <div class="col-md-4 text-right">
+                    <div class="col-md-3 text-right">
                         选择有效期：
                     </div>
-                    <div class="col-md-6">
-                        <input type="radio" name="file" id="fileInUploadModal">
+                    <div class="col-md-7">
+                        <input type="radio" name="expiredType" id="expiredTypeNone" checked value="0">不分享
+                        <input type="radio" name="expiredType" id="expiredTypePersist" value="1">永久有效
+                        <input type="radio" name="expiredType" id="expiredTypeRelative" value="2">相对有效
+                        <br>
+                        <input type="number" name="expiredHour" id="expiredHour" style="width:35px;" value="0">小时
+                        <input type="number" name="expiredMin" id="expiredMin" style="width:35px;" value="0">分钟
+                    </div>
+                </div>
+                <div class="row" style="margin: 10px;">
+                    <div class="col-md-2 text-right">
+                        分享地址：
+                    </div>
+                    <div class="col-md-8">
+                        <input class="form-control" type="text" id="shareAddr" readonly value="(尚未分享)">[<a href="javascript:;">复制</a>]
                     </div>
                 </div>
             </div>
@@ -284,12 +301,31 @@ $(function () {
     });
     $('#shareModal').on('show.bs.modal', function () {
         $('#dirPathTextInShareModal').html($('#dirPath').val());
+        var userFileId = $('#userFileIdInShareModal').html();//$(this).attr('data-id');
+        var fileName = $('#fileNameInShareModal').html();//$(this).attr('data-id');
+        
+        $.ajax({
+            url:"/my/share/check/"+userFileId,
+            success:function(data, textStatus) {
+                console.log(data);
+                if (data.result != undefined && data.result.Id != undefined) {
+                    console.log('the fileid=', data.result.Id);
+
+                }
+            }
+        })
     });
     $('#shareSubmit').on('click', function(){
         $('#shareForm').submit();
         $('#shareModal').modal('hide');
     });
+
 });
+    function checkShare(userFileId, fileName) {
+        $('#userFileIdInShareModal').html(userFileId);
+        $('#fileNameInShareModal').html(fileName);
+        $('#fileNameTextInShareModal').html(fileName);
+    }
 
 </script>
     

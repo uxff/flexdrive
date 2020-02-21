@@ -158,6 +158,43 @@ func ShareAdd(c *gin.Context) {
 
 }
 
+// 查看用户文件是否已经被分享
+func ShareCheck(c *gin.Context) {
+	// 已经分享的不做分享
+	requestId := c.GetString(CtxKeyRequestId)
+
+	loginInfo := getLoginInfo(c)
+
+	// 请求参数校验
+	userFileId, _ := strconv.ParseInt(c.Param("userFileId"), 10, 64)
+	if userFileId <= 0 {
+		StdErrResponse(c, ErrInvalidParam)
+		return
+	}
+
+	userFile, err := dao.GetUserFileById(int(userFileId))
+	if err != nil || userFile == nil {
+		log.Trace(requestId).Errorf("db error:%v", err)
+		StdErrMsgResponse(c, ErrInternal, "文件不存在或被删除")
+		return
+	}
+
+	if userFile.UserId != loginInfo.UserId {
+		StdErrMsgResponse(c, ErrInternal, "只能查看和分享自己的文件")
+		return
+	}
+
+	existShare, err := dao.GetShareByUserFile(int(userFileId))
+	if err != nil {
+		log.Trace(requestId).Errorf("db error:%v", err)
+		StdErrMsgResponse(c, ErrInternal, "查询分享失败")
+		return
+	}
+
+	StdResponse(c, ErrSuccess, existShare)
+	return
+}
+
 func ShareEnable(c *gin.Context) {
 	shareId, _ := strconv.ParseInt(c.Param("id"), 10, 64)
 	if shareId <= 0 {

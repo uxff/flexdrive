@@ -65,7 +65,7 @@
                     <td>{{.LevelName}}</td>
                     <td>{{.TotalCharge }}</td>
                     <td>{{.QuotaSpace }}</td>
-                    <td>{{.UserdSpace }}</td>
+                    <td>{{.UsedSpace }}</td>
                     <td>{{.LastLoginIp}}</td>
                     <td>{{mgrStatus .Status}}</td>
                     <td>
