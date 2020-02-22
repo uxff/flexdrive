@@ -246,20 +246,21 @@
                         选择有效期：
                     </div>
                     <div class="col-md-7">
-                        <input type="radio" name="expiredType" id="expiredTypeNone" checked value="0">不分享
-                        <input type="radio" name="expiredType" id="expiredTypePersist" value="1">永久有效
-                        <input type="radio" name="expiredType" id="expiredTypeRelative" value="2">相对有效
+                        <input class="expired-control" type="radio" name="expiredType" id="expiredTypeNone" checked value="0">不分享
+                        <input class="expired-control" type="radio" name="expiredType" id="expiredTypeRelative" value="2">分享
                         <br>
-                        <input type="number" name="expiredHour" id="expiredHour" style="width:35px;" value="0">小时
-                        <input type="number" name="expiredMin" id="expiredMin" style="width:35px;" value="0">分钟
+                        <input type="text" class="form-control" id="expiredText" name="expiredText" value="" placeholder="点击选择有效期">
                     </div>
                 </div>
                 <div class="row" style="margin: 10px;">
-                    <div class="col-md-2 text-right">
+                    <div class="col-md-3 text-right">
                         分享地址：
                     </div>
-                    <div class="col-md-8">
-                        <input class="form-control" type="text" id="shareAddr" readonly value="(尚未分享)">[<a href="javascript:;">复制</a>]
+                    <div class="col-md-7 input-group">
+                        <input class="form-control" type="text" id="shareAddr" readonly value="(尚未分享)">
+                        <span class="input-group-btn">
+                            <a class="btn btn-info btn-search" href="javascript:;">复制</a>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -274,10 +275,23 @@
     
 
 <script type="text/javascript">
-$("#txt_search_created_start").datetimepicker({
-    format: 'YYYY-MM-DD HH:mm'
-});
-$("#txt_search_created_end").datetimepicker({
+Date.prototype.Format = function (fmt) { //author: meizz
+  var o = {
+    "M+": this.getMonth() + 1, //月份
+    "d+": this.getDate(), //日
+    "h+": this.getHours(), //小时
+    "m+": this.getMinutes(), //分
+    "s+": this.getSeconds(), //秒
+    "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+    "S": this.getMilliseconds() //毫秒
+  };
+  if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+  for (var k in o)
+  if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+  return fmt;
+}
+
+$("#expiredText").datetimepicker({
     format: 'YYYY-MM-DD HH:mm'
 });
 
@@ -318,6 +332,23 @@ $(function () {
     $('#shareSubmit').on('click', function(){
         $('#shareForm').submit();
         $('#shareModal').modal('hide');
+    });
+
+    $('#expiredText').hide();
+    // (new Date()).Format("yyyy-M-d h:m:s.S")
+    $('#expiredText').val((new Date()).Format("yyyy-MM-dd hh:mm"));
+    $('.expired-control').on('click', function(){
+        var val = $(this).val();
+        console.log('expired-coltrol val=', val);
+        if (val == 0) {
+            $('#expiredText').hide();
+            //$('#expired-text').hide();
+        }
+        if (val == 2) {
+            // 相对有效期
+            $('#expiredText').show();
+            //$('#expired-text').hide();
+        }
     });
 
 });
