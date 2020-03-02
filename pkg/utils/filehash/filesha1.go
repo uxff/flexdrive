@@ -27,6 +27,7 @@ func CalcSha1(fileName string) (string, error) {
 	return hashStr, nil
 }
 
+// 调用前必须Seek到文件头
 func CalcFileSha1(fileHandle io.Reader) (string, error) {
 	sha1Enc := sha1.New()
 	if _, err := io.Copy(sha1Enc, fileHandle); err != nil {

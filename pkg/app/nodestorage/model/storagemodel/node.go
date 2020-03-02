@@ -3,8 +3,11 @@ package storagemodel
 import (
 	"io"
 	"os"
+	"strings"
 
+	"github.com/uxff/flexdrive/pkg/app/nodestorage/httpworker"
 	"github.com/uxff/flexdrive/pkg/log"
+	"github.com/uxff/flexdrive/pkg/utils/filehash"
 
 	"github.com/uxff/flexdrive/pkg/dao"
 	"github.com/uxff/flexdrive/pkg/dao/base"
@@ -19,8 +22,13 @@ const (
 )
 
 type NodeStorage struct {
-	NodeEnt    *dao.Node
-	StorageDir string // 本节点的存储路径 保证有/结尾
+	StorageDir     string // 本节点的存储路径 保证有/结尾
+	ClusterId      string
+	ClusterMembers string
+	WorkerAddr     string
+
+	NodeEnt *dao.Node
+	Worker  *httpworker.Worker
 }
 
 var node *NodeStorage
@@ -30,7 +38,7 @@ func init() {
 }
 
 //
-func StartNode(name string, storageDir string) error {
+func StartNode(storageDir string, httpAddr string, clusterId string, clusterMembers string) error {
 	if storageDir == "" {
 		storageDir = DefaultStorageDir
 	}
@@ -39,11 +47,12 @@ func StartNode(name string, storageDir string) error {
 		storageDir += "/"
 	}
 
-	node.NodeEnt = &dao.Node{
-		NodeName: name,
-	}
+	node.NodeEnt = &dao.Node{}
 
 	node.StorageDir = storageDir
+	node.ClusterId = clusterId
+	node.ClusterMembers = clusterMembers
+	node.WorkerAddr = httpAddr
 
 	// 准备makedir
 
@@ -54,9 +63,42 @@ func StartNode(name string, storageDir string) error {
 		}
 	}
 
-	log.Debugf("start node, storageDir=%s", node.StorageDir)
+	node.Worker = httpworker.NewWorker(node.WorkerAddr, node.ClusterId)
+	node.Worker.AddMates(strings.Split(node.ClusterMembers, ","))
+	node.NodeEnt.NodeName = node.Worker.Id
 
-	return nil
+	// 准备启动服务
+	serveErrorChan := make(chan error, 1)
+
+	// start http server
+	go func() {
+		log.Debugf("http server will start at %v", node.WorkerAddr)
+		serveErrorChan <- node.Worker.ServePingable()
+	}()
+
+	// start cluster node
+	go func() {
+		log.Debugf("worker server will start ")
+		serveErrorChan <- node.Worker.Start()
+	}()
+
+	err := <-serveErrorChan
+	log.Errorf("an error occur when serving storage: %v", err)
+
+	return err
+
+	// 监听信号，先关闭rpc服务，再关闭消息队列
+	// ch := make(chan os.Signal, 1)
+	// signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT, syscall.SIGKILL, syscall.SIGHUP, syscall.SIGQUIT)
+
+	// select {
+	// case sig := <-ch:
+	// 	log.Debugf("receive signal '%v', server will exit", sig)
+	// 	node.Worker.Quit()
+	// }
+	// log.Debugf("start node, storageDir=%s", node.StorageDir)
+
+	// return nil
 }
 
 // func Register() {
@@ -76,7 +118,23 @@ func (n *NodeStorage) GetFreeSpace() int64 {
 	return 1024 * 1024 * 1024
 }
 
+// 将文件保存到本地 fileHash用于校验
 func (n *NodeStorage) SaveFile(filepath string, fileHash string) (*dao.FileIndex, error) {
+	fileHandle, err := os.Open(filepath)
+	if err != nil {
+		log.Errorf("open %s failed:%v", filepath, err)
+		return nil, err
+	}
+
+	defer fileHandle.Close()
+
+	fileHash, err = filehash.CalcFileSha1(fileHandle)
+	if err != nil {
+		log.Errorf("calc filehash if uploaded file failed:%v", err)
+		//StdErrResponse(c, ErrInternal)
+		return nil, err
+	}
+
 	return &dao.FileIndex{
 		FileName: filepath,
 		FileHash: fileHash,
@@ -84,6 +142,15 @@ func (n *NodeStorage) SaveFile(filepath string, fileHash string) (*dao.FileIndex
 
 }
 
+func (n *NodeStorage) SaveFileFromNode(filepath string, nodeAddr string) (*dao.FileIndex, error) {
+
+	return &dao.FileIndex{
+		FileName: filepath,
+		//FileHash: fileHash,
+	}, nil
+}
+
+// 保存已经打开的文件流 必须在调用前知道fileHash
 // fileName 可空
 func (n *NodeStorage) SaveFileHandler(inputFileHandler io.Reader, fileHash string, fileName string, size int64) (*dao.FileIndex, error) {
 
@@ -104,6 +171,14 @@ func (n *NodeStorage) SaveFileHandler(inputFileHandler io.Reader, fileHash strin
 		log.Errorf("file copy from uploaded tmp handle to %s failed:%v", fileInStorage, err)
 		return nil, err
 	}
+
+	// fileInStorageHandle.Seek(0, io.SeekStart)
+	// fileHash, err := filehash.CalcFileSha1(headerFileHandle)
+	// if err != nil {
+	// 	log.Trace(requestId).Errorf("calc filehash if uploaded file failed:%v", err)
+	// 	StdErrResponse(c, ErrInternal)
+	// 	return
+	// }
 
 	fileIndex := &dao.FileIndex{
 		FileName:  fileName,

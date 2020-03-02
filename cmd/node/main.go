@@ -2,7 +2,12 @@
 	分布式(distributed)
     运行方式：
  	APPENV=beta SERVEADMIN=127.0.0.1:10011 SERVECUSTOMER=127.0.0.1:10012 DATADSN='mysql://yourusername:yourpwd@tcp(yourmysqlhost)/yourdbname?charset=utf8mb4&parseTime=True&loc=Local'  STORAGEDIR=./data/ ./main
- 	APPENV=beta SERVEADMIN=127.0.0.1:10011 SERVECUSTOMER=127.0.0.1:10012 DATADSN='sqlite3://./flexdrive.db'  STORAGEDIR=./data/ ./main
+	APPENV=beta SERVEADMIN=127.0.0.1:10011 SERVECUSTOMER=127.0.0.1:10012 SERVECLUSTER=127.0.0.1:10013 DATADSN='sqlite3://./flexdrive.db'  STORAGEDIR=./data/ ./main
+
+	for cluster:
+	SERVEADMIN=127.0.0.1:10011 SERVECUSTOMER=127.0.0.1:10012 SERVECLUSTER=127.0.0.1:10013 CLUSTERMEMBERS=127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033 DATADSN='sqlite3://./flexdrive.db'  STORAGEDIR=./data/ ./main
+	SERVEADMIN=127.0.0.1:10021 SERVECUSTOMER=127.0.0.1:10022 SERVECLUSTER=127.0.0.1:10023 CLUSTERMEMBERS=127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033 DATADSN='sqlite3://./flexdrive.db'  STORAGEDIR=./data/ ./main
+	SERVEADMIN=127.0.0.1:10031 SERVECUSTOMER=127.0.0.1:10032 SERVECLUSTER=127.0.0.1:10033 CLUSTERMEMBERS=127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033 DATADSN='sqlite3://./flexdrive.db'  STORAGEDIR=./data/ ./main
 */
 package main
 
@@ -29,11 +34,14 @@ var (
 	showVersion bool
 	logLevel    = -1
 	// default values, you can set these with env
-	serveCustomer = "127.0.0.1:10012"
-	serveAdmin    = "127.0.0.1:10011"
-	dataDsn       = "mysql://user:pass@tcp(127.0.0.1:3306)/flexdrive?charset=utf8mb4&parseTime=True&loc=Local"
-	cacheDsn      = ""
-	storageDir    = "/tmp/flexdrive/"
+	serveAdmin     = "127.0.0.1:10011"
+	serveCustomer  = "127.0.0.1:10012"
+	serveCluster   = "127.0.0.1:10013"
+	clusterMembers = "127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033"
+	clusterId      = "flexdrive"
+	dataDsn        = "mysql://user:pass@tcp(127.0.0.1:3306)/flexdrive?charset=utf8mb4&parseTime=True&loc=Local"
+	cacheDsn       = ""
+	storageDir     = "/tmp/flexdrive/"
 )
 
 func main() {
@@ -74,8 +82,23 @@ func main() {
 	}
 
 	if s := os.Getenv("STORAGEDIR"); s != "" {
-		log.Debugf("the storageDir from env: %s", s)
+		log.Debugf("the STORAGEDIR from env: %s", s)
 		storageDir = s
+	}
+
+	if s := os.Getenv("CLUSTERMEMBERS"); s != "" {
+		log.Debugf("the CLUSTERMEMBERS from env: %s", s)
+		clusterMembers = s
+	}
+
+	if s := os.Getenv("CLUSTERID"); s != "" {
+		log.Debugf("the storageDir from env: %s", s)
+		clusterId = s
+	}
+
+	if s := os.Getenv("SERVECLUSTER"); s != "" {
+		log.Debugf("the storageDir from env: %s", s)
+		serveCluster = s
 	}
 
 	err = envinit.InitDb(common.DBMysqlDrive, dataDsn)
@@ -110,7 +133,7 @@ func Serve(envMap map[string]string) error {
 	go func() {
 		wg.Add(1)
 		defer wg.Done()
-		storagemodel.StartNode("me", storageDir)
+		errCh <- storagemodel.StartNode(storageDir, serveCluster, clusterId, clusterMembers)
 	}()
 
 	select {

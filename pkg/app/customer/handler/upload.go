@@ -97,6 +97,7 @@ func UploadForm(c *gin.Context) {
 
 	defer headerFileHandle.Close() // 必须关闭
 
+	// fileHash := ""
 	fileHash, err := filehash.CalcFileSha1(headerFileHandle)
 	if err != nil {
 		log.Trace(requestId).Errorf("calc filehash if uploaded file failed:%v", err)
@@ -125,6 +126,8 @@ func UploadForm(c *gin.Context) {
 			StdErrResponse(c, ErrInternal)
 			return
 		}
+
+		fileHash = fileIndex.FileHash
 	}
 
 	//os.MkdirAll("/tmp/flexdirve/", os.ModePerm)
