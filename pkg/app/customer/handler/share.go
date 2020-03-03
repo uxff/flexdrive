@@ -71,3 +71,7 @@ func ShareSearch(c *gin.Context) {
 		"paginator": paginator.NewPaginator(c.Request, 10, int64(total)),
 	})
 }
+
+func ShareDetail(c *gin.Context) {
+	
+}

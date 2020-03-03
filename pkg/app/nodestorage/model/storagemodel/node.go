@@ -1,6 +1,7 @@
 package storagemodel
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -14,7 +15,7 @@ import (
 )
 
 const (
-	DirSplitDeep = 2 // 文件切割深度
+	DirSplitDeep = 2 // 文件存储目录深度
 )
 
 const (
@@ -118,7 +119,7 @@ func (n *NodeStorage) GetFreeSpace() int64 {
 	return 1024 * 1024 * 1024
 }
 
-// 将文件保存到本地 fileHash用于校验
+// 将文件保存到本地 fileHash用于校验 未完成
 func (n *NodeStorage) SaveFile(filepath string, fileHash string) (*dao.FileIndex, error) {
 	fileHandle, err := os.Open(filepath)
 	if err != nil {
@@ -142,12 +143,87 @@ func (n *NodeStorage) SaveFile(filepath string, fileHash string) (*dao.FileIndex
 
 }
 
-func (n *NodeStorage) SaveFileFromNode(filepath string, nodeAddr string) (*dao.FileIndex, error) {
+// 从第一node复制过来
+func (n *NodeStorage) SaveFileFromFileIndex(fileIndexId int, asNodeLevel string) (*dao.FileIndex, error) {
 
-	return &dao.FileIndex{
-		FileName: filepath,
-		//FileHash: fileHash,
-	}, nil
+	//
+	fileIndexEnt, err := dao.GetFileIndexById(fileIndexId)
+	if err != nil {
+		return nil, err
+	}
+
+	if fileIndexEnt == nil {
+		return nil, nil
+	}
+
+	// 如果本地已经备份 则不用备份
+
+	fileInStorage := n.FileHashToStoragePath(fileIndexEnt.FileHash)
+
+	if DirExist(fileInStorage) {
+		needUpdate := []string{}
+		switch asNodeLevel {
+		case "2":
+			if fileIndexEnt.NodeId2 == 0 {
+				fileIndexEnt.NodeId2 = n.NodeEnt.Id
+				needUpdate = append(needUpdate, "nodeId2")
+			}
+
+		case "3":
+			if fileIndexEnt.NodeId3 == 0 {
+				fileIndexEnt.NodeId3 = n.NodeEnt.Id
+				needUpdate = append(needUpdate, "nodeId3")
+			}
+		}
+		if len(needUpdate) > 0 {
+			err = fileIndexEnt.UpdateById(needUpdate)
+			if err != nil {
+				log.Errorf("when update fileIndex %d error:%v", fileIndexId, err)
+			}
+		}
+		return fileIndexEnt, nil
+	}
+
+	// 外部访问别人的地址
+	fileOutPath := n.FileHashToOutPath(fileIndexEnt.FileHash)
+	// 外部访问带域名的地址
+	fileServeUrl := n.WorkerAddr + "/" + fileOutPath
+	err = downloadFile(fileServeUrl, fileInStorage)
+	if err != nil {
+		log.Errorf("when download(%d) %s error:%v", fileIndexId, fileServeUrl, err)
+		return nil, err
+	}
+
+	realFileHash, _ := filehash.CalcSha1(fileInStorage)
+	if realFileHash != fileIndexEnt.FileHash {
+		// 当前计算的hash与数据库记录的不一致
+		log.Errorf("fileIndex %d has wrong fileHash, realFileHash:%s, record:%s", fileIndexId, realFileHash, fileIndexEnt.FileHash)
+		return nil, fmt.Errorf("fileIndex %d has wrong fileHash, realFileHash:%s, record:%s", fileIndexId, realFileHash, fileIndexEnt.FileHash)
+	}
+
+	needUpdate := []string{}
+	switch asNodeLevel {
+	case "2":
+		if fileIndexEnt.NodeId2 == 0 {
+			fileIndexEnt.NodeId2 = n.NodeEnt.Id
+			needUpdate = append(needUpdate, "nodeId2")
+		}
+
+	case "3":
+		if fileIndexEnt.NodeId3 == 0 {
+			fileIndexEnt.NodeId3 = n.NodeEnt.Id
+			needUpdate = append(needUpdate, "nodeId3")
+		}
+	}
+
+	if len(needUpdate) > 0 {
+		err = fileIndexEnt.UpdateById(needUpdate)
+		if err != nil {
+			log.Errorf("when update fileIndex %d error:%v", fileIndexId, err)
+		}
+	}
+
+	return fileIndexEnt, nil
 }
 
 // 保存已经打开的文件流 必须在调用前知道fileHash
@@ -209,7 +285,7 @@ func GetCurrentNode() *NodeStorage {
 func (n *NodeStorage) FileHashToStoragePath(fileHash string) string {
 	//return node.StorageDir + fileHash
 
-	splitDeep := 2
+	splitDeep := DirSplitDeep // 2
 	curDir := node.StorageDir
 
 	for deepIdx := 0; deepIdx < splitDeep; deepIdx++ {
@@ -224,4 +300,18 @@ func (n *NodeStorage) FileHashToStoragePath(fileHash string) string {
 
 	return curDir + fileHash
 
+}
+
+// 外网访问路径
+func (n *NodeStorage) FileHashToOutPath(fileHash string) string {
+	splitDeep := DirSplitDeep // 2
+	curDir := "/"
+
+	for deepIdx := 0; deepIdx < splitDeep; deepIdx++ {
+
+		prefix1 := fileHash[deepIdx : deepIdx+1]
+		//prefix2 := fileHash[1:2]
+		curDir = curDir + prefix1 + "/"
+	}
+	return "/file/" + curDir
 }

@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/uxff/flexdrive/pkg/dao"
 	"github.com/uxff/flexdrive/pkg/log"
 )
 
@@ -18,7 +17,7 @@ type PingRes struct {
 	MasterId string
 	Members  map[string]*Worker
 
-	NodeEnt *dao.Node
+	//NodeEnt *dao.Node
 }
 
 func (w *Worker) ServePingable() error {

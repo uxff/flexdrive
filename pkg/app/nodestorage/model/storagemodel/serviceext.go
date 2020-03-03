@@ -11,7 +11,7 @@ import (
 func (n *NodeStorage) AttachService() {
 	// 保存文件 但是循环依赖
 	w := n.Worker
-	// 备份文件
+	// 备份文件 fileIndexId fromId nodeLevel
 	n.Worker.AttachPostAction("/savefile", func(c *gin.Context) {
 		fileIndexIdStr := c.Query("fileIndexId")
 		if fileIndexIdStr == "" {
