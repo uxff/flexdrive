@@ -161,22 +161,22 @@ func (n *NodeStorage) SaveFileFromFileIndex(fileIndexId int, asNodeLevel string)
 	fileInStorage := n.FileHashToStoragePath(fileIndexEnt.FileHash)
 
 	if DirExist(fileInStorage) {
-		needUpdate := []string{}
+		needUpCols := []string{}
 		switch asNodeLevel {
 		case "2":
 			if fileIndexEnt.NodeId2 == 0 {
 				fileIndexEnt.NodeId2 = n.NodeEnt.Id
-				needUpdate = append(needUpdate, "nodeId2")
+				needUpCols = append(needUpCols, "nodeId2")
 			}
 
 		case "3":
 			if fileIndexEnt.NodeId3 == 0 {
 				fileIndexEnt.NodeId3 = n.NodeEnt.Id
-				needUpdate = append(needUpdate, "nodeId3")
+				needUpCols = append(needUpCols, "nodeId3")
 			}
 		}
-		if len(needUpdate) > 0 {
-			err = fileIndexEnt.UpdateById(needUpdate)
+		if len(needUpCols) > 0 {
+			err = fileIndexEnt.UpdateById(needUpCols)
 			if err != nil {
 				log.Errorf("when update fileIndex %d error:%v", fileIndexId, err)
 			}
@@ -201,23 +201,23 @@ func (n *NodeStorage) SaveFileFromFileIndex(fileIndexId int, asNodeLevel string)
 		return nil, fmt.Errorf("fileIndex %d has wrong fileHash, realFileHash:%s, record:%s", fileIndexId, realFileHash, fileIndexEnt.FileHash)
 	}
 
-	needUpdate := []string{}
+	needUpCols := []string{}
 	switch asNodeLevel {
 	case "2":
 		if fileIndexEnt.NodeId2 == 0 {
 			fileIndexEnt.NodeId2 = n.NodeEnt.Id
-			needUpdate = append(needUpdate, "nodeId2")
+			needUpCols = append(needUpCols, "nodeId2")
 		}
 
 	case "3":
 		if fileIndexEnt.NodeId3 == 0 {
 			fileIndexEnt.NodeId3 = n.NodeEnt.Id
-			needUpdate = append(needUpdate, "nodeId3")
+			needUpCols = append(needUpCols, "nodeId3")
 		}
 	}
 
-	if len(needUpdate) > 0 {
-		err = fileIndexEnt.UpdateById(needUpdate)
+	if len(needUpCols) > 0 {
+		err = fileIndexEnt.UpdateById(needUpCols)
 		if err != nil {
 			log.Errorf("when update fileIndex %d error:%v", fileIndexId, err)
 		}

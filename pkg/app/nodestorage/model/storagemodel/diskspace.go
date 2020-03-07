@@ -136,6 +136,11 @@ func downloadFile(fileUrl string, localPath string) error {
 
 	client := http.Client{Timeout: 900 * time.Second}
 	resp, err := client.Get(fileUrl)
+	if err != nil {
+		log.Errorf("when downloadFile %s error:%v", fileUrl, err)
+		return err
+	}
+
 	defer resp.Body.Close()
 
 	_, err = io.Copy(newFile, resp.Body)
