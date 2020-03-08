@@ -11,7 +11,6 @@ import (
 	"github.com/uxff/flexdrive/pkg/log"
 
 	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/mattn/go-sqlite3"
 )
 
 // Dbs 分库分表数据库名称映射
@@ -42,9 +41,9 @@ func InitDb(namespace, dsn string) error {
 	var err error
 	switch engineType {
 	case "mysql":
-		eng, err = ConnectMysql(dsnPath)
+		eng, err = ConnectByEngine(engineType, dsnPath)
 	case "sqlite3":
-		eng, err = ConnectSqlite3(dsnPath)
+		eng, err = ConnectByEngine(engineType, dsnPath)
 	}
 
 	// eng, err := ConnectMysql(dsnPath)
@@ -59,10 +58,13 @@ func InitDb(namespace, dsn string) error {
 }
 
 // InitMysql 链接数据库 path 为 dsn 带mysql://
-func ConnectMysql(dsnPath string) (*xorm.Engine, error) {
+/**
+* @param en 引擎类型 mysql 或 sqlite3
+*/
+func ConnectByEngine(en string, dsnPath string) (*xorm.Engine, error) {
 	var err error
 
-	engine, err := xorm.NewEngine("mysql", dsnPath)
+	engine, err := xorm.NewEngine(en, dsnPath)
 	if err != nil {
 		//log.Fatalf("xorm create err:", err)
 		return nil, err
@@ -87,25 +89,3 @@ func ConnectMysql(dsnPath string) (*xorm.Engine, error) {
 	return engine, nil
 }
 
-// InitMysql 链接数据库 path 为 dsn 带mysql://
-func ConnectSqlite3(dsnPath string) (*xorm.Engine, error) {
-	var err error
-
-	engine, err := xorm.NewEngine("sqlite3", dsnPath)
-	if err != nil {
-		//log.Fatalf("xorm create err:", err)
-		return nil, err
-	}
-
-	engine.Ping()
-	engine.SetMaxIdleConns(20)
-	engine.SetConnMaxLifetime(9 * time.Second)
-
-	dbPrefix := ""
-	mptable := core.NewPrefixMapper(&core.SnakeMapper{}, dbPrefix)
-	engine.SetTableMapper(mptable)
-	engine.SetColumnMapper(&core.SameMapper{})
-
-	engine.ShowSQL(true)
-	return engine, nil
-}
