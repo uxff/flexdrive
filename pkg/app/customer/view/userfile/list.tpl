@@ -273,6 +273,14 @@
     </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
     
+<style type="text/css">
+    .glyphicon-folder-close {
+        color: #FFCC33; 
+    }
+    .glyphicon-file {
+        color: #99CC99;
+    }
+</style>
 
 <script type="text/javascript">
 Date.prototype.Format = function (fmt) { //author: meizz
