@@ -92,8 +92,9 @@ func ShareList(c *gin.Context) {
 }
 
 type ShareAddRequest struct {
-	UserFileId int `form:"userFileId"` // 文件
-	ExpiredSec int `form:"expiredSec"` // 有效期秒数
+	UserFileId  int       `form:"userFileId"`  // 文件
+	ExpiredText string    `form:"expiredText"` // 有效期秒数
+	ExpiredTime time.Time `form:"-"`
 }
 
 func ShareAdd(c *gin.Context) {
@@ -102,9 +103,15 @@ func ShareAdd(c *gin.Context) {
 
 	// 请求参数校验
 	req := &ShareAddRequest{}
-	err := c.ShouldBindQuery(req)
+	err := c.ShouldBind(req)
 	if err != nil {
+		log.Trace(requestId).Errorf("bind param error:%v", err)
 		StdErrResponse(c, ErrInvalidParam)
+		return
+	}
+
+	if req.UserFileId <= 0 {
+		StdErrMsgResponse(c, ErrInvalidParam, "文件id为空")
 		return
 	}
 
@@ -120,6 +127,11 @@ func ShareAdd(c *gin.Context) {
 	userFile, err := dao.GetUserFileById(req.UserFileId)
 	if err != nil {
 		log.Trace(requestId).Errorf("db error:%v", err)
+		StdErrMsgResponse(c, ErrInternal, "查询分享文件失败")
+		return
+	}
+
+	if userFile == nil {
 		StdErrMsgResponse(c, ErrInternal, "要分享的文件不存在")
 		return
 	}
@@ -130,7 +142,7 @@ func ShareAdd(c *gin.Context) {
 	}
 
 	if existShare != nil {
-		//if existShare.Expired =
+		//if existShare.Expired = // todo redirect
 		StdResponse(c, ErrSuccess, existShare)
 		return
 	} else {
@@ -144,8 +156,10 @@ func ShareAdd(c *gin.Context) {
 			Status: base.StatusNormal,
 		}
 
-		if req.ExpiredSec > 0 {
-			shareItem.Expired = time.Now().Add(time.Second * time.Duration(req.ExpiredSec))
+		req.ExpiredTime, err = time.Parse("2006-01-02 15:04", req.ExpiredText)
+
+		if req.ExpiredTime.Unix() > 0 {
+			shareItem.Expired = req.ExpiredTime //time.Now().Add(time.Second * time.Duration(req.ExpiredSec))
 		}
 
 		_, err = base.Insert(shareItem)
@@ -154,6 +168,8 @@ func ShareAdd(c *gin.Context) {
 			StdErrMsgResponse(c, ErrInternal, "创建分享失败")
 			return
 		}
+		StdResponse(c, ErrSuccess, shareItem) // todo redirect
+		return
 	}
 
 }
