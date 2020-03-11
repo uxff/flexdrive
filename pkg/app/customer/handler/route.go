@@ -193,12 +193,12 @@ func loadFuncMap() {
 			return fmt.Sprintf("%d B", space)
 		}
 		if space < 1024*1024 {
-			return fmt.Sprintf("%d kB", space/1024)
+			return fmt.Sprintf("%.01f kB", float32(space)/1024)
 		}
 		if space < 1024*1024*1024 {
-			return fmt.Sprintf("%d MB", space/1024/1024)
+			return fmt.Sprintf("%.01f MB", float32(space)/1024/1024)
 		}
-		return fmt.Sprintf("%d GB", space/1024/1024/1024)
+		return fmt.Sprintf("%.02f GB", float32(space)/1024/1024/1024)
 	}
 	// 所有的空间单位必须是int64
 	tplFuncMap["spaceRate"] = func(used int64, quota int64) string {
