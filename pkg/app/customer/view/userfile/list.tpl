@@ -23,7 +23,7 @@
     <!--当前排版方式1-->
     <div class="row" style="margin-bottom: 4px;">
         <div class="col-md-6" style="padding: 5px;">
-            当前等级：黄金会员 [<a href="/" >升级</a>]&nbsp;&nbsp;
+            当前等级：{{.userLevel.Name}} [<a href="/" >升级</a>]&nbsp;&nbsp;
             当前空间：已用 {{space4Human .LoginInfo.UserEnt.UsedSpace}} / 总共 {{space4Human .LoginInfo.UserEnt.QuotaSpace}}
             [<a href="/" style="text-align: right;" >扩容</a>]
             <div class="progress " style="width:100%; float: left; height: 6px; margin-bottom: 10px; background-color: #dff0d8;">
@@ -107,8 +107,10 @@
                     <td>{{.Created }}</td>
                     <td>{{size4Human .Size }}</td>
                     <td>
+                        <!--
                         <a href="/">移动到</a>
                         <a href="/">复制到</a>
+                        -->
                         <a href="/">重命名</a>
                         {{if eq .Status 1}}
                         <a href="/my/file/enable/{{.Id}}/9">删除</a>

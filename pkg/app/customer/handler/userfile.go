@@ -83,6 +83,8 @@ func UserFileList(c *gin.Context) {
 		return
 	}
 
+	loginInfo := getLoginInfo(c)
+
 	// 当前浏览的目录
 	if req.Dir == "" {
 		req.Dir = "/"
@@ -94,6 +96,7 @@ func UserFileList(c *gin.Context) {
 
 	condition := req.ToCondition()
 	condition["status=?"] = base.StatusNormal // 只查询未删除
+	condition["userId=?"] = loginInfo.UserId
 
 	// 列表查询
 	list := make([]*dao.UserFile, 0)
@@ -116,7 +119,8 @@ func UserFileList(c *gin.Context) {
 	}
 
 	c.HTML(http.StatusOK, "userfile/list.tpl", gin.H{
-		"LoginInfo":  getLoginInfo(c),
+		"LoginInfo":  loginInfo,
+		"userLevel":  loginInfo.UserEnt.GetUserLevel(),
 		"IsLogin":    isLoginIn(c),
 		"total":      total,
 		"page":       req.Page,

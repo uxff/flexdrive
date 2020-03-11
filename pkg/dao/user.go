@@ -52,6 +52,21 @@ func (t *User) SetPwd(p string) {
 	t.Pwd = hex.EncodeToString(enc.Sum(nil))
 }
 
+func (t *User) GetUserLevel() (ul *UserLevel) {
+	if t.LevelId > 0 {
+		ul, _ = GetUserLevelById(t.LevelId)
+		return ul
+	}
+	ul, _ = GetDefaultUserLevel()
+	if ul == nil {
+		ul = &UserLevel{
+			Id:   0,
+			Name: "普通等级",
+		}
+	}
+	return ul
+}
+
 func GetUserById(id int) (*User, error) {
 	e := &User{}
 	exist, err := base.GetByCol("id", id, e)
