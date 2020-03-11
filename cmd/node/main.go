@@ -1,8 +1,8 @@
 /**
 	分布式(distributed)
     运行方式：
- 	APPENV=beta SERVEADMIN=127.0.0.1:10011 SERVECUSTOMER=127.0.0.1:10012 DATADSN='mysql://yourusername:yourpwd@tcp(yourmysqlhost)/yourdbname?charset=utf8mb4&parseTime=True&loc=Local'  STORAGEDIR=./data/ ./main
-	APPENV=beta SERVEADMIN=127.0.0.1:10011 SERVECUSTOMER=127.0.0.1:10012 SERVECLUSTER=127.0.0.1:10013 DATADSN='sqlite3://./flexdrive.db'  STORAGEDIR=./data/ ./main
+ 	SERVEADMIN=127.0.0.1:10011 SERVECUSTOMER=127.0.0.1:10012 SERVECLUSTER=127.0.0.1:10013 CLUSTERMEMBERS=127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033 DATADSN='mysql://user:pwd@tcp(127.0.0.1:3306)/flexdrive?charset=utf8mb4&parseTime=True&loc=Local'  STORAGEDIR=./data/ ./main
+	SERVEADMIN=127.0.0.1:10011 SERVECUSTOMER=127.0.0.1:10012 SERVECLUSTER=127.0.0.1:10013 DATADSN='sqlite3://./flexdrive.db'  STORAGEDIR=./data/ ./main
 
 	for cluster:
 	SERVEADMIN=127.0.0.1:10011 SERVECUSTOMER=127.0.0.1:10012 SERVECLUSTER=127.0.0.1:10013 CLUSTERMEMBERS=127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033 DATADSN='sqlite3://./flexdrive.db'  STORAGEDIR=./data/ ./main
@@ -36,8 +36,8 @@ var (
 	// default values, you can set these with env
 	serveAdmin     = "127.0.0.1:10011"
 	serveCustomer  = "127.0.0.1:10012"
-	serveCluster   = "127.0.0.1:10013"
-	clusterMembers = "127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033"
+	serveCluster   = "" //"127.0.0.1:10013"
+	clusterMembers = "" //"127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033"
 	clusterId      = "flexdrive"
 	dataDsn        = "mysql://user:pass@tcp(127.0.0.1:3306)/flexdrive?charset=utf8mb4&parseTime=True&loc=Local"
 	cacheDsn       = ""
@@ -130,6 +130,7 @@ func Serve(envMap map[string]string) error {
 		errCh <- customerhandler.StartHttpServer(serveCustomer)
 	}()
 
+	// todo non cluster
 	go func() {
 		wg.Add(1)
 		defer wg.Done()

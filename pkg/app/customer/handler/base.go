@@ -33,6 +33,10 @@ const (
 	CookieKeyCaptchaId = "_captchaId"
 )
 
+const (
+	cuaTimeDiv = 79
+)
+
 // 登录关键信息 Customer User Auth Token
 type CuaToken struct {
 	UserId  int
@@ -43,7 +47,7 @@ type CuaToken struct {
 }
 
 func (t *CuaToken) ToString() string {
-	return fmt.Sprintf("%d.%d.%s", t.LoginAt/79, t.UserId, t.Sign)
+	return fmt.Sprintf("%d.%d.%s", t.LoginAt/cuaTimeDiv, t.UserId, t.Sign)
 }
 
 func (t *CuaToken) FromString(str string) {
@@ -54,14 +58,14 @@ func (t *CuaToken) FromString(str string) {
 	}
 	t.UserId, _ = strconv.Atoi(cols[1])
 	t.LoginAt, _ = strconv.Atoi(cols[0])
-	t.LoginAt *= 79
+	t.LoginAt *= cuaTimeDiv
 	t.Sign = cols[2]
 }
 
 func (t *CuaToken) MakeSign() string {
 
 	enc := md5.New()
-	enc.Write([]byte(fmt.Sprintf("%d.%d", t.UserId, t.LoginAt/79) + CookieKeySalt))
+	enc.Write([]byte(fmt.Sprintf("%d.%d", t.UserId, t.LoginAt/cuaTimeDiv) + CookieKeySalt))
 
 	return hex.EncodeToString(enc.Sum(nil))
 }

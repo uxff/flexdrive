@@ -278,7 +278,7 @@
         color: #FFCC33; 
     }
     .glyphicon-file {
-        color: #99CC99;
+        color: #68bde6;
     }
 </style>
 

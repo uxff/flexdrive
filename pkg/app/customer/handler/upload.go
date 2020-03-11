@@ -185,7 +185,7 @@ func UploadForm(c *gin.Context) {
 		"pathHash=?": userFile.PathHash,
 		"fileName=?": userFile.FileName,
 		"isDir=?":    userFile.IsDir,
-		"status":     base.StatusNormal,
+		"status=?":   base.StatusNormal,
 	})
 
 	if err != nil {
