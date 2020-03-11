@@ -70,6 +70,7 @@ func StartHttpServer(addr string) error {
 
 	authRouter.GET("/my/share/list", ShareList)
 	authRouter.GET("/my/share/check/:userFileId", ShareCheck)
+	authRouter.POST("/my/share/add", ShareAdd)
 	authRouter.GET("/my/share/enable/:id/:enable", ShareEnable)
 
 	authRouter.GET("/my/file/list", UserFileList)

@@ -114,7 +114,7 @@
                         <a href="/my/file/enable/{{.Id}}/9">删除</a>
                         {{end}}
                         {{if eq .IsDir 0}}
-                        <a href="javascript:void(0);" onclick="checkShare({{.Id}},'{{.FileName}}');" data-id="{{.Id}}" data-toggle="modal" data-target="#shareModal">分享</a>
+                        <a href="#" onclick="checkShare({{.Id}},'{{.FileName}}');" data-id="{{.Id}}" data-toggle="modal" data-target="#shareModal">分享</a>
                         <a href="/">下载</a>
                         {{end}}
                     </td>
@@ -228,7 +228,7 @@
                     分享
                 </h4>
             </div>
-            <form id="uploadForm" accept-charset="utf-8" role="form" class="form-horizontal" method="POST" action='/my/file/upload' enctype="multipart/form-data">
+            <form id="uploadForm" accept-charset="utf-8" role="form" class="form-horizontal" method="POST" action='/my/share/add' enctype="application/x-www-form-urlencoded">
             <div class="modal-body">
                 <div class="row" style="margin: 10px;">
                     <div class="col-md-3 text-right">
@@ -236,9 +236,9 @@
                     </div>
                     <div class="col-md-7">
                         全部文件<span id="dirPathTextInShareModal"></span><span id="fileNameTextInShareModal"></span>
-                        <input type="hidden" name="parentDir" id="dirPathInShareModal" readonly value="{{.reqParam.Dir}}">
-                        <input type="hidden" name="fileName" id="fileNameInShareModal" readonly value="">
-                        <input type="hidden" name="userFileId" id="userFileIdInShareModal" readonly value="">
+                        <input type="hidden" name="parentDir" id="dirPathInShareModal" value="{{.reqParam.Dir}}">
+                        <input type="hidden" name="fileName" id="fileNameInShareModal" value="">
+                        <input type="hidden" name="userFileId" id="userFileIdInShareModal" value="">
                     </div>
                 </div>
                 <div class="row" style="margin: 10px;">
@@ -266,7 +266,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                <button type="button" class="btn btn-primary" id="shareSubmit">提交</button>
+                <button type="submit" class="btn btn-primary" id="shareSubmit">提交</button>
             </div>
             </form>
         </div><!-- /.modal-content -->
@@ -323,19 +323,19 @@ $(function () {
     });
     $('#shareModal').on('show.bs.modal', function () {
         $('#dirPathTextInShareModal').html($('#dirPath').val());
-        var userFileId = $('#userFileIdInShareModal').html();//$(this).attr('data-id');
-        var fileName = $('#fileNameInShareModal').html();//$(this).attr('data-id');
         
+        var userFileId = $('#userFileIdInShareModal').val();//$(this).attr('data-id');
+        var fileName = $('#fileNameInShareModal').val();//$(this).attr('data-id');
+        console.log('userFileId=', userFileId);
         $.ajax({
             url:"/my/share/check/"+userFileId,
             success:function(data, textStatus) {
                 console.log(data);
                 if (data.result != undefined && data.result.Id != undefined) {
                     console.log('the fileid=', data.result.Id);
-
                 }
             }
-        })
+        });
     });
     $('#shareSubmit').on('click', function(){
         $('#shareForm').submit();
@@ -361,9 +361,10 @@ $(function () {
 
 });
     function checkShare(userFileId, fileName) {
-        $('#userFileIdInShareModal').html(userFileId);
-        $('#fileNameInShareModal').html(fileName);
-        $('#fileNameTextInShareModal').html(fileName);
+        $('#userFileIdInShareModal').val(userFileId);
+        $('#fileNameInShareModal').val(fileName);
+        $('#fileNameTextInShareModal').val(fileName);
+        //$('#shareModal').show();
     }
 
 </script>
