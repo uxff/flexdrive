@@ -1,3 +1,5 @@
+{{ define "order/mockpay.tpl" }}
+
 <form id="mockpay" method="POST" action="/my/order/notify">
     <p>
         本页面用于模拟本系统的订单支付跳转到第三方支付页面
@@ -43,3 +45,4 @@
     <button type="submit">确认支付</button>
     <a href="javascript:go(-1);">返回</a>
 </form>
+{{end}}

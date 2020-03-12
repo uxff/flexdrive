@@ -183,3 +183,18 @@ func MockpayForm(c *gin.Context) {
 
 	StdErrResponse(c, ErrSuccess)
 }
+
+func OrderCreate(c *gin.Context) {
+
+	c.HTML(http.StatusOK, "order/create.tpl", gin.H{
+		"LoginInfo": getLoginInfo(c),
+		"IsLogin":   isLoginIn(c),
+	})
+}
+
+type OrderCreateRequest struct {
+}
+
+func OrderCreateForm(c *gin.Context) {
+
+}

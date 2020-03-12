@@ -73,6 +73,13 @@ func StartHttpServer(addr string) error {
 	authRouter.POST("/my/share/add", ShareAdd)
 	authRouter.GET("/my/share/enable/:id/:enable", ShareEnable)
 
+	authRouter.GET("/my/order/create", OrderCreate)
+	authRouter.POST("/my/order/create", OrderCreateForm)
+	authRouter.GET("/my/order/list", OrderList)
+	authRouter.GET("/my/share/check/:userFileId", ShareCheck)
+	authRouter.POST("/my/share/add", ShareAdd)
+	authRouter.GET("/my/share/enable/:id/:enable", ShareEnable)
+
 	authRouter.GET("/my/file/list", UserFileList)
 	authRouter.POST("/my/file/newfolder", UserFileNewFolder)
 	authRouter.POST("/my/file/upload", UploadForm)

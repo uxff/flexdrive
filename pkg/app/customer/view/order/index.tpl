@@ -68,7 +68,7 @@
                     <td>{{.AwardLevelId }}</td>
                     <td>空间增加{{size4Human .AwardSpace }}</td>
                     <td>{{.TotalAmount }}</td>
-                    <td>{{orderStatus .Status }}</td>
+                    <td>{{ .Status }}</td>
                     <td>
                         {{if eq .Status 1}}
                             <a href="/" target="_blank">去支付</a>
