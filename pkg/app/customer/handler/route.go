@@ -13,6 +13,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mattn/go-runewidth"
+	"github.com/uxff/flexdrive/pkg/dao"
 	"github.com/uxff/flexdrive/pkg/dao/base"
 	"github.com/uxff/flexdrive/pkg/log"
 )
@@ -210,5 +211,8 @@ func loadFuncMap() {
 	// 所有的空间单位必须是int64
 	tplFuncMap["spaceRate"] = func(used int64, quota int64) string {
 		return fmt.Sprintf("%d", int(float32(used)/float32(quota)*100))
+	}
+	tplFuncMap["orderStatus"] = func(orderStatus int) string {
+		return dao.OrderStatusMap[orderStatus]
 	}
 }
