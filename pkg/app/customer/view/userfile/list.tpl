@@ -117,7 +117,7 @@
                         {{end}}
                         {{if eq .IsDir 0}}
                         <a href="#" onclick="checkFile({{.Id}},'{{.FileName}}');" data-id="{{.Id}}" data-toggle="modal" data-target="#shareModal">分享</a>
-                        <a href="/">下载</a>
+                        <a href="/file/{{.FileHash}}/{{.FileName}}">下载</a>
                         {{end}}
                     </td>
                 </tr>
