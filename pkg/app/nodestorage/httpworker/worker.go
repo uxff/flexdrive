@@ -17,8 +17,8 @@ import (
 	"github.com/uxff/flexdrive/pkg/log"
 )
 
-const RegisterTimeoutSec = 2  // 已注册的超时检测
-const RegisterIntervalSec = 1 // 作为worker或master注册间隔
+const RegisterTimeoutSec = 200  // 已注册的超时检测
+const RegisterIntervalSec = 100 // 作为worker或master注册间隔
 
 type Worker struct {
 	Id             string // from redis incr? // uniq in cluster, different from other nodes

@@ -68,7 +68,7 @@
                         {{.Id}}
                     </td>
                     <td>{{.Created }}</td>
-                    <td>{{.AwardLevelId }}</td>
+                    <td>{{.LevelName}}({{.AwardLevelId }})</td>
                     <td>空间增加{{size4Human .AwardSpace }}</td>
                     <td>{{.TotalAmount }}</td>
                     <td>{{orderStatus .Status }}</td>

@@ -39,6 +39,6 @@ func Profile(c *gin.Context) {
 	c.HTML(http.StatusOK, "my/profile.tpl", gin.H{
 		"LoginInfo": getLoginInfo(c),
 		"IsLogin":   isLoginIn(c),
-		"Level":     levelInfo,
+		"userLevel": levelInfo,
 	})
 }

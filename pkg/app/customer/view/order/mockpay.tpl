@@ -14,15 +14,15 @@
         </tr>
         <tr>
             <td>用户Id</td>
-            <td><input type="text" name="userId" readonly value="{{.UserEnt.Id}}"></td>
+            <td><input type="text" name="userId" readonly value="{{.Order.UserId}}"></td>
         </tr>
         <tr>
             <td>用户Email</td>
-            <td>{{.UserEnt.Email}}</td>
+            <td>{{.User.Email}}</td>
         </tr>
         <tr>
             <td>订单号</td>
-            <td><input type="text" name="userId" readonly value="{{.Order.Id}}"></td>
+            <td><input type="text" name="orderId" readonly value="{{.Order.Id}}"></td>
         </tr>
         <tr>
             <td>订单内容</td>
@@ -34,15 +34,15 @@
         </tr>
         <tr>
             <td>支付机构订单号</td>
-            <td>{{.OutOrderNo}}</td>
+            <td><input type="text" name="outOrderNo" readonly value="{{.OutOrderNo}}"></td>
         </tr>
         <tr>
             <td>输入支付验证码({{.VerifyCode}})</td>
             <td><input type="number" name="verifyCode"></td>
         </tr>
     </table>
-    <input >
+    <input type="hidden" name="token" value="{{.Token}}">
     <button type="submit">确认支付</button>
-    <a href="javascript:go(-1);">返回</a>
+    <a href="javascript:history.go(-1);">返回</a>
 </form>
 {{end}}

@@ -10,6 +10,7 @@ import (
 	"github.com/uxff/flexdrive/pkg/dao"
 	"github.com/uxff/flexdrive/pkg/dao/base"
 	"github.com/uxff/flexdrive/pkg/log"
+	"github.com/uxff/flexdrive/pkg/utils"
 	"github.com/uxff/flexdrive/pkg/utils/paginator"
 )
 
@@ -69,13 +70,11 @@ func OrderList(c *gin.Context) {
 	list := make([]*dao.Order, 0)
 	var total int64
 
-	if req.Name != "" {
-		total, err = base.ListAndCountByCondition(&dao.Order{}, req.ToCondition(), req.Page, req.PageSize, "", &list)
-		if err != nil {
-			log.Trace(requestId).Errorf("list failed:%v", err)
-			StdErrResponse(c, ErrInternal)
-			return
-		}
+	total, err = base.ListAndCountByCondition(&dao.Order{}, req.ToCondition(), req.Page, req.PageSize, "", &list)
+	if err != nil {
+		log.Trace(requestId).Errorf("list failed:%v", err)
+		StdErrResponse(c, ErrInternal)
+		return
 	}
 
 	// 从数据库结构转换成返回结构
@@ -107,7 +106,7 @@ func OrderCreate(c *gin.Context) {
 func OrderCreateForm(c *gin.Context) {
 	requestId := c.GetString(CtxKeyRequestId)
 
-	levelIdStr := c.Query("level")
+	levelIdStr := c.PostForm("level")
 	if levelIdStr == "" {
 		StdErrResponse(c, ErrInvalidParam)
 		return
@@ -151,7 +150,7 @@ func OrderCreateForm(c *gin.Context) {
 
 func OrderDetail(c *gin.Context) {
 
-	orderIdStr := c.Query("orderId")
+	orderIdStr := c.Param("orderId")
 	if orderIdStr == "" {
 		StdErrResponse(c, ErrInvalidParam)
 		return
@@ -196,7 +195,7 @@ func OrderDetail(c *gin.Context) {
 }
 
 func Mockpay(c *gin.Context) {
-	orderIdStr := c.Query("orderId")
+	orderIdStr := c.Param("orderId")
 	if orderIdStr == "" {
 		StdErrResponse(c, ErrInvalidParam)
 		return
@@ -221,20 +220,23 @@ func Mockpay(c *gin.Context) {
 		return
 	}
 
-	verifyCode := fmt.Sprintf("%d", (time.Now().Unix()/79)%9999)
+	verifyCode := fmt.Sprintf("%d", (time.Now().Unix()/79+int64(orderId*177))%9999)
 	outOrderNo := fmt.Sprintf("%d", (time.Now().UnixNano() / 777777))
+	token := utils.Md5(outOrderNo + "/")
 
-	c.HTML(http.StatusOK, "order/list.tpl", gin.H{
-		"LoginInfo":  getLoginInfo(c),
-		"IsLogin":    isLoginIn(c),
+	c.HTML(http.StatusOK, "order/mockpay.tpl", gin.H{
+		//"LoginInfo":  getLoginInfo(c),
+		//"IsLogin":    isLoginIn(c),
 		"Order":      orderInfo,
 		"OutOrderNo": outOrderNo,
 		"VerifyCode": verifyCode,
+		"Token":      token,
+		"User":       loginInfo.UserEnt,
 	})
 }
 
 func MockpayForm(c *gin.Context) {
-	orderIdStr := c.Query("orderId")
+	orderIdStr := c.PostForm("orderId")
 	if orderIdStr == "" {
 		StdErrResponse(c, ErrInvalidParam)
 		return
@@ -259,21 +261,27 @@ func MockpayForm(c *gin.Context) {
 		return
 	}
 
-	verifyCode := c.Query("verifyCode")
+	verifyCode := c.PostForm("verifyCode")
 	if verifyCode == "" {
 		StdErrMsgResponse(c, ErrInvalidParam, "验证码不对")
 		return
 	}
 
-	verifyCodeExpected := fmt.Sprintf("%d", (time.Now().Unix()/79)%9999)
+	verifyCodeExpected := fmt.Sprintf("%d", (time.Now().Unix()/79+int64(orderId*177))%9999)
 	if verifyCode != verifyCodeExpected {
 		StdErrMsgResponse(c, ErrInvalidParam, "验证码不对，期望"+verifyCodeExpected)
 		return
 	}
 
-	outOrderNo := c.Query("outOrderNo")
+	outOrderNo := c.PostForm("outOrderNo")
 	if outOrderNo == "" {
 		StdErrMsgResponse(c, ErrInvalidParam, "未收到第三方支付订单，支付失败")
+		return
+	}
+
+	token := c.PostForm("token")
+	if token == "" {
+		StdErrMsgResponse(c, ErrInvalidParam, "表单token失效")
 		return
 	}
 

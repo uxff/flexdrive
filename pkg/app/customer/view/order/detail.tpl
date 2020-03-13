@@ -65,18 +65,17 @@
                             状态
                         </div>
                         <div class="col-md-4" >
-                            {{.Order.Status}}
+                            {{orderStatus .Order.Status}}
                         </div>
                         <div class="col-md-2"></div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-2"></div>
-                        <div class="col-md-4" >
-                            
-                        </div>
-                        <div class="col-md-4" >
-                            <a href="/my/order/mockpay/{{.Order.Id}}" class="btn btn-success">去付款</a>
+                        <div class="col-md-8 text-center" >
+                            {{if eq .Order.Status 1}}
+                            <a href="/my/order/mockpay/{{.Order.Id}}" class="btn btn-success" target="_blank">去付款</a>
+                            {{end}}
                         </div>
                         <div class="col-md-2"></div>
                     </div>

@@ -80,7 +80,8 @@
         </div>
     </div>
     <div class="row text-center">
-        <input type="submit" class="btn btn-lg btn-primary" style="width: 200px;">
+        <p></p>
+        <button type="submit" class="btn btn-lg btn-primary" style="width: 200px;">提交购买</button>
     </div>
     <hr>
     <div class="row">

@@ -25,7 +25,21 @@
             会员账号
         </div>
         <div class="col-md-4" >
-            {{.LoginInfo.UserEnt.Email}}
+            <div class="well well-sm">
+                {{.LoginInfo.UserEnt.Email}}
+            </div>
+        </div>
+        <div class="col-md-2"></div>
+    </div>
+    <div class="row">
+        <div class="col-md-2"></div>
+        <div class="col-md-4" >
+            账号id
+        </div>
+        <div class="col-md-4" >
+            <div class="well well-sm">
+                {{.LoginInfo.UserEnt.Id}}
+            </div>
         </div>
         <div class="col-md-2"></div>
     </div>
@@ -35,87 +49,116 @@
             会员等级
         </div>
         <div class="col-md-4" >
-            {{.LoginInfo.UserEnt.Email}}
+            <div class="well well-sm">
+            {{.userLevel.Name}} 
+            <a href="/my/order/create" class="btn btn-info  btn-sm" type="button">升级</a>
+            </div>
         </div>
         <div class="col-md-2"></div>
     </div>
     <div class="row">
         <div class="col-md-2"></div>
         <div class="col-md-4" >
-            会员等级
+            总空间
         </div>
         <div class="col-md-4" >
-            {{.userLevel.Name}} <button class="btn btn-info " type="button">升级</button>
+            <div class="well well-sm">
+                {{space4Human .LoginInfo.UserEnt.QuotaSpace}}
+            </div>
         </div>
         <div class="col-md-2"></div>
     </div>
     <div class="row">
         <div class="col-md-2"></div>
         <div class="col-md-4" >
-            空间
+            已用空间
         </div>
         <div class="col-md-4" >
-            已用 {{space4Human .LoginInfo.UserEnt.UsedSpace}} / 总共 {{space4Human .LoginInfo.UserEnt.QuotaSpace}}
-            [<a href="/my/file/list" style="text-align: right;" >文件列表</a>]
-            <div class="progress " style="width:100%; float: left; height: 6px; margin-bottom: 10px; background-color: #dff0d8;">
-                <div class="progress-bar progress-bar-success" role="progressbar"
-                        aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"
-                        style="width: {{spaceRate .LoginInfo.UserEnt.UsedSpace .LoginInfo.UserEnt.QuotaSpace}}%;">
-                    <span class="sr-only">{{spaceRate .LoginInfo.UserEnt.UsedSpace .LoginInfo.UserEnt.QuotaSpace}}% 已用</span>
-                </div>
+            <div class="well well-sm">
+                {{space4Human .LoginInfo.UserEnt.UsedSpace}}
+                <a href="/my/file/list" class="btn btn-info btn-sm" style="text-align: right;" >文件列表</a>
             </div>
         </div>
         <div class="col-md-2"></div>
     </div>
     <div class="row" style="margin-bottom: 4px;">
         <div class="col-md-2"></div>
-        <div class="col-md-8" >
-            当前等级：{{.userLevel.Name}} [<a href="/" >升级</a>]&nbsp;&nbsp;
-            当前空间：已用 {{space4Human .LoginInfo.UserEnt.UsedSpace}} / 总共 {{space4Human .LoginInfo.UserEnt.QuotaSpace}}
-            [<a href="/" style="text-align: right;" >扩容</a>]
-            <div class="progress " style="width:100%; float: left; height: 6px; margin-bottom: 10px; background-color: #dff0d8;">
+        <div class="col-md-4" >
+            使用比例
+        </div>
+        <div class="col-md-4" >
+            <div class="progress " style="width:100%; float: left; height: 23px; margin-bottom: 10px; background-color: #dff0d8;">
                 <div class="progress-bar progress-bar-success" role="progressbar"
                         aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"
                         style="width: {{spaceRate .LoginInfo.UserEnt.UsedSpace .LoginInfo.UserEnt.QuotaSpace}}%;">
                     <span class="sr-only">{{spaceRate .LoginInfo.UserEnt.UsedSpace .LoginInfo.UserEnt.QuotaSpace}}% 已用</span>
                 </div>
+                {{spaceRate .LoginInfo.UserEnt.UsedSpace .LoginInfo.UserEnt.QuotaSpace}}%
             </div>
         </div>
         <div class="col-md-2"></div>
     </div>
-    <div class="row" style="margin-bottom: 4px;">
+    <div class="row">
         <div class="col-md-2"></div>
-        <div class="col-md-8" >
-            当前等级：{{.userLevel.Name}} [<a href="/" >升级</a>]&nbsp;&nbsp;
-            当前空间：已用 {{space4Human .LoginInfo.UserEnt.UsedSpace}} / 总共 {{space4Human .LoginInfo.UserEnt.QuotaSpace}}
-            [<a href="/" style="text-align: right;" >扩容</a>]
-            <div class="progress " style="width:100%; float: left; height: 6px; margin-bottom: 10px; background-color: #dff0d8;">
-                <div class="progress-bar progress-bar-success" role="progressbar"
-                        aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"
-                        style="width: {{spaceRate .LoginInfo.UserEnt.UsedSpace .LoginInfo.UserEnt.QuotaSpace}}%;">
-                    <span class="sr-only">{{spaceRate .LoginInfo.UserEnt.UsedSpace .LoginInfo.UserEnt.QuotaSpace}}% 已用</span>
-                </div>
+        <div class="col-md-4" >
+            总文件数
+        </div>
+        <div class="col-md-4" >
+            <div class="well well-sm">
+                {{.LoginInfo.UserEnt.FileCount}}
             </div>
         </div>
         <div class="col-md-2"></div>
     </div>
-    <div class="row" style="margin-bottom: 4px;">
+    <div class="row">
         <div class="col-md-2"></div>
-        <div class="col-md-8" >
-            当前等级：{{.userLevel.Name}} [<a href="/" >升级</a>]&nbsp;&nbsp;
-            当前空间：已用 {{space4Human .LoginInfo.UserEnt.UsedSpace}} / 总共 {{space4Human .LoginInfo.UserEnt.QuotaSpace}}
-            [<a href="/" style="text-align: right;" >扩容</a>]
-            <div class="progress " style="width:100%; float: left; height: 6px; margin-bottom: 10px; background-color: #dff0d8;">
-                <div class="progress-bar progress-bar-success" role="progressbar"
-                        aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"
-                        style="width: {{spaceRate .LoginInfo.UserEnt.UsedSpace .LoginInfo.UserEnt.QuotaSpace}}%;">
-                    <span class="sr-only">{{spaceRate .LoginInfo.UserEnt.UsedSpace .LoginInfo.UserEnt.QuotaSpace}}% 已用</span>
-                </div>
+        <div class="col-md-4" >
+            总分享数
+        </div>
+        <div class="col-md-4" >
+            <div class="well well-sm">
+                {{.LoginInfo.UserEnt.FileCount}}
             </div>
         </div>
         <div class="col-md-2"></div>
     </div>
-
+    <div class="row">
+        <div class="col-md-2"></div>
+        <div class="col-md-4" >
+            累计充值
+        </div>
+        <div class="col-md-4" >
+            <div class="well well-sm">
+                {{.LoginInfo.UserEnt.TotalCharge}}
+            </div>
+        </div>
+        <div class="col-md-2"></div>
+    </div>
+    <div class="row">
+        <div class="col-md-2"></div>
+        <div class="col-md-4" >
+            最后登录时间
+        </div>
+        <div class="col-md-4" >
+            <div class="well well-sm">
+                {{.LoginInfo.UserEnt.LastLoginAt}}
+            </div>
+        </div>
+        <div class="col-md-2"></div>
+    </div>
+    <div class="row">
+        <div class="col-md-2"></div>
+        <div class="col-md-4" >
+            最后登录ip
+        </div>
+        <div class="col-md-4" >
+            <div class="well well-sm">
+                {{.LoginInfo.UserEnt.LastLoginIp}}
+            </div>
+        </div>
+        <div class="col-md-2"></div>
+    </div>
+    
 
 
 </div>

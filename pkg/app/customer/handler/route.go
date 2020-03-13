@@ -76,9 +76,9 @@ func StartHttpServer(addr string) error {
 
 	authRouter.GET("/my/order/create", OrderCreate)
 	authRouter.POST("/my/order/create", OrderCreateForm)
-	authRouter.POST("/my/order/detail/:orderId", OrderDetail)
+	authRouter.GET("/my/order/detail/:orderId", OrderDetail)
 	authRouter.GET("/my/order/mockpay/:orderId", Mockpay)
-	authRouter.POST("/my/order/mockpay/:orderId", MockpayForm)
+	authRouter.POST("/my/order/notify", MockpayForm)
 	authRouter.GET("/my/order/list", OrderList)
 
 	authRouter.GET("/my/profile", Profile)
