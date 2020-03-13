@@ -96,6 +96,105 @@ func OrderList(c *gin.Context) {
 	})
 }
 
+func OrderCreate(c *gin.Context) {
+
+	c.HTML(http.StatusOK, "order/create.tpl", gin.H{
+		"LoginInfo": getLoginInfo(c),
+		"IsLogin":   isLoginIn(c),
+	})
+}
+
+func OrderCreateForm(c *gin.Context) {
+	requestId := c.GetString(CtxKeyRequestId)
+
+	levelIdStr := c.Query("level")
+	if levelIdStr == "" {
+		StdErrResponse(c, ErrInvalidParam)
+		return
+	}
+
+	levelId, _ := strconv.Atoi(levelIdStr)
+
+	levelInfo, err := dao.GetUserLevelById(levelId)
+	if err != nil {
+		StdErrMsgResponse(c, ErrInvalidParam, "查询等级错误")
+		return
+	}
+
+	if levelInfo == nil {
+		StdErrMsgResponse(c, ErrInvalidParam, "查询不到要购买的等级")
+		return
+	}
+
+	loginInfo := getLoginInfo(c)
+
+	orderInfo := &dao.Order{
+		UserId:        loginInfo.UserId,
+		OriginLevelId: loginInfo.UserEnt.LevelId,
+		TotalAmount:   levelInfo.Price,
+		PayAmount:     levelInfo.Price,
+		AwardSpace:    levelInfo.QuotaSpace,
+		AwardLevelId:  levelInfo.Id,
+		LevelName:     levelInfo.Name,
+		Status:        1,
+	}
+
+	_, err = base.Insert(orderInfo)
+	if err != nil {
+		log.Trace(requestId).Errorf("insert order error:%v", err)
+		StdErrMsgResponse(c, ErrInvalidParam, "创建订单失败")
+		return
+	}
+
+	c.Redirect(http.StatusMovedPermanently, "/my/order/detail/"+strconv.Itoa(orderInfo.Id))
+}
+
+func OrderDetail(c *gin.Context) {
+
+	orderIdStr := c.Query("orderId")
+	if orderIdStr == "" {
+		StdErrResponse(c, ErrInvalidParam)
+		return
+	}
+
+	orderId, _ := strconv.Atoi(orderIdStr)
+
+	orderInfo, err := dao.GetOrderById(orderId)
+	if err != nil {
+		StdErrMsgResponse(c, ErrInvalidParam, "查询订单错误")
+		return
+	}
+
+	if orderInfo == nil {
+		StdErrMsgResponse(c, ErrInvalidParam, "查询不到订单")
+		return
+	}
+
+	loginInfo := getLoginInfo(c)
+	if loginInfo.UserId != orderInfo.UserId {
+		StdErrMsgResponse(c, ErrInvalidParam, "无权限操作该订单")
+		return
+	}
+
+	levelInfo, err := dao.GetUserLevelById(orderInfo.AwardLevelId)
+	if err != nil {
+		StdErrMsgResponse(c, ErrInvalidParam, "查询等级错误")
+		return
+	}
+
+	if levelInfo == nil {
+		StdErrMsgResponse(c, ErrInvalidParam, "等级不存在")
+		return
+	}
+
+	c.HTML(http.StatusOK, "order/detail.tpl", gin.H{
+		"LoginInfo": getLoginInfo(c),
+		"IsLogin":   isLoginIn(c),
+		"Order":     orderInfo,
+		"Level":     levelInfo,
+	})
+}
+
 func Mockpay(c *gin.Context) {
 	orderIdStr := c.Query("orderId")
 	if orderIdStr == "" {
@@ -133,6 +232,7 @@ func Mockpay(c *gin.Context) {
 		"VerifyCode": verifyCode,
 	})
 }
+
 func MockpayForm(c *gin.Context) {
 	orderIdStr := c.Query("orderId")
 	if orderIdStr == "" {
@@ -182,19 +282,4 @@ func MockpayForm(c *gin.Context) {
 	orderInfo.UpdateById([]string{"remark", "status"})
 
 	StdErrResponse(c, ErrSuccess)
-}
-
-func OrderCreate(c *gin.Context) {
-
-	c.HTML(http.StatusOK, "order/create.tpl", gin.H{
-		"LoginInfo": getLoginInfo(c),
-		"IsLogin":   isLoginIn(c),
-	})
-}
-
-type OrderCreateRequest struct {
-}
-
-func OrderCreateForm(c *gin.Context) {
-
 }

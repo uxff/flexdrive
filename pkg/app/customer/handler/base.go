@@ -142,7 +142,7 @@ func AuthMiddleWare(c *gin.Context) {
 		return
 	}
 
-	if cuaToken.LoginAt < int(time.Now().Add(-time.Hour*24).Unix()) {
+	if cuaToken.LoginAt < int(time.Now().Add(-time.Hour*24*7).Unix()) {
 		ClearLogin(c)
 		StdErrResponse(c, ErrLoginExpired)
 		c.Abort()

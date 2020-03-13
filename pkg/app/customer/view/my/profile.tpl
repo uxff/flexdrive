@@ -1,4 +1,4 @@
-{{ define "userfile/list.tpl" }}
+{{ define "my/profile.tpl" }}
 
 {{template "common/head.tpl" .}}
 {{template "common/partheader.tpl" .}}

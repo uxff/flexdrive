@@ -10,8 +10,8 @@
 
     <h2 class="text-center">购买升级享受以下优惠权益</h2>
     <div class="row">
-        <div class="col-sm-3">
-            <label for="level1">
+        <div class="col-sm-3 levels">
+            <label for="level1" style="display: block;padding: 8px;">
             <div class="panel panel-success">
                 <div class="panel-heading">
                     <h3 class="text-center">青铜会员</h3>
@@ -27,8 +27,8 @@
             </div>
             <input type="radio" name="level" id="level1" value="1"></label>
         </div>
-        <div class="col-sm-3">
-            <label for="level2">
+        <div class="col-sm-3 levels">
+            <label for="level2" style="display: block;padding: 8px;">
             <div class="panel panel-info">
                 <div class="panel-heading">
                     <h3 class="text-center">白银会员</h3>
@@ -44,8 +44,8 @@
             </div>
             <input type="radio" name="level" id="level2" value="2"></label>
         </div>
-        <div class="col-sm-3">
-            <label for="level3">
+        <div class="col-sm-3 levels">
+            <label for="level3" style="display: block;padding: 8px;">
             <div class="panel panel-warning">
                 <div class="panel-heading">
                     <h3 class="text-center">黄金会员</h3>
@@ -61,8 +61,8 @@
             </div>
             <input type="radio" name="level" id="level3" value="3"></label>
         </div>
-        <div class="col-sm-3">
-            <label for="level4">
+        <div class="col-sm-3 levels">
+            <label for="level4" style="display: block;padding: 8px;">
             <div class="panel panel-primary">
                 <div class="panel-heading">
                     <h3 class="text-center">钻石会员</h3>
@@ -80,7 +80,7 @@
         </div>
     </div>
     <div class="row text-center">
-        <input type="submit" class="btn btn-lg btn-primary" style="width: 200px;">确认下单</a>
+        <input type="submit" class="btn btn-lg btn-primary" style="width: 200px;">
     </div>
     <hr>
     <div class="row">
@@ -89,6 +89,19 @@
     </div>
 </form>
 </div>
+
+
+<script type="text/javascript">
+
+$(".levels").on('click', function(){
+    // $('.levels').removeClass('purple');
+    // $(this).addClass('purple');
+    $('.levels').css({background: '#ffffff'});
+    $(this).css({background: '#9076c3'});
+});
+
+
+</script>
 {{template "common/partfooter.tpl"}}
 {{template "common/foot.tpl"}}
 

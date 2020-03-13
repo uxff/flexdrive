@@ -23,9 +23,9 @@
     <!--当前排版方式1-->
     <div class="row" style="margin-bottom: 4px;">
         <div class="col-md-6" style="padding: 5px;">
-            当前等级：{{.userLevel.Name}} [<a href="/" >升级</a>]&nbsp;&nbsp;
+            当前等级：{{.userLevel.Name}} &nbsp;&nbsp;
             当前空间：已用 {{space4Human .LoginInfo.UserEnt.UsedSpace}} / 总共 {{space4Human .LoginInfo.UserEnt.QuotaSpace}}
-            [<a href="/" style="text-align: right;" >扩容</a>]
+            [<a href="/my/order/create" style="text-align: right;" >升级扩容</a>]
             <div class="progress " style="width:100%; float: left; height: 6px; margin-bottom: 10px; background-color: #dff0d8;">
                 <div class="progress-bar progress-bar-success" role="progressbar"
                         aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"
