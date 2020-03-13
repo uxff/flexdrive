@@ -247,7 +247,7 @@ func UserFileEnable(c *gin.Context) {
 
 	//loginInfo := getLoginInfo(c)
 
-	shareEnt, err := dao.GetUserFileById(int(fileIndexId))
+	userFile, err := dao.GetUserFileById(int(fileIndexId))
 
 	if err != nil {
 		log.Errorf("db error:%v", err)
@@ -255,20 +255,74 @@ func UserFileEnable(c *gin.Context) {
 		return
 	}
 
-	if shareEnt == nil {
+	if userFile == nil {
 		StdErrResponse(c, ErrUserNotExist)
 		return
 	}
 
 	if enable == 1 {
 		// 启用
-		shareEnt.Status = base.StatusNormal
+		userFile.Status = base.StatusNormal
 	} else if enable == 9 {
 		// 停用
-		shareEnt.Status = base.StatusDeleted
+		userFile.Status = base.StatusDeleted
 	}
 
-	_, err = base.UpdateByCol("id", fileIndexId, shareEnt, []string{"status"})
+	_, err = base.UpdateByCol("id", fileIndexId, userFile, []string{"status"})
+	if err != nil {
+		log.Errorf("db error:%v", err)
+		StdErrResponse(c, ErrInternal)
+		return
+	}
+
+	//StdResponse(c, ErrSuccess, nil)
+	c.Redirect(http.StatusMovedPermanently, RouteUserFileList)
+}
+
+func UserFileRename(c *gin.Context) {
+	fileIndexId, _ := strconv.ParseInt(c.PostForm("id"), 10, 64)
+	if fileIndexId <= 0 {
+		StdErrResponse(c, ErrInvalidParam)
+		return
+	}
+
+	newFileName := c.PostForm("name")
+
+	loginInfo := getLoginInfo(c)
+
+	userFile, err := dao.GetUserFileById(int(fileIndexId))
+
+	if err != nil {
+		log.Errorf("db error:%v", err)
+		StdErrResponse(c, ErrInternal)
+		return
+	}
+
+	if userFile == nil {
+		StdErrResponse(c, ErrUserFileNotExist)
+		return
+	}
+
+	if userFile.UserId != loginInfo.UserId {
+		StdErrResponse(c, ErrNoPermit)
+		return
+	}
+
+	existNameFile, err := dao.GetUserFileByPath(loginInfo.UserId, userFile.FilePath+newFileName)
+	if err != nil {
+		log.Errorf("db error:%v", err)
+		StdErrResponse(c, ErrInternal)
+		return
+	}
+
+	if existNameFile != nil {
+		StdErrMsgResponse(c, ErrNameDuplicate, "提交的文件名已存在")
+		return
+	}
+
+	userFile.FileName = newFileName
+
+	_, err = base.UpdateByCol("id", fileIndexId, userFile, []string{"fileName"})
 	if err != nil {
 		log.Errorf("db error:%v", err)
 		StdErrResponse(c, ErrInternal)

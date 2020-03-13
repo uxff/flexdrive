@@ -23,7 +23,7 @@
     <!--当前排版方式1-->
     <div class="row" style="margin-bottom: 4px;">
         <div class="col-md-6" style="padding: 5px;">
-            当前等级：{{.userLevel.Name}} &nbsp;&nbsp;
+            <!--当前等级：{{.userLevel.Name}} &nbsp;&nbsp;-->
             当前空间：已用 {{space4Human .LoginInfo.UserEnt.UsedSpace}} / 总共 {{space4Human .LoginInfo.UserEnt.QuotaSpace}}
             [<a href="/my/order/create" style="text-align: right;" >升级扩容</a>]
             <div class="progress " style="width:100%; float: left; height: 6px; margin-bottom: 10px; background-color: #dff0d8;">
@@ -111,12 +111,12 @@
                         <a href="/">移动到</a>
                         <a href="/">复制到</a>
                         -->
-                        <a href="/">重命名</a>
+                        <a href="#" onclick="checkFile({{.Id}},'{{.FileName}}');"  data-id="{{.Id}}" data-toggle="modal" data-target="#renameModal">重命名</a>
                         {{if eq .Status 1}}
                         <a href="/my/file/enable/{{.Id}}/9">删除</a>
                         {{end}}
                         {{if eq .IsDir 0}}
-                        <a href="#" onclick="checkShare({{.Id}},'{{.FileName}}');" data-id="{{.Id}}" data-toggle="modal" data-target="#shareModal">分享</a>
+                        <a href="#" onclick="checkFile({{.Id}},'{{.FileName}}');" data-id="{{.Id}}" data-toggle="modal" data-target="#shareModal">分享</a>
                         <a href="/">下载</a>
                         {{end}}
                     </td>
@@ -220,6 +220,55 @@
     </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 
+<!-- 模态框（Modal） rename -->
+<div class="modal fade" id="renameModal" tabindex="-1" role="dialog" aria-labelledby="renameLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" 
+                        aria-hidden="true">×
+                </button>
+                <h4 class="modal-title" id="renameLabel">
+                    重命名
+                </h4>
+            </div>
+            <form id="renameForm" accept-charset="utf-8" role="form" class="form-horizontal" method="POST" action='/my/file/rename' enctype="application/x-www-form-urlencoded">
+            <div class="modal-body">
+                <div class="row" style="margin: 10px;">
+                    <div class="col-md-4 text-right">
+                        当前路径：
+                    </div>
+                    <div class="col-md-6">
+                        全部文件<span id="dirPathTextInRenameModal"></span>
+                    </div>
+                </div>
+                <div class="row" style="margin: 10px;">
+                    <div class="col-md-4 text-right">
+                        原文件名：
+                    </div>
+                    <div class="col-md-6">
+                        <span id="fileNameTextInRenameModal"></span>
+                        <input type="hidden" name="id" id="userFileIdInRenameModal" value="">
+                    </div>
+                </div>
+                <div class="row" style="margin: 10px;">
+                    <div class="col-md-4 text-right">
+                        重命名为：
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text" name="name" id="fileNameInRenameModal" value="">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="submit" class="btn btn-primary" id="renameSubmit">提交</button>
+            </div>
+            </form>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
 <!-- 模态框（Modal） share -->
 <div class="modal fade" id="shareModal" tabindex="-1" role="dialog" aria-labelledby="shareLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -306,6 +355,7 @@ $("#expiredText").datetimepicker({
 });
 
 $(function () {
+    // -------- 新建文件夹 ----------
     $('#newFolderModal').on('show.bs.modal', function () {
         //alert('嘿，我听说您喜欢模态框xxxxxxxxx...');})
         $('#dirPathTextInNewFolderModal').html($('#dirPath').val());
@@ -315,6 +365,8 @@ $(function () {
         $('#newFolderForm').submit();
         $('#newFolderModal').modal('hide');
     });
+
+    // -------- 上传 ----------
     $('#uploadModal').on('show.bs.modal', function () {
         //alert('嘿，我听说您喜欢模态框xxxxxxxxx...');})
         $('#dirPathTextInUploadModal').html($('#dirPath').val());
@@ -323,6 +375,18 @@ $(function () {
         $('#uploadForm').submit();
         $('#uploadModal').modal('hide');
     });
+
+    // -------- 重命名 ----------
+    $('#renameModal').on('show.bs.modal', function () {
+        $('#dirPathTextInRenameModal').html($('#dirPath').val());
+        $('#fileTextInRenameModal').html($('#dirPath').val());
+    });
+    $('#renameSubmit').on('click', function(){
+        $('#renameForm').submit();
+        $('#renameModal').modal('hide');
+    });
+
+    // -------- 分享 ----------
     $('#shareModal').on('show.bs.modal', function () {
         $('#dirPathTextInShareModal').html($('#dirPath').val());
         
@@ -362,12 +426,18 @@ $(function () {
     });
 
 });
-    function checkShare(userFileId, fileName) {
-        $('#userFileIdInShareModal').val(userFileId);
-        $('#fileNameInShareModal').val(fileName);
-        $('#fileNameTextInShareModal').val(fileName);
-        //$('#shareModal').show();
-    }
+
+function checkFile(userFileId, fileName) {
+    $('#userFileIdInShareModal').val(userFileId);
+    $('#fileNameInShareModal').val(fileName);
+    $('#fileNameTextInShareModal').html(fileName);
+
+    $('#userFileIdInRenameModal').val(userFileId);
+    $('#fileNameInRenameModal').val(fileName);
+    $('#fileNameTextInRenameModal').html(fileName);
+
+    //$('#shareModal').show();
+}
 
 </script>
     
