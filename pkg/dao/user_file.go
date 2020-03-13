@@ -162,3 +162,16 @@ func (t *UserFile) SumSpace() int64 {
 	}
 	return total
 }
+
+// 统计用户的文件数
+func (t *UserFile) CountFiles() int64 {
+	dbname := common.DBMysqlDrive // t.DbNamespace()
+	// total, err := engine.Where("id >?", 1).SumInt(ss, "money")
+	total, err := envinit.Dbs[dbname].Where("userId=? and status=?", t.UserId, t.Status).Count(&UserFile{}, "id")
+
+	if err != nil {
+		log.Errorf("count user(%d).files failed:%v", t.UserId, err)
+		return 0
+	}
+	return total
+}

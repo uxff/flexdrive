@@ -113,18 +113,6 @@
     <div class="row">
         <div class="col-md-2"></div>
         <div class="col-md-4" >
-            总分享数
-        </div>
-        <div class="col-md-4" >
-            <div class="well well-sm">
-                {{.LoginInfo.UserEnt.FileCount}}
-            </div>
-        </div>
-        <div class="col-md-2"></div>
-    </div>
-    <div class="row">
-        <div class="col-md-2"></div>
-        <div class="col-md-4" >
             累计充值
         </div>
         <div class="col-md-4" >
@@ -163,101 +151,7 @@
 
 </div>
  
-<style type="text/css">
-    .glyphicon-folder-close {
-        color: #FFCC33; 
-    }
-    .glyphicon-file {
-        color: #68bde6;
-    }
-</style>
 
-<script type="text/javascript">
-Date.prototype.Format = function (fmt) { //author: meizz
-  var o = {
-    "M+": this.getMonth() + 1, //月份
-    "d+": this.getDate(), //日
-    "h+": this.getHours(), //小时
-    "m+": this.getMinutes(), //分
-    "s+": this.getSeconds(), //秒
-    "q+": Math.floor((this.getMonth() + 3) / 3), //季度
-    "S": this.getMilliseconds() //毫秒
-  };
-  if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
-  for (var k in o)
-  if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
-  return fmt;
-}
-
-$("#expiredText").datetimepicker({
-    format: 'YYYY-MM-DD HH:mm'
-});
-
-$(function () {
-    $('#newFolderModal').on('show.bs.modal', function () {
-        //alert('嘿，我听说您喜欢模态框xxxxxxxxx...');})
-        $('#dirPathTextInNewFolderModal').html($('#dirPath').val());
-        $('#nameInNewFolderModal').focus();// 未生效
-    });
-    $('#newFolderSubmit').on('click', function(){
-        $('#newFolderForm').submit();
-        $('#newFolderModal').modal('hide');
-    });
-    $('#uploadModal').on('show.bs.modal', function () {
-        //alert('嘿，我听说您喜欢模态框xxxxxxxxx...');})
-        $('#dirPathTextInUploadModal').html($('#dirPath').val());
-    });
-    $('#uploadSubmit').on('click', function(){
-        $('#uploadForm').submit();
-        $('#uploadModal').modal('hide');
-    });
-    $('#shareModal').on('show.bs.modal', function () {
-        $('#dirPathTextInShareModal').html($('#dirPath').val());
-        
-        var userFileId = $('#userFileIdInShareModal').val();//$(this).attr('data-id');
-        var fileName = $('#fileNameInShareModal').val();//$(this).attr('data-id');
-        console.log('userFileId=', userFileId);
-        $.ajax({
-            url:"/my/share/check/"+userFileId,
-            success:function(data, textStatus) {
-                console.log(data);
-                if (data.result != undefined && data.result.Id != undefined) {
-                    console.log('the fileid=', data.result.Id);
-                }
-            }
-        });
-    });
-    $('#shareSubmit').on('click', function(){
-        $('#shareForm').submit();
-        $('#shareModal').modal('hide');
-    });
-
-    $('#expiredText').hide();
-    // (new Date()).Format("yyyy-M-d h:m:s.S")
-    $('#expiredText').val((new Date()).Format("yyyy-MM-dd hh:mm"));
-    $('.expired-control').on('click', function(){
-        var val = $(this).val();
-        console.log('expired-coltrol val=', val);
-        if (val == 0) {
-            $('#expiredText').hide();
-            //$('#expired-text').hide();
-        }
-        if (val == 2) {
-            // 相对有效期
-            $('#expiredText').show();
-            //$('#expired-text').hide();
-        }
-    });
-
-});
-    function checkShare(userFileId, fileName) {
-        $('#userFileIdInShareModal').val(userFileId);
-        $('#fileNameInShareModal').val(fileName);
-        $('#fileNameTextInShareModal').val(fileName);
-        //$('#shareModal').show();
-    }
-
-</script>
     
 {{template "common/partfooter.tpl"}}
 {{template "common/foot.tpl"}}

@@ -132,7 +132,7 @@ func AcceptLogin(c *gin.Context, userEnt *dao.User) {
 	c.SetCookie(CookieKeyAuth, tokenStr, 3600*24*7, "", "", http.SameSiteDefaultMode, false, false)
 
 	// record login
-	//go managermodel.RecordLoginStatus(userEnt)
+	go userEnt.UpdateById([]string{"lastLoginAt", "lastLoginIp"})
 }
 
 func ClearLogin(c *gin.Context) {

@@ -212,8 +212,10 @@ func UploadForm(c *gin.Context) {
 	// 更新用户自己的空间使用记录
 	go func(userId int) {
 		usedSpace := userFile.SumSpace()
+		fileCount := userFile.CountFiles()
 		userInfo.UserEnt.UsedSpace = usedSpace
-		err := userInfo.UserEnt.UpdateById([]string{"usedSpace"})
+		userInfo.UserEnt.FileCount = fileCount
+		err := userInfo.UserEnt.UpdateById([]string{"usedSpace", "fileCount"})
 		if err != nil {
 			log.Trace(requestId).Debugf("update user(%d) usedSpace failed:%v", userInfo.UserEnt.Id, err)
 		}
