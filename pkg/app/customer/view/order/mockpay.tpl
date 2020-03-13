@@ -38,7 +38,7 @@
         </tr>
         <tr>
             <td>输入支付验证码({{.VerifyCode}})</td>
-            <td><input type="number" name="verifyCode"></td>
+            <td><input type="text" name="verifyCode"></td>
         </tr>
     </table>
     <input type="hidden" name="token" value="{{.Token}}">

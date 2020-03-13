@@ -220,8 +220,8 @@ func Mockpay(c *gin.Context) {
 		return
 	}
 
-	verifyCode := fmt.Sprintf("%d", (time.Now().Unix()/79+int64(orderId*177))%9999)
-	outOrderNo := fmt.Sprintf("%d", (time.Now().UnixNano() / 777777))
+	verifyCode := genVerifyCode(orderId)
+	outOrderNo := fmt.Sprintf("%d", (time.Now().UnixNano() / 7777777))
 	token := utils.Md5(outOrderNo + "/")
 
 	c.HTML(http.StatusOK, "order/mockpay.tpl", gin.H{
@@ -244,6 +244,18 @@ func MockpayForm(c *gin.Context) {
 
 	orderId, _ := strconv.Atoi(orderIdStr)
 
+	verifyCode := c.PostForm("verifyCode")
+	if !checkVerifyCode(orderId, verifyCode) {
+		StdErrMsgResponse(c, ErrInvalidParam, "验证码不对")
+		return
+	}
+
+	token := c.PostForm("token")
+	if token == "" {
+		StdErrMsgResponse(c, ErrInvalidParam, "表单token失效")
+		return
+	}
+
 	orderInfo, err := dao.GetOrderById(orderId)
 	if err != nil {
 		StdErrMsgResponse(c, ErrInvalidParam, "查询错误")
@@ -261,27 +273,9 @@ func MockpayForm(c *gin.Context) {
 		return
 	}
 
-	verifyCode := c.PostForm("verifyCode")
-	if verifyCode == "" {
-		StdErrMsgResponse(c, ErrInvalidParam, "验证码不对")
-		return
-	}
-
-	verifyCodeExpected := fmt.Sprintf("%d", (time.Now().Unix()/79+int64(orderId*177))%9999)
-	if verifyCode != verifyCodeExpected {
-		StdErrMsgResponse(c, ErrInvalidParam, "验证码不对，期望"+verifyCodeExpected)
-		return
-	}
-
 	outOrderNo := c.PostForm("outOrderNo")
 	if outOrderNo == "" {
 		StdErrMsgResponse(c, ErrInvalidParam, "未收到第三方支付订单，支付失败")
-		return
-	}
-
-	token := c.PostForm("token")
-	if token == "" {
-		StdErrMsgResponse(c, ErrInvalidParam, "表单token失效")
 		return
 	}
 
@@ -289,5 +283,30 @@ func MockpayForm(c *gin.Context) {
 	orderInfo.Status = dao.OrderStatusPaid
 	orderInfo.UpdateById([]string{"remark", "status"})
 
-	StdErrResponse(c, ErrSuccess)
+	// 用户升级
+	loginInfo.UserEnt.QuotaSpace += orderInfo.AwardSpace
+	loginInfo.UserEnt.TotalCharge += orderInfo.TotalAmount
+	loginInfo.UserEnt.LevelId = orderInfo.AwardLevelId
+
+	loginInfo.UserEnt.UpdateById([]string{"quotaSpace", "totalCharge", "levelId"})
+
+	StdErrMsgResponse(c, ErrSuccess, "支付完成")
+}
+
+// 每秒都能产生不同的验证码 79秒内都可以正确验证
+func genVerifyCode(orderId int) string {
+	fixCode := int(time.Now().UnixNano()/1001) % 16
+	longCode := utils.Md5(fmt.Sprintf("%d-%d", time.Now().Unix()/79, fixCode))
+
+	return fmt.Sprintf("%x%s", fixCode, longCode[:3])
+}
+
+func checkVerifyCode(orderId int, v string) bool {
+	if v == "" {
+		return false
+	}
+	fixCode, _ := strconv.ParseInt(v[0:1], 16, 32)
+	longCode := utils.Md5(fmt.Sprintf("%d-%d", time.Now().Unix()/79, fixCode))
+
+	return v[1:] == longCode[:3]
 }
