@@ -55,6 +55,7 @@ func StartHttpServer(addr string) error {
 	router.POST("/signup", TraceMiddleWare, SignupForm)
 	router.GET("/logout", TraceMiddleWare, Logout)
 	router.GET("/share/search", TraceMiddleWare, ShareSearch)
+	router.GET("/s/:shareHash", TraceMiddleWare, ShareDetail)
 	//router.GET("/app/config", TraceMiddleWare, GetAppConfig)
 	router.GET("/", TraceMiddleWare, Index)
 	router.GET("/file/:fileHash/:fileName", Fs)

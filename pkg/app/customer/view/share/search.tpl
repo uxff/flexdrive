@@ -33,7 +33,7 @@
         {{range .list}}
         <div class="col-md-8">
             <h3>{{.FileName}}</h3>
-            <p>分享人：{{.UserId}} 大小：{{.Size}} 分享时间：</p>
+            <p>分享人id：{{.UserId}} 大小：{{size4Human .UserFile.Size}} 分享时间：{{.Created}}</p>
             <p class="text-success">{{.FilePath}}</p>
         </div>
         {{else}}

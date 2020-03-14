@@ -73,5 +73,31 @@ func ShareSearch(c *gin.Context) {
 }
 
 func ShareDetail(c *gin.Context) {
-	
+	requestId := c.GetString(CtxKeyRequestId)
+
+	shareHash := c.Param("shareHash")
+	if shareHash == "" {
+		StdErrResponse(c, ErrInvalidParam)
+		return
+	}
+
+	shareItem, err := dao.GetShareByShareHash(shareHash)
+	if err != nil {
+		log.Trace(requestId).Debugf("get shareHash(%s) error:%v", shareHash, err)
+		StdErrResponse(c, ErrInternal)
+		return
+	}
+
+	if shareItem == nil || shareItem.Status == base.StatusDeleted {
+		StdErrMsgResponse(c, ErrItemNotExist, "分享的内容不存在或已删除")
+		return
+	}
+
+	genShareOutPath(c, shareItem)
+
+	c.HTML(http.StatusOK, "share/detail.tpl", gin.H{
+		"LoginInfo": getLoginInfo(c),
+		"IsLogin":   isLoginIn(c),
+		"ShareItem": shareItem,
+	})
 }

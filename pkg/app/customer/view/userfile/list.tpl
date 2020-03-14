@@ -280,6 +280,7 @@
                 </h4>
             </div>
             <form id="uploadForm" accept-charset="utf-8" role="form" class="form-horizontal" method="POST" action='/my/share/add' enctype="application/x-www-form-urlencoded">
+            </form>
             <div class="modal-body">
                 <div class="row" style="margin: 10px;">
                     <div class="col-md-3 text-right">
@@ -331,7 +332,6 @@
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
                 <!--<button type="submit" class="btn btn-primary" id="shareSubmit">提交</button>-->
             </div>
-            </form>
         </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
@@ -408,14 +408,46 @@ $(function () {
             success:function(data, textStatus) {
                 console.log(data);
                 if (data.result != undefined && data.result.Id != undefined) {
+                    // 有分享
                     console.log('the fileid=', data.result.Id);
+                    $('#shareStatusText').html('已生成分享链接');
+                    $('#shareAddr').val(data.result.OuterPath);
+                    $('#btnMakeShare').hide();
+                } else {
+                    // 无分享
+                    $('#shareStatusText').html('尚未分享');
+                    $('#btnMakeShare').show();
                 }
             }
         });
     });
-    $('#shareSubmit').on('click', function(){
-        $('#shareForm').submit();
-        $('#shareModal').modal('hide');
+    // $('#shareSubmit').on('click', function(){
+    //     $('#shareForm').submit();
+    //     $('#shareModal').modal('hide');
+    // });
+    $('#btnMakeShare').on('click', function() {
+        var userFileId = $('#userFileIdInShareModal').val();
+        $.ajax({
+            method: 'POST',
+            url:"/my/share/add",
+            data: {
+                'userFileId': userFileId,
+            },
+            success:function(data, textStatus) {
+                console.log(data);
+                if (data.result != undefined && data.result.Id != undefined) {
+                    // 有分享
+                    console.log('the fileid=', data.result.Id);
+                    $('#shareStatusText').html('已生成分享链接');
+                    $('#shareAddr').val(data.result.OuterPath);
+                    $('#btnMakeShare').hide();
+                } else {
+                    // 无分享
+                    alert('生成分享链接失败:'+data.errmsg);
+                }
+            }
+        });
+
     });
 
     $('#expiredText').hide();

@@ -268,7 +268,7 @@ func ListAndCountByCondition(entityPtr interface{}, conditions map[string]interf
 		return
 	}
 
-	log.Debugf("nCount of listByCondition =%d", nCount)
+	//log.Debugf("nCount of listByCondition =%d", nCount)
 
 	total = nCount
 

@@ -92,9 +92,9 @@ func ShareList(c *gin.Context) {
 }
 
 type ShareAddRequest struct {
-	UserFileId  int       `form:"userFileId"`  // 文件
-	ExpiredText string    `form:"expiredText"` // 有效期秒数
-	ExpiredTime time.Time `form:"-"`
+	UserFileId int `form:"userFileId"` // 文件
+	//ExpiredText string    `form:"expiredText"` // 有效期秒数
+	// ExpiredTime time.Time `form:"-"`
 }
 
 func ShareAdd(c *gin.Context) {
@@ -143,6 +143,7 @@ func ShareAdd(c *gin.Context) {
 
 	if existShare != nil {
 		//if existShare.Expired = // todo redirect
+		genShareOutPath(c, existShare)
 		StdResponse(c, ErrSuccess, existShare)
 		return
 	} else {
@@ -153,14 +154,18 @@ func ShareAdd(c *gin.Context) {
 			FileHash:   userFile.FileHash,
 			NodeId:     userFile.NodeId,
 			//FilePath:   userFile.FilePath,
-			Status: base.StatusNormal,
+			Status:  base.StatusNormal,
+			Expired: time.Now().Add(time.Hour * 24 * 7),
 		}
 
-		req.ExpiredTime, err = time.Parse("2006-01-02 15:04", req.ExpiredText)
+		// 生成分享访问链接
+		genShareOutPath(c, shareItem)
 
-		if req.ExpiredTime.Unix() > 0 {
-			shareItem.Expired = req.ExpiredTime //time.Now().Add(time.Second * time.Duration(req.ExpiredSec))
-		}
+		//req.ExpiredTime, err = time.Parse("2006-01-02 15:04", req.ExpiredText)
+
+		// if req.ExpiredTime.Unix() > 1 {
+		// 	shareItem.Expired = req.ExpiredTime //time.Now().Add(time.Second * time.Duration(req.ExpiredSec))
+		// }
 
 		_, err = base.Insert(shareItem)
 		if err != nil {
@@ -205,6 +210,15 @@ func ShareCheck(c *gin.Context) {
 		log.Trace(requestId).Errorf("db error:%v", err)
 		StdErrMsgResponse(c, ErrInternal, "查询分享失败")
 		return
+	}
+
+	if existShare != nil {
+		// portStr := ""
+		// if c.Request.Header.Get("Host") != "" && c.Request.URL.Port() != "80" && c.Request.URL.Port() != "443" {
+		// 	portStr = ":" + c.Request.URL.Port()
+		// }
+
+		genShareOutPath(c, existShare)
 	}
 
 	StdResponse(c, ErrSuccess, existShare)
@@ -254,4 +268,10 @@ func ShareEnable(c *gin.Context) {
 
 	//StdResponse(c, ErrSuccess, nil)
 	c.Redirect(http.StatusMovedPermanently, RouteShareList)
+}
+
+func genShareOutPath(c *gin.Context, i *dao.Share) string {
+	i.MakeShareHash()
+	i.OuterPath = "http://" + c.Request.Host + "/s/" + i.ShareHash
+	return i.OuterPath
 }

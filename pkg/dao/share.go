@@ -25,8 +25,9 @@ type Share struct {
 	Expired    time.Time `xorm:"not null default '0000-00-00 00:00:00' comment('分享有效期') TIMESTAMP"`
 
 	// after select
-	User     *User     `xorm:"-"`
-	UserFile *UserFile `xorm:"-"`
+	User      *User     `xorm:"-"`
+	UserFile  *UserFile `xorm:"-"`
+	OuterPath string    `xorm:"-"`
 }
 
 func (t Share) TableName() string {
@@ -46,7 +47,7 @@ func (t *Share) UpdateById(cols []string) error {
 //  保证UserFileId已经赋值
 func (t *Share) MakeShareHash() string {
 	raw := fmt.Sprintf("share-%d", t.UserFileId)
-	t.ShareHash, _ = filehash.CalcSha1(raw)
+	t.ShareHash, _ = filehash.CalcStrSha1(raw)
 	return t.ShareHash
 }
 
@@ -77,8 +78,24 @@ func (t *Share) AfterSelect() {
 }
 
 func GetShareByUserFile(userFileId int) (*Share, error) {
+	et := &Share{
+		UserFileId: userFileId,
+	}
+	shareHash := et.MakeShareHash()
 	e := &Share{}
-	exist, err := base.GetByCol("userFileId", userFileId, e)
+	exist, err := base.GetByCol("shareHash", shareHash, e)
+	if err != nil {
+		return nil, err
+	}
+	if !exist {
+		return nil, nil
+	}
+	return e, nil
+}
+
+func GetShareByShareHash(shareHash string) (*Share, error) {
+	e := &Share{}
+	exist, err := base.GetByCol("shareHash", shareHash, e)
 	if err != nil {
 		return nil, err
 	}

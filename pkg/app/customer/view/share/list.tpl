@@ -52,7 +52,6 @@
                     <th>文件大小</th>
                     <th>创建分享时间</th>
                     <th>过期时间</th>
-                    <th>状态</th>
                     <th>操作</th>
                 </tr>
             </thead>
@@ -63,9 +62,8 @@
                     <td>{{.UserId}} ..</td>
                     <td>{{.FileName}}</td>
                     <td>{{.FileHash }}</td>
-                    <td>{{.Size }}</td>
+                    <td>{{.UserFile.Size }}</td>
                     <td>{{.Created }}</td>
-                    <td>{{.Expired}}</td>
                     <td>{{mgrStatus .Status}}</td>
                     <td>
                         {{if eq .Status 1}}
@@ -73,7 +71,7 @@
                         {{else}}
                         <a href="/share/enable/{{.Id}}/1">启用</a>
                         {{end}}
-                        <a href="/share/index?id={{.Id}}">查看分享</a>
+                        <a href="/s/{{.ShareHash}}">查看分享</a>
                     </td>
                 </tr>
                 {{else}}
