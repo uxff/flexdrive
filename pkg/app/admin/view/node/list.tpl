@@ -63,8 +63,8 @@
                     <td>{{.Id}}</td>
                     <td>{{.NodeName}}</td>
                     <td>{{.NodeAddr}}</td>
-                    <td>{{.TotalSpace }}</td>
-                    <td>{{.UserdSpace }}</td>
+                    <td>{{space4Human .TotalSpace }}</td>
+                    <td>{{space4Human .UsedSpace }}</td>
                     <td>{{.FileCount }}</td>
                     <td>{{.Created}}</td>
                     <td>{{.LastRegistered}}</td>

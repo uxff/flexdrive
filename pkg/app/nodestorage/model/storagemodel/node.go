@@ -49,8 +49,6 @@ func StartNode(storageDir string, httpAddr string, clusterId string, clusterMemb
 		storageDir += "/"
 	}
 
-	node.NodeEnt = &dao.Node{}
-
 	node.StorageDir = storageDir
 	node.ClusterId = clusterId
 	node.ClusterMembers = clusterMembers
@@ -67,7 +65,32 @@ func StartNode(storageDir string, httpAddr string, clusterId string, clusterMemb
 
 	node.Worker = httpworker.NewWorker(node.WorkerAddr, node.ClusterId)
 	node.Worker.AddMates(strings.Split(node.ClusterMembers, ","))
-	node.NodeEnt.NodeName = node.Worker.Id
+
+	var err error
+	node.NodeEnt, err = dao.GetNodeByWorkerId(node.Worker.Id) //&dao.Node{}
+	if err != nil {
+		return err
+	}
+
+	if node.NodeEnt == nil {
+		node.NodeEnt = &dao.Node{
+			NodeName: node.Worker.Id,
+		}
+		_, err = base.Insert(node.NodeEnt)
+		if err != nil {
+			return err
+		}
+	}
+
+	//node.NodeEnt.NodeName = node.Worker.Id
+	node.NodeEnt.NodeAddr = node.WorkerAddr
+	node.NodeEnt.Status = 0
+	node.NodeEnt.TotalSpace = 1000000000
+
+	err = node.NodeEnt.UpdateById([]string{"nodeAddr", "status", "totalSpace"})
+	if err != nil {
+		return err
+	}
 
 	node.Worker.OuterHandler = node
 
@@ -86,7 +109,7 @@ func StartNode(storageDir string, httpAddr string, clusterId string, clusterMemb
 		serveErrorChan <- node.Worker.Start()
 	}()
 
-	err := <-serveErrorChan
+	err = <-serveErrorChan
 	log.Errorf("an error occur when serving storage: %v", err)
 
 	return err

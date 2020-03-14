@@ -45,3 +45,14 @@ func GetNodeById(id int) (*Node, error) {
 	}
 	return e, err
 }
+func GetNodeByWorkerId(id string) (*Node, error) {
+	e := &Node{}
+	exist, err := base.GetByCol("nodeName", id, e)
+	if err != nil {
+		return nil, err
+	}
+	if !exist {
+		return nil, nil
+	}
+	return e, err
+}
