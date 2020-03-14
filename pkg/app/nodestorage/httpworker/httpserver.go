@@ -135,6 +135,29 @@ func (w *Worker) ServePingable() error {
 		w.JsonOk(c)
 	})
 
+	// 收到消息
+	router.GET("/msg", func(c *gin.Context) {
+		data := c.Query("data")
+		if data == "" {
+			w.JsonError(c, "data must no be empty")
+			return
+		}
+		fromId := c.Query("fromId")
+		if fromId == "" {
+			w.JsonError(c, "fromid must no be empty")
+			return
+		}
+
+		//w.masterGoneChan <- true
+		log.Debugf("msg from: %s, data=%s", fromId, data)
+
+		if w.OuterHandler != nil {
+			w.OuterHandler.OnMsg(fromId, data)
+		}
+
+		w.JsonOk(c)
+	})
+
 	// 其他节点向本节点提交其投票
 	//router.GET("/collectvotedmaster", func(c *gin.Context) {
 	//	fromId := c.Query("fromId")

@@ -56,7 +56,7 @@
                     <th>创建时间</th>
                     <th>引用量</th>
                     <th>大小(B)</th>
-                    <th>占用空间(kB)</th>
+                    <th>占用空间</th>
                     <th>备注</th>
                     <th>状态</th>
                     <th>操作</th>
@@ -71,8 +71,8 @@
                     <td>{{.NodeId }}, {{.NodeId2}}, {{.NodeId2}}</td>
                     <td>{{.Created }}</td>
                     <td>{{.ReferCount }}</td>
-                    <td>{{size4Human .Size }}</td>
-                    <td>{{space4Human .Space }}</td>
+                    <td>{{.Size }}</td>
+                    <td>{{space4Human .Space}}</td>
                     <td>{{.Desc}}</td>
                     <td>{{mgrStatus .Status}}</td>
                     <td>

@@ -1,15 +1,28 @@
 package storagemodel
 
 import (
+	"encoding/json"
+	"errors"
+	"net/http"
 	"strconv"
+	"time"
+
+	"github.com/buger/jsonparser"
+
+	"github.com/uxff/flexdrive/pkg/app/nodestorage/httpworker"
 
 	"github.com/gin-gonic/gin"
 	"github.com/uxff/flexdrive/pkg/dao"
 	"github.com/uxff/flexdrive/pkg/log"
 )
 
+const (
+	RouteFile = "/file/" // format /file/:fileHash
+)
+
 func (n *NodeStorage) AttachService() {
 	// 保存文件 但是循环依赖
+	// TODO 用onmsg代替
 	w := n.Worker
 	// 备份文件 fileIndexId fromId nodeLevel
 	n.Worker.AttachPostAction("/savefile", func(c *gin.Context) {
@@ -65,4 +78,115 @@ func (n *NodeStorage) AttachService() {
 		w.JsonOk(c)
 	})
 
+	n.Worker.AttachGetAction("/file/:fileHash", func(c *gin.Context) {
+		fileHash := c.Param("fileHash")
+		if fileHash == "" {
+			c.String(http.StatusBadRequest, "")
+			return
+		}
+
+		localFilePath := n.FileHashToStoragePath(fileHash)
+		if !DirExist(localFilePath) {
+			c.String(http.StatusNotFound, "")
+			return
+		}
+
+		c.File(localFilePath)
+	})
+}
+
+type NodeMsg struct {
+	FromId       string
+	Action       string
+	CustomerAddr string
+}
+
+type NodeMsgSaveFile struct {
+	NodeMsg
+	FileIndexId int
+	AsNodeLevel string
+}
+
+func (node *NodeStorage) HandleSaveFile(msg *NodeMsgSaveFile) error {
+
+	type Aaa struct {
+		A string
+	}
+
+	if msg.FileIndexId == 0 {
+		log.Errorf("when handle saveFile, fileIndexId cannot be 0")
+		return errors.New("when handle saveFile, fileIndexId cannot be 0")
+	}
+
+	fromNode := node.Worker.ClusterMembers[msg.FromId]
+	if fromNode == nil {
+		//w.JsonError(c, "fromId has no real node")
+		return errors.New("fromId has no real node")
+	}
+
+	fileIndexEnt, err := dao.GetFileIndexById(msg.FileIndexId)
+	if err != nil {
+		//w.JsonError(c, "getFileIndex "+fileIndexIdStr+" error")
+		log.Errorf("get fileIndexId(%d) error:%v", msg.FileIndexId, err)
+		return err
+	}
+
+	if fileIndexEnt == nil {
+		//
+		//w.JsonError(c, "cannot find fileIndexEnt")
+		return errors.New("cannot find fileIndexEnt")
+	}
+
+	//fileTargetUrl := fromNode.ServiceAddr + "/file/" + fileIndexEnt.FileHash + "/" + fileIndexEnt.FileName
+	node.SaveFileFromFileIndex(msg.FileIndexId, msg.AsNodeLevel)
+
+	return nil
+}
+
+func (node *NodeStorage) OnMsg(fromId, data string) {
+	action, err := jsonparser.GetString([]byte(data), "action")
+	if err != nil {
+		log.Errorf("parse msg error:%v", err)
+		return
+	}
+	switch action {
+	case "savefile":
+		msg := &NodeMsgSaveFile{
+			// NodeMsg: NodeMsg{	// no effected
+			// 	FromId: fromId,
+			// 	Action: action,
+			// },
+		}
+		err = json.Unmarshal([]byte(data), msg)
+		if err != nil {
+			log.Errorf("unmarshal msg error:%v", err)
+			return
+		}
+		err = node.HandleSaveFile(msg)
+		if err != nil {
+			log.Errorf("handle msg error:%v", err)
+			return
+		}
+	default:
+		log.Warnf("no action when handle msg:%s", data)
+	}
+}
+
+func (node *NodeStorage) OnRegistered(w *httpworker.Worker) {
+	//node.RegisterTo
+	node.NodeEnt.LastRegistered = time.Now()
+	//node.NodeEnt.Status
+	node.NodeEnt.UpdateById([]string{"lastRegistered"})
+}
+
+// 要求同伴保存文件
+func (node *NodeStorage) DemandMateSaveFile(mateId string, fileIndexId int, asNodeLevel string) {
+	msg := &NodeMsgSaveFile{
+		NodeMsg: NodeMsg{ // no effected
+			FromId: node.Worker.Id,
+			Action: "savefile",
+		},
+	}
+	val, _ := json.Marshal(msg)
+	node.Worker.MsgTo(mateId, string(val))
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/uxff/flexdrive/pkg/app/nodestorage/httpworker"
@@ -68,6 +69,8 @@ func StartNode(storageDir string, httpAddr string, clusterId string, clusterMemb
 	node.Worker.AddMates(strings.Split(node.ClusterMembers, ","))
 	node.NodeEnt.NodeName = node.Worker.Id
 
+	node.Worker.OuterHandler = node
+
 	// 准备启动服务
 	serveErrorChan := make(chan error, 1)
 
@@ -119,7 +122,7 @@ func (n *NodeStorage) GetFreeSpace() int64 {
 	return 1024 * 1024 * 1024
 }
 
-// 将文件保存到本地 fileHash用于校验 未完成
+// 将文件保存到本地 fileHash用于校验 未完成 暂无调用
 func (n *NodeStorage) SaveFile(filepath string, fileHash string) (*dao.FileIndex, error) {
 	fileHandle, err := os.Open(filepath)
 	if err != nil {
@@ -187,7 +190,8 @@ func (n *NodeStorage) SaveFileFromFileIndex(fileIndexId int, asNodeLevel string)
 	// 外部访问别人的地址
 	fileOutPath := n.FileHashToOutPath(fileIndexEnt.FileHash)
 	// 外部访问带域名的地址
-	fileServeUrl := n.WorkerAddr + "/" + fileOutPath
+	fileServeUrl := n.WorkerAddr + fileOutPath
+	log.Debugf("will save file form node1: %s", fileServeUrl)
 	err = downloadFile(fileServeUrl, fileInStorage)
 	if err != nil {
 		log.Errorf("when download(%d) %s error:%v", fileIndexId, fileServeUrl, err)
@@ -263,7 +267,7 @@ func (n *NodeStorage) SaveFileHandler(inputFileHandler io.Reader, fileHash strin
 		InnerPath: fileInStorage,
 		OuterPath: "", // todo
 		Size:      size,
-		Space:     size / 1024,
+		Space:     size/1024 + 1,
 	}
 
 	_, err = base.Insert(fileIndex)
@@ -274,6 +278,26 @@ func (n *NodeStorage) SaveFileHandler(inputFileHandler io.Reader, fileHash strin
 
 	log.Infof("a file stored, %s", fileInStorage)
 	// todo distribute to other node
+	// get other nodes
+	condidateNodes := make([]string, 0)
+
+	// random get two nodes? // get lowest members
+	for mateId, _ := range n.Worker.ClusterMembers {
+		//
+		condidateNodes = append(condidateNodes, mateId)
+		if len(condidateNodes) >= 2 {
+			break
+		}
+	}
+
+	if len(condidateNodes) == 0 {
+		log.Errorf("no mate members found, need to distribute other nodes")
+	} else {
+		for levelId, mateId := range condidateNodes {
+			//n.Worker.MsgTo(msteId, )
+			n.DemandMateSaveFile(mateId, fileIndex.Id, strconv.Itoa(levelId))
+		}
+	}
 
 	return fileIndex, nil
 }
@@ -304,14 +328,15 @@ func (n *NodeStorage) FileHashToStoragePath(fileHash string) string {
 
 // 外网访问路径
 func (n *NodeStorage) FileHashToOutPath(fileHash string) string {
-	splitDeep := DirSplitDeep // 2
-	curDir := "/"
+	return "/file/" + fileHash
+	// splitDeep := DirSplitDeep // 2
+	// curDir := "/"
 
-	for deepIdx := 0; deepIdx < splitDeep; deepIdx++ {
+	// for deepIdx := 0; deepIdx < splitDeep; deepIdx++ {
 
-		prefix1 := fileHash[deepIdx : deepIdx+1]
-		//prefix2 := fileHash[1:2]
-		curDir = curDir + prefix1 + "/"
-	}
-	return "/file/" + curDir
+	// 	prefix1 := fileHash[deepIdx : deepIdx+1]
+	// 	//prefix2 := fileHash[1:2]
+	// 	curDir = curDir + prefix1 + "/"
+	// }
+	// return "/file/" + curDir
 }

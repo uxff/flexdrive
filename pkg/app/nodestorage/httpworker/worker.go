@@ -17,8 +17,8 @@ import (
 	"github.com/uxff/flexdrive/pkg/log"
 )
 
-const RegisterTimeoutSec = 1000 // 已注册的超时检测
-const RegisterIntervalSec = 600 // 作为worker或master注册间隔
+const RegisterTimeoutSec = 300  // 已注册的超时检测
+const RegisterIntervalSec = 100 // 作为worker或master注册间隔
 
 type Worker struct {
 	Id             string // from redis incr? // uniq in cluster, different from other nodes
@@ -36,6 +36,9 @@ type Worker struct {
 	masterGoneChan chan bool
 	//masterChangeChan chan string
 	router *gin.Engine
+
+	// 外部操作者
+	OuterHandler PingableHandler `json:"-"`
 }
 
 func NewWorker(serviceAddr string, clusterId string) *Worker {
@@ -178,6 +181,10 @@ func (w *Worker) KeepRegistered() {
 			w.RegisterToMates()
 
 			log.Debugf("id:%s has registered to mates, master:%s", w.Id, w.MasterId)
+
+			if w.OuterHandler != nil {
+				w.OuterHandler.OnRegistered(w)
+			}
 
 			time.Sleep(time.Second * RegisterIntervalSec)
 		}
@@ -443,4 +450,20 @@ func (w *Worker) genServeUrl(method string, params url.Values) string {
 		RawQuery: params.Encode(),
 	}
 	return u.String()
+}
+
+// 给某个节点发信息 外层调用
+func (w *Worker) MsgTo(mateId string, jsonData string) error {
+
+	//val, _ := json.Marshal(jsonableData)
+	res := w.MessageTo("msg", mateId, url.Values{
+		"data": []string{jsonData},
+	})
+
+	if res.Code != 0 {
+		log.Debugf("i:%s msgto:%s  error:%v", w.Id, mateId, res.Msg)
+		return fmt.Errorf(res.Msg)
+	}
+
+	return nil
 }
