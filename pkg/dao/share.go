@@ -63,18 +63,19 @@ func GetShareById(id int) (*Share, error) {
 	return e, err
 }
 
+//
 func (t *Share) AfterSelect() {
 	var err error
 	t.User, err = GetUserById(t.UserId)
 	if err != nil {
-		log.Warnf("load share.User error:%v", err)
+		log.Warnf("load share(%d).User(%d) error:%v", t.Id, t.UserId, err)
 	}
 	t.UserFile, err = GetUserFileById(t.UserFileId)
 	if err != nil {
-		log.Warnf("load share.UserFile error:%v", err)
+		log.Warnf("load share(%d).UserFile(%d) error:%v", t.Id, t.UserFileId, err)
 	}
 
-	log.Debugf("load share.User, share.UserFile ok")
+	log.Debugf("load share %d .User .UserFile ok", t.Id)
 }
 
 func GetShareByUserFile(userFileId int) (*Share, error) {

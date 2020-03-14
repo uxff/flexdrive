@@ -21,7 +21,7 @@
         <div class="panel panel-default">
             <div class="panel-heading">查询条件</div>
             <div class="panel-body">
-                <form id="formSearch" class="form-horizontal" method="GET" action="/share/list">
+                <form id="formSearch" class="form-horizontal" method="GET" action="/my/share/list">
                     <div class="form-group" >
                         <label class="control-label col-sm-1" for="txt_search_name">文件名称</label>
                         <div class="col-sm-2">
@@ -47,6 +47,7 @@
                 <tr class="info">
                     <th>id</th>
                     <th>分享人</th>
+                    <th>路径</th>
                     <th>文件名</th>
                     <th>文件hash</th>
                     <th>文件大小</th>
@@ -59,17 +60,18 @@
                 {{range .list}}
                 <tr>
                     <td>{{.Id}}</td>
-                    <td>{{.UserId}} ..</td>
+                    <td>{{.UserId}} </td>
+                    <td>{{.UserFile.FilePath}} </td>
                     <td>{{.FileName}}</td>
                     <td>{{.FileHash }}</td>
-                    <td>{{.UserFile.Size }}</td>
+                    <td>{{size4Human .UserFile.Size }}</td>
                     <td>{{.Created }}</td>
-                    <td>{{mgrStatus .Status}}</td>
+                    <td>{{.Expired}}</td>
                     <td>
                         {{if eq .Status 1}}
-                        <a href="/share/enable/{{.Id}}/9">禁用</a>
+                        <a href="/my/share/enable/{{.Id}}/9">禁用</a>
                         {{else}}
-                        <a href="/share/enable/{{.Id}}/1">启用</a>
+                        <a href="/my/share/enable/{{.Id}}/1">启用</a>
                         {{end}}
                         <a href="/s/{{.ShareHash}}">查看分享</a>
                     </td>

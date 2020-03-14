@@ -26,6 +26,10 @@ type DbNamespace interface {
 	DbNamespace() string
 }
 
+type AfterSelect interface {
+	AfterSelect()
+}
+
 // 缓存过期时间 30min
 var cacheExpireSec int64 = 60 * 30
 
@@ -56,6 +60,9 @@ func GetByCol(colName string, colVal interface{}, entityPtr interface{}) (found 
 	}
 
 	found, err = envinit.Dbs[dbname].Where(colName+" = ?", colVal).Get(entityPtr)
+	if v, ok := entityPtr.(AfterSelect); ok {
+		v.AfterSelect()
+	}
 	return
 }
 
@@ -278,6 +285,23 @@ func ListAndCountByCondition(entityPtr interface{}, conditions map[string]interf
 		session.In(k, v)
 	}
 	err = session.OrderBy(orderBy).Limit(pageSize, (pageNo-1)*pageSize).Find(listSlicePtr)
+
+	if _, ok := entityPtr.(AfterSelect); ok {
+
+		//listSlice := reflect.New(reflect.SliceOf(reflect.TypeOf(entityPtr))).Elem().Addr().Interface()
+
+		listOfPage := reflect.ValueOf(listSlicePtr).Elem()
+		log.Debugf("reflect listOfPage len:%d", listOfPage.Len())
+
+		// 处理页中的每行
+		for i := 0; i < listOfPage.Len(); i++ {
+			rowEntity := listOfPage.Index(i).Interface()
+			if vv, vvok := rowEntity.(AfterSelect); vvok {
+				vv.AfterSelect()
+			}
+		}
+
+	}
 	return
 }
 
@@ -317,6 +341,22 @@ func ListByCondition(entityPtr interface{}, conditions map[string]interface{}, p
 	}
 
 	err = session.Find(listSlicePtr)
+	if _, ok := entityPtr.(AfterSelect); ok {
+
+		//listSlice := reflect.New(reflect.SliceOf(reflect.TypeOf(entityPtr))).Elem().Addr().Interface()
+
+		listOfPage := reflect.ValueOf(listSlicePtr).Elem()
+		log.Debugf("reflect listOfPage len:%d", listOfPage.Len())
+
+		// 处理页中的每行
+		for i := 0; i < listOfPage.Len(); i++ {
+			rowEntity := listOfPage.Index(i).Interface()
+			if vv, vvok := rowEntity.(AfterSelect); vvok {
+				vv.AfterSelect()
+			}
+		}
+
+	}
 
 	return
 }

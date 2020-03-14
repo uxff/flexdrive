@@ -32,9 +32,9 @@
     <div class="row">
         {{range .list}}
         <div class="col-md-8">
-            <h3>{{.FileName}}</h3>
+            <h3><a href="/s/{{.ShareHash}}" >{{.FileName}}</a></h3>
             <p>分享人id：{{.UserId}} 大小：{{size4Human .UserFile.Size}} 分享时间：{{.Created}}</p>
-            <p class="text-success">{{.FilePath}}</p>
+            <p class="text-success">{{.UserFile.FilePath}}{{.FileName}}</p>
         </div>
         {{else}}
         <!--应该加载热门关键字-->
@@ -55,6 +55,7 @@
             {{end}}
 
         {{end}}
+        <hr>
     </div>
     <p></p>
     <div class="row">

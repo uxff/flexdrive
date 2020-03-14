@@ -44,7 +44,7 @@
           </a>
           <ul class="dropdown-menu">
             <li><a href="/my/profile">我的账号</a></li>
-            <li><a href="/my/share">我的分享</a></li>
+            <li><a href="/my/share/list">我的分享</a></li>
             <li><a href="/my/downloadtask">我的离线下载</a></li>
             <li><a href="/my/order/list">我的订单</a></li>
           </ul>

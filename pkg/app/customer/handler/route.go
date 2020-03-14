@@ -24,7 +24,7 @@ const (
 	RouteLogout       = "/logout"
 	RouteUserList     = "/user/list"
 	RouteUserFileList = "/my/file/list"
-	RouteShareList    = "/share/list"
+	RouteShareList    = "/my/share/list"
 	RouteChangePwd    = "/changePwd"
 )
 
