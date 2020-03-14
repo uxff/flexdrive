@@ -60,10 +60,10 @@
                 {{range .list}}
                 <tr>
                     <td>{{.Id}}</td>
-                    <td>{{.UserId}} ..</td>
+                    <td>{{.User.Email}}({{.UserId}} )</td>
                     <td>{{.FileName}}</td>
                     <td>{{.FileHash }}</td>
-                    <td>{{.Size }}</td>
+                    <td>{{size4Human .UserFile.Size }}</td>
                     <td>{{.Created }}</td>
                     <td>{{.Expired}}</td>
                     <td>{{mgrStatus .Status}}</td>
@@ -73,7 +73,7 @@
                         {{else}}
                         <a href="/share/enable/{{.Id}}/1">启用</a>
                         {{end}}
-                        <a href="/share/index?id={{.Id}}">查看分享</a>
+                        <a href="/s/{{.ShareHash}}">查看分享</a>
                     </td>
                 </tr>
                 {{else}}
