@@ -54,7 +54,7 @@
                 <tr class="info">
                     <th>订单编号</th>
                     <th>下单时间</th>
-                    <th>购买等级</th>
+                    <th>购买升级包</th>
                     <th>获得权益</th>
                     <th>金额(元)</th>
                     <th>状态</th>
@@ -69,7 +69,7 @@
                     </td>
                     <td>{{.Created }}</td>
                     <td>{{.LevelName}}({{.AwardLevelId }})</td>
-                    <td>空间增加{{size4Human .AwardSpace }}</td>
+                    <td>空间增加 {{space4Human .AwardSpace }}</td>
                     <td>{{.TotalAmount }}</td>
                     <td>{{orderStatus .Status }}</td>
                     <td>

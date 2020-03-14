@@ -292,6 +292,8 @@
                         <input type="hidden" name="userFileId" id="userFileIdInShareModal" value="">
                     </div>
                 </div>
+                <!--
+
                 <div class="row" style="margin: 10px;">
                     <div class="col-md-3 text-right">
                         选择有效期：
@@ -301,6 +303,16 @@
                         <input class="expired-control" type="radio" name="expiredType" id="expiredTypeRelative" value="2">分享
                         <br>
                         <input type="text" class="form-control" id="expiredText" name="expiredText" value="" placeholder="点击选择有效期">
+                    </div>
+                </div>
+                -->
+                <div class="row" style="margin: 10px;">
+                    <div class="col-md-3 text-right">
+                        当前状态：
+                    </div>
+                    <div class="col-md-7">
+                        <span id="shareStatusText"></span>
+                        <button class="btn btn-info" href="javascript:;" id="btnMakeShare">生成分享链接</button>
                     </div>
                 </div>
                 <div class="row" style="margin: 10px;">
@@ -317,7 +329,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-                <button type="submit" class="btn btn-primary" id="shareSubmit">提交</button>
+                <!--<button type="submit" class="btn btn-primary" id="shareSubmit">提交</button>-->
             </div>
             </form>
         </div><!-- /.modal-content -->
@@ -357,7 +369,6 @@ $("#expiredText").datetimepicker({
 $(function () {
     // -------- 新建文件夹 ----------
     $('#newFolderModal').on('show.bs.modal', function () {
-        //alert('嘿，我听说您喜欢模态框xxxxxxxxx...');})
         $('#dirPathTextInNewFolderModal').html($('#dirPath').val());
         $('#nameInNewFolderModal').focus();// 未生效
     });
@@ -368,7 +379,6 @@ $(function () {
 
     // -------- 上传 ----------
     $('#uploadModal').on('show.bs.modal', function () {
-        //alert('嘿，我听说您喜欢模态框xxxxxxxxx...');})
         $('#dirPathTextInUploadModal').html($('#dirPath').val());
     });
     $('#uploadSubmit').on('click', function(){

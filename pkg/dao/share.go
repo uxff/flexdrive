@@ -1,7 +1,10 @@
 package dao
 
 import (
+	"fmt"
 	"time"
+
+	"github.com/uxff/flexdrive/pkg/utils/filehash"
 
 	"github.com/uxff/flexdrive/pkg/log"
 
@@ -10,6 +13,7 @@ import (
 
 type Share struct {
 	Id         int       `xorm:"not null pk autoincr comment('文件id') INT(10)"`
+	ShareHash  string    `xorm:"not null default '' comment('share哈希 用于访问 带索引') VARCHAR(40)"`
 	FileHash   string    `xorm:"not null default '' comment('文件哈希') VARCHAR(40)"`
 	UserId     int       `xorm:"not null default 0 comment('分享者用户id') INT(11)"`
 	UserFileId int       `xorm:"not null default 0 comment('分享者文件索引id') INT(11)"`
@@ -37,6 +41,13 @@ func (t *Share) GetById(id int) error {
 func (t *Share) UpdateById(cols []string) error {
 	_, err := base.UpdateByCol("id", t.Id, t, cols)
 	return err
+}
+
+//  保证UserFileId已经赋值
+func (t *Share) MakeShareHash() string {
+	raw := fmt.Sprintf("share-%d", t.UserFileId)
+	t.ShareHash, _ = filehash.CalcSha1(raw)
+	return t.ShareHash
 }
 
 func GetShareById(id int) (*Share, error) {

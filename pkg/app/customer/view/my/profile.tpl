@@ -46,12 +46,12 @@
     <div class="row">
         <div class="col-md-2"></div>
         <div class="col-md-4" >
-            会员等级
+            会员升级包
         </div>
         <div class="col-md-4" >
             <div class="well well-sm">
             {{.userLevel.Name}} 
-            <a href="/my/order/create" class="btn btn-info  btn-sm" type="button">升级</a>
+            <a href="/my/order/create" class="btn btn-info  btn-sm" type="button">购买升级包</a>
             </div>
         </div>
         <div class="col-md-2"></div>

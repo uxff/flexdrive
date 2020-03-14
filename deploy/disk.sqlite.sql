@@ -138,6 +138,7 @@ CREATE TABLE `user_file` (
 CREATE TABLE `share` (
   `id` integer PRIMARY KEY AUTOINCREMENT , 
   `fileHash` varchar(40) NOT NULL DEFAULT '' , 
+  `shareHash` varchar(40) NOT NULL DEFAULT '' , 
   `userId` integer NOT NULL DEFAULT '0' , 
   `userFileId` integer NOT NULL DEFAULT '0' , 
   `nodeId` integer NOT NULL DEFAULT '0' , 
@@ -148,6 +149,10 @@ CREATE TABLE `share` (
   `expired` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' 
 ) ;
 
+CREATE INDEX "IDX_shareHash"
+ON "share" (
+  "shareHash"
+);
 
 insert into manager (email,pwd,status,isSuper) values("admin@admin.com","e10adc3949ba59abbe56e057f20f883e",1,1);
 
