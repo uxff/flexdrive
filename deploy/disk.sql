@@ -147,6 +147,7 @@ CREATE TABLE `user_file` (
 CREATE TABLE `share` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '文件id',
   `fileHash` varchar(40) NOT NULL DEFAULT '' COMMENT '文件内容哈希',
+  `shareHash`  varchar(40) NOT NULL DEFAULT '' COMMENT 'share哈希 用于路由',
   `userId` int(11) NOT NULL DEFAULT '0' COMMENT '分享者会员id',
   `userFileId` int(11) NOT NULL DEFAULT '0' COMMENT '分享者会员文件索引id',
   `nodeId` int(11) NOT NULL DEFAULT '0' COMMENT '所在节点名',
@@ -155,6 +156,7 @@ CREATE TABLE `share` (
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态 1=正常 2=隐藏 99=已删除',
   `expired` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '分享有效期',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  INDEX IDX_ShareHash (`shareHash`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
