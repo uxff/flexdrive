@@ -220,4 +220,7 @@ func loadFuncMap() {
 	tplFuncMap["orderStatus"] = func(orderStatus int) string {
 		return dao.OrderStatusMap[orderStatus]
 	}
+	tplFuncMap["amount4Human"] = func(amount int) string {
+		return fmt.Sprintf("%.02f", float32(amount)/100)
+	}
 }

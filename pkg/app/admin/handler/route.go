@@ -67,7 +67,7 @@ func StartHttpServer(addr string) error {
 	authRouter.GET("/changePwd", ChangePwd)      // 修改自己的密码 不受角色限制
 	authRouter.POST("/changePwd", ChangePwdForm) // 修改自己的密码 不受角色限制
 	authRouter.GET("/", Index)
-	authRouter.GET("/file", Fs)
+	authRouter.GET("/file/:fileHash/:fileName", Fs)
 
 	// 基础基于登录cookie并rabc授权的验证
 	// 如果增加接口，必须在现有的菜单下，否则会被权限控制拦住
@@ -249,5 +249,8 @@ func loadFuncMap() {
 	}
 	tplFuncMap["orderStatus"] = func(orderStatus int) string {
 		return dao.OrderStatusMap[orderStatus]
+	}
+	tplFuncMap["amount4Human"] = func(amount int) string {
+		return fmt.Sprintf("%.02f", float32(amount)/100)
 	}
 }

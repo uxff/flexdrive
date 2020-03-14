@@ -68,11 +68,11 @@
                     <td>{{.Id}}</td>
                     <td>{{.FileName}}</td>
                     <td>{{.FileHash}}</td>
-                    <td>{{.Node }}, {{.Node2}}, {{.Node2}}</td>
+                    <td>{{.NodeId }}, {{.NodeId2}}, {{.NodeId2}}</td>
                     <td>{{.Created }}</td>
                     <td>{{.ReferCount }}</td>
-                    <td>{{.Size }}</td>
-                    <td>{{.Space }}</td>
+                    <td>{{size4Human .Size }}</td>
+                    <td>{{space4Human .Space }}</td>
                     <td>{{.Desc}}</td>
                     <td>{{mgrStatus .Status}}</td>
                     <td>
@@ -81,6 +81,7 @@
                         {{else}}
                         <a href="/fileindex/enable/{{.Id}}/1">启用</a>
                         {{end}}
+                        <a href="/file/{{.FileHash}}/{{.FileName}}">下载</a>
                     </td>
                 </tr>
                 {{else}}
