@@ -13,6 +13,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mattn/go-runewidth"
+	"github.com/uxff/flexdrive/pkg/dao"
 	"github.com/uxff/flexdrive/pkg/dao/base"
 	"github.com/uxff/flexdrive/pkg/log"
 )
@@ -66,6 +67,7 @@ func StartHttpServer(addr string) error {
 	authRouter.GET("/changePwd", ChangePwd)      // 修改自己的密码 不受角色限制
 	authRouter.POST("/changePwd", ChangePwdForm) // 修改自己的密码 不受角色限制
 	authRouter.GET("/", Index)
+	authRouter.GET("/file", Fs)
 
 	// 基础基于登录cookie并rabc授权的验证
 	// 如果增加接口，必须在现有的菜单下，否则会被权限控制拦住
@@ -102,6 +104,9 @@ func StartHttpServer(addr string) error {
 
 	rbacRouter.GET("/share/list", ShareList)
 	rbacRouter.GET("/share/enable/:id/:enable", ShareEnable)
+
+	rbacRouter.GET("/order/list", OrderList)
+	rbacRouter.GET("/order/refund/:id", OrderRefund)
 
 	rbacRouter.GET("/node/list", NodeList)
 	// rbacRouter.GET("/share/enable/:id/:enable", UserEnable)
@@ -211,5 +216,38 @@ func loadFuncMap() {
 	}
 	tplFuncMap["mgrStatus"] = func(status int) string {
 		return base.StatusMap[status]
+	}
+	// 所有的空间单位必须是int64
+	tplFuncMap["space4Human"] = func(space int64) string {
+		if space < 1024 {
+			return fmt.Sprintf("%d kB", space)
+		}
+		if space < 1024*1024 {
+			return fmt.Sprintf("%d MB", space/1024)
+		}
+		if space < 1024*1024*1024 {
+			return fmt.Sprintf("%d GB", space/1024/1024)
+		}
+		return fmt.Sprintf("%d TB", space/1024/1024/1024)
+	}
+	// 所有的空间单位必须是int64
+	tplFuncMap["size4Human"] = func(space int64) string {
+		if space < 1024 {
+			return fmt.Sprintf("%d B", space)
+		}
+		if space < 1024*1024 {
+			return fmt.Sprintf("%.01f kB", float32(space)/1024)
+		}
+		if space < 1024*1024*1024 {
+			return fmt.Sprintf("%.01f MB", float32(space)/1024/1024)
+		}
+		return fmt.Sprintf("%.02f GB", float32(space)/1024/1024/1024)
+	}
+	// 所有的空间单位必须是int64
+	tplFuncMap["spaceRate"] = func(used int64, quota int64) string {
+		return fmt.Sprintf("%d", int(float32(used)/float32(quota)*100))
+	}
+	tplFuncMap["orderStatus"] = func(orderStatus int) string {
+		return dao.OrderStatusMap[orderStatus]
 	}
 }

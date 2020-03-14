@@ -29,6 +29,8 @@ CREATE TABLE `user_level` (
   `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '创建时间',
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
   `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态 1=启用 99=删除',
+  `primeCost` int(11) NOT NULL DEFAULT '0' COMMENT '原价 仅用于展示 单位分',
+  `desc` varchar(256) NOT NULL COMMENT '介绍',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 

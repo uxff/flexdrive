@@ -47,10 +47,10 @@
                 <tr class="info">
                     <th>id</th>
                     <th>Email</th>
-                    <th>等级</th>
                     <th>累计充值(元)</th>
-                    <th>配额空间(MB)</th>
-                    <th>已用空间(MB)</th>
+                    <th>配额空间</th>
+                    <th>已用空间</th>
+                    <th>文件数</th>
                     <th>最后登录时间</th>
                     <th>最后登录ip</th>
                     <th>状态</th>
@@ -62,10 +62,11 @@
                 <tr>
                     <td>{{.Id}}</td>
                     <td>{{.Email}}</td>
-                    <td>{{.LevelName}}</td>
                     <td>{{.TotalCharge }}</td>
-                    <td>{{.QuotaSpace }}</td>
-                    <td>{{.UsedSpace }}</td>
+                    <td>{{space4Human .QuotaSpace }}</td>
+                    <td>{{space4Human .UsedSpace }}</td>
+                    <td>{{.FileCount}}</td>
+                    <td>{{.LastLoginAt}}</td>
                     <td>{{.LastLoginIp}}</td>
                     <td>{{mgrStatus .Status}}</td>
                     <td>

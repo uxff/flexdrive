@@ -40,7 +40,7 @@
           </a>
           <ul class="dropdown-menu">
             <li><a href="/user/list">会员列表</a></li>
-            <li><a href="/userlevel/list">等级管理</a></li>
+            <li><a href="/userlevel/list">升级包管理</a></li>
             <li><a href="/order/list">订单管理</a></li>
             <li><a href="/share/list">分享管理</a></li>
           </ul>

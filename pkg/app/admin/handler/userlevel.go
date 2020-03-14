@@ -53,6 +53,8 @@ type UserLevelItem struct {
 	Created    string `json:"created" form:"-"`
 	Updated    string `json:"updated" form:"-"`
 	Status     int    `json:"status" form:"-"`
+	Desc       string `json:"desc" form:"desc"`
+	PrimeCost  int    `json:"primeCost" form:"primeCost"` // 分
 }
 
 func UserLevelList(c *gin.Context) {
@@ -107,6 +109,8 @@ func (r *UserLevelAddRequest) ToEnt() *dao.UserLevel {
 		QuotaSpace: int64(r.QuotaSpace),
 		Price:      r.Price,
 		IsDefault:  r.IsDefault,
+		PrimeCost:  r.PrimeCost,
+		Desc:       r.Desc,
 		//levelId: r.levelId,
 		// MgrLastLoginAt:time.Now(),
 		//Pwd: r.Pwd,

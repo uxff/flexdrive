@@ -15,8 +15,8 @@
     <div class="row">
         <ul class="breadcrumb">
             <li><a href="/">首页</a></li>
-            <li><a href="/userlevel/list">会员等级</a></li>
-            <li class="active">会员等级列表</li>
+            <li><a href="/userlevel/list">会员升级包</a></li>
+            <li class="active">会员升级包列表</li>
         </ul>
         <div class="panel panel-default">
             <div class="panel-heading">查询条件</div>
@@ -47,7 +47,8 @@
             <thead>
                 <tr class="info">
                     <th>id</th>
-                    <th>等级名称</th>
+                    <th>升级包名称</th>
+                    <th>介绍</th>
                     <th>是否默认</th>
                     <th>配额空间(KB)</th>
                     <th>价格(分)</th>
@@ -61,6 +62,7 @@
                 <tr>
                     <td>{{.Id}}</td>
                     <td>{{.Name}}</td>
+                    <td>{{.Desc}}</td>
                     <td>{{if eq .IsDefault 1}}是{{else}}否{{end}}</td>
                     <td>{{.QuotaSpace}}</td>
                     <td>{{.Price}}</td>

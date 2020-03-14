@@ -31,15 +31,27 @@
                         </div>
                     </div>
                     <div class="form-group">
+                        <label class="col-sm-3 control-label">介绍</label>
+                        <div class="col-sm-8">
+                            <input class="form-control" placeholder="例: 送某某礼品" name="name" value="{{.levelEnt.Desc}}" type="input"  />
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <label class="col-sm-3 control-label">配额空间(KB)</label>
                         <div class="col-sm-8">
                             <input class="form-control" placeholder="0" name="quotaSpace" value="{{.levelEnt.QuotaSpace}}" type="number" required />
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="col-sm-3 control-label">价格(分)</label>
+                        <label class="col-sm-3 control-label">购买价格(分)</label>
                         <div class="col-sm-8">
                             <input class="form-control" name="price" value="{{.levelEnt.Price}}" type="number" required />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">展示原价(分)</label>
+                        <div class="col-sm-8">
+                            <input class="form-control" name="primeCost" value="{{.levelEnt.PrimeCost}}" type="number" />
                         </div>
                     </div>
                     <div class="form-group">

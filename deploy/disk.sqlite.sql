@@ -27,7 +27,9 @@ CREATE TABLE `user_level` (
   "isDefault" integer NOT NULL DEFAULT '0',
   `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' , 
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP , 
-  `status` integer NOT NULL DEFAULT '1' 
+  `status` integer NOT NULL DEFAULT '1',
+  "primeCost" integer NOT NULL DEFAULT 0 
+  "desc" varchar(256) NOT NULL DEFAULT '',
 );
  
 

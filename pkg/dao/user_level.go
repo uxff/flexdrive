@@ -15,6 +15,8 @@ type UserLevel struct {
 	Created    time.Time `xorm:"created not null default '0000-00-00 00:00:00' comment('创建时间') TIMESTAMP"`
 	Updated    time.Time `xorm:"updated not null default 'CURRENT_TIMESTAMP' comment('更新时间') TIMESTAMP"`
 	Status     int       `xorm:"not null default 1 comment('状态 1=启用 99=删除') TINYINT(4)"`
+	PrimeCost  int       `xorm:"not null default 0 comment('原价 仅用于展示 单位分') INT(11)"`
+	Desc       string    `xorm:"not null comment('介绍') VARCHAR(256)"`
 }
 
 func (t UserLevel) TableName() string {

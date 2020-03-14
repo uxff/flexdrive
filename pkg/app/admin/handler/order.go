@@ -105,14 +105,12 @@ func OrderList(c *gin.Context) {
 	})
 }
 
-func OrderEnable(c *gin.Context) {
+func OrderRefund(c *gin.Context) {
 	orderId, _ := strconv.ParseInt(c.Param("id"), 10, 64)
 	if orderId <= 0 {
 		StdErrResponse(c, ErrInvalidParam)
 		return
 	}
-
-	enable, _ := strconv.ParseInt(c.Param("enable"), 10, 64)
 
 	orderEnt, err := dao.GetOrderById(int(orderId))
 
@@ -125,17 +123,16 @@ func OrderEnable(c *gin.Context) {
 	}
 
 	if orderEnt == nil {
-		StdErrResponse(c, ErrMgrNotExist)
+		StdErrResponse(c, ErrItemNotExist)
 		return
 	}
 
-	if enable == 1 {
-		// 启用
-		orderEnt.Status = base.StatusNormal
-	} else if enable == 9 {
-		// 停用
-		orderEnt.Status = base.StatusDeleted
+	if orderEnt.Status != dao.OrderStatusPaid {
+		StdErrMsgResponse(c, ErrInternal, "该订单不允许退款")
+		return
 	}
+
+	orderEnt.Status = dao.OrderStatusRefended
 
 	//base.CacheDelByEntity("mgrLoginName", orderEnt.Email, orderEnt)
 
