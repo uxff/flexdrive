@@ -253,4 +253,18 @@ func loadFuncMap() {
 	tplFuncMap["amount4Human"] = func(amount int) string {
 		return fmt.Sprintf("%.02f", float32(amount)/100)
 	}
+	tplFuncMap["timeSmell"] = func(t time.Time) string {
+		diff := time.Now().Sub(t) / time.Second
+		if diff < 30 {
+			return "#4edd1c" // green
+		} else if diff < 120 {
+			return "#dcdd1c" // yellow
+		} else if diff < 300 {
+			return "#ddc31c" // orange
+		} else if diff < 3000 {
+			return "#dd7c1c" // #dd1c1c // red
+		} else {
+			return "gray"
+		}
+	}
 }

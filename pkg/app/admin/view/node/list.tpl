@@ -48,8 +48,7 @@
                     <th>id</th>
                     <th>名称</th>
                     <th>服务地址</th>
-                    <th>总空间(MB)</th>
-                    <th>已用空间(MB)</th>
+                    <th>已用/总空间</th>
                     <th>文件量</th>
                     <th>加入时间</th>
                     <th>最后心跳时间</th>
@@ -63,14 +62,13 @@
                     <td>{{.Id}}</td>
                     <td>{{.NodeName}}</td>
                     <td>{{.NodeAddr}}</td>
-                    <td>{{space4Human .TotalSpace }}</td>
-                    <td>{{space4Human .UsedSpace }}</td>
+                    <td>{{space4Human .UsedSpace }} / {{space4Human .TotalSpace }}</td>
                     <td>{{.FileCount }}</td>
                     <td>{{.Created}}</td>
-                    <td>{{.LastRegistered}}</td>
+                    <td style="color:{{timeSmell .LastRegistered}}"><b>{{.LastRegistered}}</b></td>
                     <td>{{mgrStatus .Status}}</td>
                     <td>
-                        -
+                        -[编辑空间]
                     </td>
                 </tr>
                 {{else}}
