@@ -10,7 +10,7 @@
         <span class="icon-bar"></span>
       </button>
       <a style="font-size: 14px;" class="navbar-brand" rel="home" href="/" >
-        <strong>云盘管理后台</strong>
+        <strong>分布式云盘管理后台</strong>
       </a>
     </div>
 
@@ -27,10 +27,10 @@
             <span class="glyphicon glyphicon-th-large"></span> 节点管理 <b class="caret"></b>
           </a>
           <ul class="dropdown-menu">
-            <li role="presentation" class="dropdown-header">main route</li>
+            <li role="presentation" class="dropdown-header">node manage</li>
             <li><a href="/node/list">节点列表</a></li>
             <li role="presentation" class="divider"></li>
-            <li role="presentation" class="dropdown-header">selected picsets</li>
+            <li role="presentation" class="dropdown-header">file manage</li>
             <li><a href="/fileindex/list">文件管理</a></li>
           </ul>
         </li>
