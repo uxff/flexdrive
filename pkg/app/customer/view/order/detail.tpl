@@ -42,7 +42,7 @@
                     <div class="row">
                         <div class="col-md-2"></div>
                         <div class="col-md-4" >
-                            购买等级
+                            购买内容
                         </div>
                         <div class="col-md-4" >
                             {{.Level.Name}}({{.Level.Id}})
@@ -52,10 +52,20 @@
                     <div class="row">
                         <div class="col-md-2"></div>
                         <div class="col-md-4" >
+                            获得权益
+                        </div>
+                        <div class="col-md-4" >
+                            空间增加 {{space4Human .Order.AwardSpace}}
+                        </div>
+                        <div class="col-md-2"></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-2"></div>
+                        <div class="col-md-4" >
                             金额
                         </div>
                         <div class="col-md-4" >
-                            {{.Order.TotalAmount}}
+                            {{amount4Human .Order.TotalAmount}} 元
                         </div>
                         <div class="col-md-2"></div>
                     </div>

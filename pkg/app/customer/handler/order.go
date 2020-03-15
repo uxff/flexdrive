@@ -66,11 +66,15 @@ func OrderList(c *gin.Context) {
 		return
 	}
 
+	loginInfo := getLoginInfo(c)
+	condition := req.ToCondition()
+	condition["userId=?"] = loginInfo.UserId
+
 	// 列表查询
 	list := make([]*dao.Order, 0)
 	var total int64
 
-	total, err = base.ListAndCountByCondition(&dao.Order{}, req.ToCondition(), req.Page, req.PageSize, "", &list)
+	total, err = base.ListAndCountByCondition(&dao.Order{}, condition, req.Page, req.PageSize, "", &list)
 	if err != nil {
 		log.Trace(requestId).Errorf("list failed:%v", err)
 		StdErrResponse(c, ErrInternal)

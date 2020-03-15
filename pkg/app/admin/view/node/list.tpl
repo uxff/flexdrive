@@ -68,7 +68,7 @@
                     <td style="color:{{timeSmell .LastRegistered}}"><b>{{.LastRegistered}}</b></td>
                     <td>{{mgrStatus .Status}}</td>
                     <td>
-                        -[编辑空间]
+                        -
                     </td>
                 </tr>
                 {{else}}

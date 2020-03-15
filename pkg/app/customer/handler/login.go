@@ -57,7 +57,7 @@ func LoginForm(c *gin.Context) {
 		return
 	}
 
-	if userEnt.Id == 0 {
+	if userEnt == nil || userEnt.Id == 0 {
 		log.Warnf("email:%s not exist, verify failed", req.Email)
 		StdErrResponse(c, ErrUserNotExist)
 		return

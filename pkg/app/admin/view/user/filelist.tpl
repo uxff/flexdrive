@@ -66,7 +66,6 @@
                     <th>创建时间</th>
                     <th>大小</th>
                     <th>占用空间</th>
-                    <th>备注</th>
                     <th>状态</th>
                     <th>操作</th>
                 </tr>
@@ -82,7 +81,6 @@
                     <td>{{.Created }}</td>
                     <td>{{size4Human .Size }}</td>
                     <td>{{space4Human .Space}}</td>
-                    <td>{{.Desc}}</td>
                     <td>{{mgrStatus .Status}}</td>
                     <td>
                         {{if eq .Status 1}}
