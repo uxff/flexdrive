@@ -17,7 +17,8 @@ type Node struct {
 	Created        time.Time `xorm:"created not null default '0000-00-00 00:00:00' comment('添加时间') TIMESTAMP"`
 	Updated        time.Time `xorm:"updated not null default 'CURRENT_TIMESTAMP' comment('更新时间') TIMESTAMP"`
 	Status         int       `xorm:"not null default 1 comment('状态 1=正常启用 2=注册超时 99=删除 ') TINYINT(4)"`
-	LastRegistered time.Time `xorm:"not null default '0000-00-00 00:00:00' comment('最后注册时间') TIMESTAMP"`
+	LastRegistered time.Time `xorm:"default ('0000-00-00 00:00:00') comment('最后注册时间') TIMESTAMP"` // 声明的default无用 实际效果是CURRENT_TIMESTAMP
+	// 上面时间xorm申明必须default null 数据库ddl可以不是default null, 因为 zero值问题
 }
 
 func (t Node) TableName() string {
@@ -45,6 +46,7 @@ func GetNodeById(id int) (*Node, error) {
 	}
 	return e, err
 }
+
 func GetNodeByWorkerId(id string) (*Node, error) {
 	e := &Node{}
 	exist, err := base.GetByCol("nodeName", id, e)

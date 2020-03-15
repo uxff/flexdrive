@@ -21,7 +21,7 @@ type Manager struct {
 	Status      int       `xorm:"not null default 1 comment('状态 1=正常 99=删除') TINYINT(4)"`
 	RoleId      int       `xorm:"not null default 0 comment('角色id') INT(11)"`
 	IsSuper     int       `xorm:"not null default 0 comment('是否是超管 1=超管') TINYINT(4)"`
-	LastLoginAt time.Time `xorm:"not null default '0000-00-00 00:00:00' comment('最后登录时间') TIMESTAMP"`
+	LastLoginAt time.Time `xorm:"default NULL comment('最后登录时间') TIMESTAMP"` // 不能not null ok 实际值为CURRENT_TIMESTAMP
 	LastLoginIp string    `xorm:"not null default '' comment('最后登录ip') VARCHAR(16)"`
 }
 

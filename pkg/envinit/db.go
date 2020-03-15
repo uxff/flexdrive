@@ -32,7 +32,7 @@ func InitDb(namespace, dsn string) error {
 	dsnPaths := strings.Split(dsn, "://")
 
 	if len(dsnPaths) != 2 {
-		return errors.New("dsn path must by like: mysql://user:pwd@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4")
+		return errors.New("dsn path must be like: mysql://user:pwd@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4")
 	}
 	engineType := dsnPaths[0]
 	dsnPath := dsnPaths[1]
@@ -42,15 +42,27 @@ func InitDb(namespace, dsn string) error {
 	switch engineType {
 	case "mysql":
 		eng, err = ConnectByEngine(engineType, dsnPath)
+		if err != nil {
+			log.Errorf("connect db %s error:%v", dsn, err)
+			return err
+		}
+		if eng != nil {
+			//eng.Exec("set sessoin sql_mode='NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';")
+		}
 	case "sqlite3":
 		eng, err = ConnectByEngine(engineType, dsnPath)
+		if err != nil {
+			log.Errorf("connect db %s error:%v", dsn, err)
+			return err
+		}
 	}
 
-	// eng, err := ConnectMysql(dsnPath)
-	if err != nil {
+	if eng == nil {
 		log.Errorf("connect db %s error:%v", dsn, err)
 		return err
 	}
+
+	// eng, err := ConnectMysql(dsnPath)
 
 	Dbs[namespace] = eng
 	log.Debugf("namespace %s is registered ok", namespace)
@@ -60,7 +72,7 @@ func InitDb(namespace, dsn string) error {
 // InitMysql 链接数据库 path 为 dsn 带mysql://
 /**
 * @param en 引擎类型 mysql 或 sqlite3
-*/
+ */
 func ConnectByEngine(en string, dsnPath string) (*xorm.Engine, error) {
 	var err error
 
@@ -88,4 +100,3 @@ func ConnectByEngine(en string, dsnPath string) (*xorm.Engine, error) {
 	engine.ShowSQL(true)
 	return engine, nil
 }
-
