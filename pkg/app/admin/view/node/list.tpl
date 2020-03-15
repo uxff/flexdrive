@@ -27,14 +27,24 @@
                         <div class="col-sm-2">
                             <input type="text" class="form-control" id="txt_search_name" name="name" value="{{.reqParam.Name}}">
                         </div>
-                        <label class="control-label col-sm-1" for="txt_search_created">时间</label>
+                        <label class="control-label col-sm-1" for="txt_search_created">加入时间</label>
                         <div class="col-sm-2">
                             <input type="text" class="form-control" id="txt_search_created_start" name="createStart" value="{{.reqParam.CreateStart}}">
                         </div>
                         <div class="col-sm-2">
                             <input type="text" class="form-control" id="txt_search_created_end" name="createEnd" value="{{.reqParam.CreateEnd}}">
                         </div>
-                        <div class="col-sm-3" style="text-align:left;">
+                        <label class="control-label col-sm-1" for="txt_search_last_active">最后注册</label>
+                        <div class="col-sm-1">
+                            <select class="form-control" id="txt_search_last_active" name="lastActive" value="{{.reqParam.LastActive}}">
+                                <option value="-1">不限</option>
+                                <option value="60" {{if eq .reqParam.LastActive 60}}selected{{end}}>1分钟内</option>
+                                <option value="300" {{if eq .reqParam.LastActive 300}}selected{{end}}>5分钟内</option>
+                                <option value="3600" {{if eq .reqParam.LastActive 3600}}selected{{end}}>1小时内</option>
+                                <option value="86400" {{if eq .reqParam.LastActive 86400}}selected{{end}}>1天内</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-1" style="text-align:left;">
                             <button type="submit" style="margin-left:50px" class="btn btn-primary">查询</button>
                         </div>
                     </div>

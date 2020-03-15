@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/uxff/flexdrive/pkg/dao"
@@ -17,6 +18,7 @@ type NodeListRequest struct {
 	CreateStart string `form:"createStart"`
 	CreateEnd   string `form:"createEnd"`
 	Name        string `form:"name"`
+	LastActive  int    `form:"lastActive"`
 	Page        int    `form:"page"`
 	PageSize    int    `form:"pagesize"`
 }
@@ -36,9 +38,9 @@ func (r *NodeListRequest) ToCondition() (condition map[string]interface{}) {
 		condition["name like ?"] = "%" + r.Name + "%"
 	}
 
-	// if r.Email != "" {
-	// 	condition["email = ?"] = r.Email
-	// }
+	if r.LastActive > 0 {
+		condition["lastRegistered > ?"] = time.Now().Add(-time.Duration(r.LastActive) * time.Second).Format("2006-01-02 15:04:05")
+	}
 
 	log.Debugf("r=%+v tocondition:%+v", r, condition)
 	return condition
