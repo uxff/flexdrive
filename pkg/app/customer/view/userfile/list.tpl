@@ -93,7 +93,7 @@
                 <tr class="info">
                     <th>名称</th>
                     <th>创建时间</th>
-                    <th>大小(B)</th>
+                    <th>大小</th>
                     <th>操作</th>
                 </tr>
             </thead>
