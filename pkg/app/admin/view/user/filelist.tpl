@@ -36,12 +36,16 @@
                         <div class="col-sm-2">
                             <input type="text" class="form-control" id="txt_search_hash" name="fileHash" value="{{.reqParam.FileHash}}">
                         </div>
-                        <label class="control-label col-sm-1" for="txt_search_created">时间</label>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-sm-1" for="txt_search_created">创建时间</label>
                         <div class="col-sm-2">
                             <input type="text" class="form-control" id="txt_search_created_start" name="createStart" value="{{.reqParam.CreateStart}}">
                         </div>
                         <div class="col-sm-2">
                             <input type="text" class="form-control" id="txt_search_created_end" name="createEnd" value="{{.reqParam.CreateEnd}}">
+                        </div>
+                        <div class="col-sm-5">
                         </div>
                         <div class="col-sm-1" style="text-align:right;">
                             <button type="submit" class="btn btn-primary">查询</button>
@@ -55,7 +59,7 @@
             <thead>
                 <tr class="info">
                     <th>id</th>
-                    <th>会员id</th>
+                    <th>会员(id)</th>
                     <th>父路径</th>
                     <th>名称</th>
                     <th>Hash</th>
@@ -71,7 +75,7 @@
                 {{range .list}}
                 <tr>
                     <td>{{.Id}}</td>
-                    <td>{{.UserId}}</td>
+                    <td>{{.User.Email}}({{.UserId}})</td>
                     <td>{{.FilePath}}</td>
                     <td>{{.FileName}}</td>
                     <td>{{.FileHash}}({{.FileIndexId}})</td>

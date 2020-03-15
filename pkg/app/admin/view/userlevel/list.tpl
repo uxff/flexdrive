@@ -64,8 +64,8 @@
                     <td>{{.Name}}</td>
                     <td>{{.Desc}}</td>
                     <td>{{if eq .IsDefault 1}}是{{else}}否{{end}}</td>
-                    <td>{{.QuotaSpace}}</td>
-                    <td>{{.Price}}</td>
+                    <td>{{space4Human .QuotaSpace}}</td>
+                    <td>{{amount4Human .Price}}</td>
                     <td>{{.Created}}</td>
                     <td>{{mgrStatus .Status}}</td>
                     <td>

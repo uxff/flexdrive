@@ -48,6 +48,8 @@ func (r *UserFileListRequest) ToCondition() (condition map[string]interface{}) {
 		condition["userId = ?"] = r.UserId
 	}
 
+	condition["isDir=?"] = 0
+
 	log.Debugf("r=%+v tocondition:%+v", r, condition)
 	return condition
 }
