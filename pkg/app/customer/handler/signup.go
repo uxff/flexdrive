@@ -98,7 +98,7 @@ func SignupForm(c *gin.Context) {
 	userEnt.QuotaSpace = initialLevelEnt.QuotaSpace
 	userEnt.Status = base.StatusNormal
 	userEnt.LastLoginAt = time.Now()
-	userEnt.LastLoginIp = ""
+	userEnt.LastLoginIp = getRemoteIp(c)
 
 	_, err = base.Insert(userEnt)
 	if err != nil {

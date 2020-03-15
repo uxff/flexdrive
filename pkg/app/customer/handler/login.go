@@ -121,7 +121,7 @@ func Logout(c *gin.Context) {
 
 // 受理登录
 func AcceptLogin(c *gin.Context, userEnt *dao.User) {
-	userEnt.LastLoginIp = c.Request.Header.Get("X-Real-IP")
+	userEnt.LastLoginIp = getRemoteIp(c)
 	userEnt.LastLoginAt = time.Now() //util.JsonTime(time.Now()) // time.Now().Format("2006-01-02 15:04:05")
 
 	_, tokenStr, _, err := genCuaFromUserEnt(userEnt)
@@ -198,4 +198,12 @@ func ChangePwdForm(c *gin.Context) {
 
 	//StdResponse(c, ErrSuccess, nil)
 	c.Redirect(http.StatusMovedPermanently, RouteHome)
+}
+
+func getRemoteIp(c *gin.Context) string {
+	remoteIp := c.Request.Header.Get("X-Real-IP")
+	if remoteIp == "" {
+		remoteIp = c.Request.RemoteAddr
+	}
+	return remoteIp
 }
