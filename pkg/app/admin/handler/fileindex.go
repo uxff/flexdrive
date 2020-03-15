@@ -45,7 +45,7 @@ func (r *FileIndexListRequest) ToCondition() (condition map[string]interface{}) 
 	}
 
 	if r.NodeId != 0 {
-		condition["node = ?"] = r.NodeId
+		condition["nodeId = ?"] = r.NodeId
 	}
 
 	log.Debugf("r=%+v tocondition:%+v", r, condition)
@@ -112,30 +112,30 @@ func FileIndexEnable(c *gin.Context) {
 
 	//loginInfo := getLoginInfo(c)
 
-	shareEnt, err := dao.GetFileIndexById(int(fileIndexId))
+	fileIndexEnt, err := dao.GetFileIndexById(int(fileIndexId))
 
-	//_, err := base.GetByCol("id", mid, shareEnt)
-	// exist, err := base.GetByCol("mid", mid, shareEnt)
+	//_, err := base.GetByCol("id", mid, fileIndexEnt)
+	// exist, err := base.GetByCol("mid", mid, fileIndexEnt)
 	if err != nil {
 		log.Errorf("db error:%v", err)
 		StdErrResponse(c, ErrInternal)
 		return
 	}
 
-	if shareEnt == nil {
+	if fileIndexEnt == nil {
 		StdErrResponse(c, ErrMgrNotExist)
 		return
 	}
 
 	if enable == 1 {
 		// 启用
-		shareEnt.Status = base.StatusNormal
+		fileIndexEnt.Status = base.StatusNormal
 	} else if enable == 9 {
 		// 停用
-		shareEnt.Status = base.StatusDeleted
+		fileIndexEnt.Status = base.StatusDeleted
 	}
 
-	_, err = base.UpdateByCol("id", fileIndexId, shareEnt, []string{"status"})
+	_, err = base.UpdateByCol("id", fileIndexId, fileIndexEnt, []string{"status"})
 	if err != nil {
 		log.Errorf("db error:%v", err)
 		StdErrResponse(c, ErrInternal)

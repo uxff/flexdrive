@@ -25,6 +25,7 @@ const (
 	RouteManagerList   = "/manager/list"
 	RouteRoleList      = "/role/list"
 	RouteUserList      = "/user/list"
+	RouteUserFileList  = "/user/file/list"
 	RouteFileIndexList = "/file/list"
 	RouteNodeList      = "/node/list"
 	RouteShareList     = "/share/list"
@@ -94,6 +95,8 @@ func StartHttpServer(addr string) error {
 
 	rbacRouter.GET("/user/list", UserList)
 	rbacRouter.GET("/user/enable/:id/:enable", UserEnable)
+	rbacRouter.GET("/user/file/list", UserFileList)
+	rbacRouter.GET("/user/file/enable/:id/:enable", UserFileEnable)
 
 	rbacRouter.GET("/userlevel/add", UserLevelAdd)
 	rbacRouter.POST("/userlevel/add", UserLevelAddForm)

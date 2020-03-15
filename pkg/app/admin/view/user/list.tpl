@@ -48,8 +48,7 @@
                     <th>id</th>
                     <th>Email</th>
                     <th>累计充值(元)</th>
-                    <th>配额空间</th>
-                    <th>已用空间</th>
+                    <th>已用/配额空间</th>
                     <th>文件数</th>
                     <th>最后登录时间</th>
                     <th>最后登录ip</th>
@@ -63,8 +62,7 @@
                     <td>{{.Id}}</td>
                     <td>{{.Email}}</td>
                     <td>{{.TotalCharge }}</td>
-                    <td>{{space4Human .QuotaSpace }}</td>
-                    <td>{{space4Human .UsedSpace }}</td>
+                    <td>{{space4Human .UsedSpace }} / {{space4Human .QuotaSpace }}</td>
                     <td>{{.FileCount}}</td>
                     <td>{{.LastLoginAt}}</td>
                     <td>{{.LastLoginIp}}</td>
@@ -75,7 +73,7 @@
                         {{else}}
                         <a href="/user/enable/{{.Id}}/1">启用</a>
                         {{end}}
-                        <a href="/file/list?userId={{.Id}}">文件列表</a>
+                        <a href="/user/file/list?userId={{.Id}}">文件列表</a>
                     </td>
                 </tr>
                 {{else}}
