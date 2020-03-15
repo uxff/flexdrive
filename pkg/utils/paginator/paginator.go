@@ -7,6 +7,10 @@ import (
 	"strconv"
 )
 
+const (
+	DefaultPageCol = "page" // page no column name in url
+)
+
 type Paginator struct {
 	Request     *http.Request
 	PerPageNums int
@@ -16,6 +20,8 @@ type Paginator struct {
 	pageRange []int
 	pageNums  int
 	page      int
+
+	pageCol string
 }
 
 func (p *Paginator) PageNums() int {
@@ -45,7 +51,7 @@ func (p *Paginator) Page() int {
 	if p.Request.Form == nil {
 		p.Request.ParseForm()
 	}
-	p.page, _ = strconv.Atoi(p.Request.Form.Get("p"))
+	p.page, _ = strconv.Atoi(p.Request.Form.Get(p.pageCol))
 	if p.page > p.PageNums() {
 		p.page = p.PageNums()
 	}
@@ -88,9 +94,9 @@ func (p *Paginator) PageLink(page int) string {
 	link, _ := url.ParseRequestURI(p.Request.RequestURI)
 	values := link.Query()
 	if page == 1 {
-		values.Del("p")
+		values.Del(p.pageCol)
 	} else {
-		values.Set("p", strconv.Itoa(page))
+		values.Set(p.pageCol, strconv.Itoa(page))
 	}
 	link.RawQuery = values.Encode()
 	return link.String()
@@ -138,6 +144,11 @@ func (p *Paginator) HasPages() bool {
 	return p.PageNums() > 1
 }
 
+func (p *Paginator) SetPageCol(col string) *Paginator {
+	p.pageCol = col
+	return p
+}
+
 func NewPaginator(req *http.Request, per int, nums int64) *Paginator {
 	p := Paginator{}
 	p.Request = req
@@ -146,5 +157,8 @@ func NewPaginator(req *http.Request, per int, nums int64) *Paginator {
 	}
 	p.PerPageNums = per
 	p.SetNums(nums)
+
+	p.pageCol = DefaultPageCol
+
 	return &p
 }
