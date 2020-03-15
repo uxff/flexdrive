@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -204,6 +205,12 @@ func getRemoteIp(c *gin.Context) string {
 	remoteIp := c.Request.Header.Get("X-Real-IP")
 	if remoteIp == "" {
 		remoteIp = c.Request.RemoteAddr
+		if remoteIp != "" {
+			remoteIpStamp := strings.Split(remoteIp, ":")
+			if len(remoteIpStamp) > 1 {
+				remoteIp = remoteIpStamp[0]
+			}
+		}
 	}
 	return remoteIp
 }
