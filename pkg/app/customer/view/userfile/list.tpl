@@ -105,7 +105,7 @@
                         <a href="/my/file/list?dir={{.FilePath}}{{.FileName}}">{{.FileName}}</a>
                     </td>
                     <td>{{.Created }}</td>
-                    <td>{{size4Human .Size }}</td>
+                    <td>{{if .IsDir}}-{{else}}{{size4Human .Size }}{{end}}</td>
                     <td>
                         <!--
                         <a href="/">移动到</a>

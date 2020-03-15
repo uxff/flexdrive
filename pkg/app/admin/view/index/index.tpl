@@ -33,7 +33,7 @@
     </div>
     <hr>
     <div class="row">
-        <p class="text-center">本项目是开源项目，使用Apache协议，开发者可以基于本项目构建自己的应用，也可以向我们贡献自己的代码。<a href="https://github.com/uxff/flexdrive">view source</a></p>
+        <p class="text-center">本项目是开源项目，使用MIT协议，开发者可以基于本项目构建自己的应用，也可以向我们贡献自己的代码。<a href="https://github.com/uxff/flexdrive">view source</a></p>
         
     </div>
 </div>

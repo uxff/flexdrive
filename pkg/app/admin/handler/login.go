@@ -10,6 +10,13 @@ import (
 	"github.com/uxff/flexdrive/pkg/log"
 )
 
+func Login(c *gin.Context) {
+	c.HTML(http.StatusOK, "login/login.tpl", gin.H{
+		"LoginInfo": getLoginInfo(c),
+		"IsLogin":   isLoginIn(c),
+	})
+}
+
 type LoginRequest struct {
 	Email   string `form:"email"`
 	Pwd     string `form:"password"`
@@ -19,13 +26,6 @@ type LoginRequest struct {
 type LoginResponse struct {
 	Email string `json:"email"`
 	Mid   int    `json:"mid"`
-}
-
-func Login(c *gin.Context) {
-	c.HTML(http.StatusOK, "login/login.tpl", gin.H{
-		"LoginInfo": getLoginInfo(c),
-		"IsLogin":   isLoginIn(c),
-	})
 }
 
 // 提交登录的处理
@@ -45,6 +45,7 @@ func LoginForm(c *gin.Context) {
 		return
 	}
 
+	// 查找账号
 	mgrEnt, err := dao.GetManagerByEmail(req.Email)
 	if err != nil {
 		log.Errorf("query by email:%s failed:%v", req.Email, err)
@@ -58,6 +59,7 @@ func LoginForm(c *gin.Context) {
 		return
 	}
 
+	// 验证密码
 	if !mgrEnt.IsPwdValid(req.Pwd) {
 		log.Warnf("mgr pwd not matched, verify failed. email:%s", req.Email)
 		StdErrResponse(c, ErrInvalidPass)
@@ -73,8 +75,8 @@ func LoginForm(c *gin.Context) {
 	// 登录成功 种下cookie
 	AcceptLogin(c, mgrEnt)
 
+	// 登录成功 跳转到首页
 	c.Redirect(http.StatusMovedPermanently, RouteHome)
-	//StdResponse(c, ErrSuccess, "/")
 }
 
 //// 获取一些全局配置 比如登录信息 菜单列表
@@ -119,11 +121,13 @@ func AcceptLogin(c *gin.Context, mgrEnt *dao.Manager) {
 	mgrEnt.LastLoginIp = c.Request.Header.Get("X-Real-IP")
 	mgrEnt.LastLoginAt = time.Now() //util.JsonTime(time.Now()) // time.Now().Format("2006-01-02 15:04:05")
 
+	// 生成签名
 	_, tokenStr, sign, err := genGpaFromMgrEnt(mgrEnt)
 	if err != nil {
 		log.Errorf("gen gpatoken failed:%v", err)
 		return
 	}
+	// 设置cookie
 	c.SetCookie(CookieKeyGpa, tokenStr, 3600*24*7, "", "", http.SameSiteDefaultMode, false, false)
 	c.SetCookie(CookieKeySign, sign, 3600*24*7, "", "", http.SameSiteDefaultMode, false, false)
 
