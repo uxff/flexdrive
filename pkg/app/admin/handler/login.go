@@ -30,11 +30,6 @@ func Login(c *gin.Context) {
 
 // 提交登录的处理
 func LoginForm(c *gin.Context) {
-	// 如果已经登录 则跳到成功页
-	//gpaToken, _ := verifyFromCookie(c)
-	//if gpaToken == nil {
-	//	// 未登录
-	//}
 
 	// 参数是否正确
 	req := &LoginRequest{}

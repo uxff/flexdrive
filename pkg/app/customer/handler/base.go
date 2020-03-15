@@ -169,7 +169,9 @@ func StdResponse(c *gin.Context, code string, biz interface{}) {
 func StdErrResponse(c *gin.Context, code string) {
 	errMsg := CodeToMessage(code)
 	c.HTML(http.StatusOK, "common/error.tpl", gin.H{
-		"errMsg": errMsg,
+		"LoginInfo": getLoginInfo(c),
+		"IsLogin":   isLoginIn(c),
+		"errMsg":    errMsg,
 	})
 	//StdResponseJson(c, code, "", "")
 }
@@ -178,7 +180,9 @@ func StdErrMsgResponse(c *gin.Context, code string, errMsg string) {
 		errMsg = CodeToMessage(code)
 	}
 	c.HTML(http.StatusOK, "common/error.tpl", gin.H{
-		"errMsg": errMsg,
+		"LoginInfo": getLoginInfo(c),
+		"IsLogin":   isLoginIn(c),
+		"errMsg":    errMsg,
 	})
 	//StdResponseJson(c, code, "", "")
 }
