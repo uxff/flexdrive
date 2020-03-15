@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/uxff/flexdrive/pkg/app/nodestorage/httpworker"
 	"github.com/uxff/flexdrive/pkg/log"
@@ -86,6 +87,7 @@ func StartNode(storageDir string, httpAddr string, clusterId string, clusterMemb
 	node.NodeEnt.NodeAddr = node.WorkerAddr
 	node.NodeEnt.Status = 0
 	node.NodeEnt.TotalSpace = 1000000000
+	node.NodeEnt.LastRegistered = time.Now()
 
 	err = node.NodeEnt.UpdateById([]string{"nodeAddr", "status", "totalSpace"})
 	if err != nil {
