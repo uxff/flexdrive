@@ -162,6 +162,7 @@ CREATE TABLE `share` (
   INDEX IDX_ShareHash (`shareHash`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+
 CREATE TABLE `offline_task` (
   `id` int(11) NOT NULL COMMENT '任务id',
   `userId` int(11) NOT NULL COMMENT '会员id',
@@ -169,7 +170,12 @@ CREATE TABLE `offline_task` (
   `fileName` varchar(256) NOT NULL DEFAULT '' COMMENT '文件名',
   `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '创建时间',
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态 1=下载中 2=下载完成 3=下载失败',
+  `status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '状态 1=下载中 2=下载完成 3=下载失败 4=已保存',
+  `parentUserFileId` int(11) NOT NULL DEFAULT '0' COMMENT '父目录id 对应userFile.Id',
+  `userFileId` int(11) NOT NULL DEFAULT '0' COMMENT '会员文件id',
+  `fileHash` varchar(40) NOT NULL DEFAULT '' COMMENT '文件hash',
+  `size` bigint(20) NOT NULL DEFAULT '0' COMMENT '文件大小',
+  `remark` varchar(256) NOT NULL DEFAULT '' COMMENT '备注 比如失败原因',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='离线任务表';
 
