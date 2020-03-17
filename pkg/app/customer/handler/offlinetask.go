@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/uxff/flexdrive/pkg/app/nodestorage/model/storagemodel"
+
 	"github.com/gin-gonic/gin"
 	"github.com/uxff/flexdrive/pkg/dao"
 	"github.com/uxff/flexdrive/pkg/dao/base"
@@ -138,6 +140,15 @@ func OfflineTaskAdd(c *gin.Context) {
 		StdErrMsgResponse(c, ErrInternal, "创建离线任务失败")
 		return
 	}
+
+	go func() {
+		node := storagemodel.GetCurrentNode()
+		if node != nil {
+			//startOfflineTask(offlineTaskItem)
+			node.ExecOfflineTask(offlineTaskItem)
+		}
+	}()
+
 	StdResponse(c, ErrSuccess, offlineTaskItem) // todo redirect
 	return
 

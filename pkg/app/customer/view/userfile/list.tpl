@@ -47,7 +47,7 @@
         <div class="col-md-3">
             <button class="btn btn-info " type="button" data-toggle="modal" data-target="#newFolderModal">新建文件夹</button>
             <a href="javascript:;" class="btn btn-info " type="button" data-toggle="modal" data-target="#uploadModal"><span class="glyphicon glyphicon-cloud-upload"></span>上传</a>
-            <button class="btn btn-info " type="button">离线下载</button>
+            <button class="btn btn-info " type="button" data-toggle="modal" data-target="#offlineTaskModal">离线下载</button>
         </div>
     </div>
 
@@ -335,6 +335,49 @@
         </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
+
+<!-- 模态框（Modal） offlineTask -->
+<div class="modal fade" id="offlineTaskModal" tabindex="-1" role="dialog" aria-labelledby="offlineTaskLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" 
+                        aria-hidden="true">×
+                </button>
+                <h4 class="modal-title" id="offlineTaskLabel">
+                    新建离线下载任务
+                </h4>
+            </div>
+            <form id="offlineTaskForm" accept-charset="utf-8" role="form" class="form-horizontal" method="POST" action='/my/file/newfolder'>
+
+            <div class="modal-body">
+                <div class="row" style="margin: 10px;">
+                    <div class="col-md-4 text-right">
+                        当前路径：
+                    </div>
+                    <div class="col-md-6">
+                        全部文件<span id="dirPathTextInOfflineTaskModal"></span>
+                        <input type="hidden" name="parentDir" id="dirPathInOfflineTaskModal" readonly value="{{.reqParam.Dir}}">
+                    </div>
+                </div>
+                <div class="row" style="margin: 10px;">
+                    <div class="col-md-4 text-right">
+                        请输入资源地址：
+                    </div>
+                    <div class="col-md-8">
+                        <textarea class="form-control" name="dataurl" id="nameInOfflineTaskModal"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="submit" class="btn btn-primary" id="offlineTaskSubmit">提交</button>
+            </div>
+            </form>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
     
 <style type="text/css">
     .glyphicon-folder-close {
@@ -363,7 +406,7 @@ Date.prototype.Format = function (fmt) { //author: meizz
 }
 
 $("#expiredText").datetimepicker({
-    format: 'YYYY-MM-DD HH:mm'
+    format: 'YYYY-MM-DD HH:mm',
 });
 
 $(function () {
@@ -465,6 +508,16 @@ $(function () {
             $('#expiredText').show();
             //$('#expired-text').hide();
         }
+    });
+
+    // -------- 离线任务 ----------
+    $('#offlineTaskModal').on('show.bs.modal', function () {
+        $('#dirPathTextInOfflineTaskModal').html($('#dirPath').val());
+        $('#nameInOfflineTaskModal').focus();// 未生效
+    });
+    $('#offlineTaskSubmit').on('click', function(){
+        $('#offlineTaskForm').submit();
+        $('#offlineTaskModal').modal('hide');
     });
 
 });

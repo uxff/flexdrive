@@ -321,8 +321,10 @@ func UserFileRename(c *gin.Context) {
 	}
 
 	userFile.FileName = newFileName
+	// todo 目录改名，则子目录都得你改名？、、 限制空目录才能改名？？
+	userFile.MakePathHash()
 
-	_, err = base.UpdateByCol("id", fileIndexId, userFile, []string{"fileName"})
+	_, err = base.UpdateByCol("id", fileIndexId, userFile, []string{"fileName", "pathHash"})
 	if err != nil {
 		log.Errorf("db error:%v", err)
 		StdErrResponse(c, ErrInternal)

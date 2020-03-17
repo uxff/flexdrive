@@ -447,6 +447,8 @@ func (n *NodeStorage) ExecOfflineTask(task *dao.OfflineTask) error {
 		Space:       fileSize/1024 + 1,
 	}
 
+	userFile.MakePathHash()
+
 	_, err = base.Insert(userFile)
 	if err != nil {
 		log.Errorf("save offlinetask(%d) to userFile error:%v", task.Id)
