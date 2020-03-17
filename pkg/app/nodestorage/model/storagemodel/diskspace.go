@@ -4,6 +4,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/uxff/flexdrive/pkg/log"
@@ -56,7 +57,7 @@ func DirExist(path string) bool {
 // 	    //创建一个http client
 // 	    client := new(http.Client)
 // 	    //client.Timeout = time.Second * 60 //设置超时时间
-// 	    //get方法获取资源
+// 	    //get方法获取资
 // 	    resp, err := client.Get(url)
 // 	    if err != nil {
 // 	        return err
@@ -121,7 +122,8 @@ func DirExist(path string) bool {
 // 	    return err
 // }
 
-func downloadFile(fileUrl string, localPath string) error {
+// 返回的fileName是链接中检测到的fileName， 可能为空
+func downloadFile(fileUrl string, localPath string) (fileName string, fileSize int64, err error) {
 	// nt := time.Now().Format("2006-01-02 15:04:05")
 	// fmt.Printf("[%s]To download %s\n", nt, fileID)
 
@@ -130,7 +132,7 @@ func downloadFile(fileUrl string, localPath string) error {
 	newFile, err := os.Create(localPath)
 	if err != nil {
 		log.Errorf("create localFile %s error: %v", localPath, err)
-		return err
+		return "", 0, err
 	}
 	defer newFile.Close()
 
@@ -138,15 +140,25 @@ func downloadFile(fileUrl string, localPath string) error {
 	resp, err := client.Get(fileUrl)
 	if err != nil {
 		log.Errorf("when downloadFile %s error:%v", fileUrl, err)
-		return err
+		return "", 0, err
 	}
 
 	defer resp.Body.Close()
 
-	_, err = io.Copy(newFile, resp.Body)
+	fileSize, err = io.Copy(newFile, resp.Body)
 	if err != nil {
 		log.Errorf("when downloadFile %s error:%v", fileUrl, err)
-		return err
+		return "", 0, err
 	}
-	return nil
+
+	// 自动寻找下载文件名 Content-Disposition: attachment; filename=%s
+	desc := resp.Header.Get("Content-Disposition")
+	if namePos := strings.Index(desc, "filename="); namePos > 0 {
+		fileName = desc[namePos+len("filename="):]
+		if tailPos := strings.Index(fileName, ";"); tailPos > 0 {
+			fileName = fileName[:tailPos]
+		}
+	}
+
+	return fileName, fileSize, nil
 }

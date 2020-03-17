@@ -47,11 +47,11 @@
                 <tr class="info">
                     <th>id</th>
                     <th>原地址</th>
-                    <th>路径</th>
+                    <th>保存在</th>
                     <th>文件名</th>
                     <th>文件hash</th>
                     <th>文件大小</th>
-                    <th>创建分享时间</th>
+                    <th>创建时间</th>
                     <th>状态</th>
                     <th>操作</th>
                 </tr>
@@ -60,7 +60,7 @@
                 {{range .list}}
                 <tr>
                     <td>{{.Id}}</td>
-                    <td><a href="{{.Dataurl}}"></a> </td>
+                    <td><a href="{{.Dataurl}}" target="_blank">查看</a> </td>
                     <td>{{.UserFile.FilePath}} </td>
                     <td>{{.FileName}}</td>
                     <td>{{.FileHash }}</td>

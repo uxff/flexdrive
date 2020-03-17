@@ -217,7 +217,7 @@ func (n *NodeStorage) SaveFileFromFileIndex(fileIndexId int, asNodeLevel string)
 	// 外部访问带域名的地址
 	fileServeUrl := n.WorkerAddr + fileOutPath
 	log.Debugf("will save file form node1: %s", fileServeUrl)
-	err = downloadFile(fileServeUrl, fileInStorage)
+	_, _, err = downloadFile(fileServeUrl, fileInStorage)
 	if err != nil {
 		log.Errorf("when download(%d) %s error:%v", fileIndexId, fileServeUrl, err)
 		return nil, err
@@ -259,6 +259,7 @@ func (n *NodeStorage) SaveFileFromFileIndex(fileIndexId int, asNodeLevel string)
 // fileName 可空
 func (n *NodeStorage) SaveFileHandler(inputFileHandler io.Reader, fileHash string, fileName string, size int64) (*dao.FileIndex, error) {
 
+	// 新建文件
 	fileInStorage := n.FileHashToStoragePath(fileHash) //n.StorageDir + fileHash
 
 	// 将inputFileHandler 的保存在节点存储系统中
@@ -284,24 +285,31 @@ func (n *NodeStorage) SaveFileHandler(inputFileHandler io.Reader, fileHash strin
 	// 	StdErrResponse(c, ErrInternal)
 	// 	return
 	// }
+	return n.collectFileInStorageToFileIndex(fileInStorage, fileHash, fileName, size)
+}
+
+/*
+	fileName 可空
+*/
+func (n *NodeStorage) collectFileInStorageToFileIndex(filePathInStorage string, fileHash string, fileName string, fileSize int64) (*dao.FileIndex, error) {
 
 	fileIndex := &dao.FileIndex{
 		FileName:  fileName,
 		FileHash:  fileHash,
 		NodeId:    node.NodeEnt.Id,
-		InnerPath: fileInStorage,
+		InnerPath: filePathInStorage,
 		OuterPath: "", // todo
-		Size:      size,
-		Space:     size/1024 + 1,
+		Size:      fileSize,
+		Space:     fileSize/1024 + 1,
 	}
 
-	_, err = base.Insert(fileIndex)
+	_, err := base.Insert(fileIndex)
 	if err != nil {
-		log.Errorf("insert %s failed:%v", fileInStorage, err)
+		log.Errorf("insert %s failed:%v", filePathInStorage, err)
 		return nil, err
 	}
 
-	log.Infof("a file stored, %s", fileInStorage)
+	log.Infof("a file stored, %s", filePathInStorage)
 	// todo distribute to other node
 	// get other nodes
 	condidateNodes := make([]string, 0)
@@ -364,4 +372,89 @@ func (n *NodeStorage) FileHashToOutPath(fileHash string) string {
 	// 	curDir = curDir + prefix1 + "/"
 	// }
 	// return "/file/" + curDir
+}
+
+func (n *NodeStorage) ExecOfflineTask(task *dao.OfflineTask) error {
+
+	if task.Dataurl == "" {
+		log.Errorf("dataurl is invalid when exec offlinetask")
+		return fmt.Errorf("dataurl is invalid ")
+	}
+
+	os.MkdirAll("./tmp/", os.ModeDir)
+
+	localPath := fmt.Sprintf("./tmp/offline-%d", task.Id)
+
+	fileName, fileSize, err := downloadFile(task.Dataurl, localPath)
+	if err != nil {
+		log.Errorf("download dataurl(%s) error when exec offlinetask(%d): %v", task.Dataurl, task.Id, err)
+		return err
+	}
+
+	log.Debugf("offline task %d has done. fileName:%s size:%d", task.Id, fileName, fileSize)
+
+	if DirExist(localPath) {
+		task.FileName = fileName
+		task.Size = fileSize
+	}
+
+	defer task.UpdateById([]string{"fileName", "size", "fileHash", "userFileId", "remark"})
+
+	fileHash, err := filehash.CalcSha1(localPath)
+	if err != nil {
+		log.Errorf("calc filehash error when exec offlinetask(%d): %v", task.Id, err)
+		return err
+	}
+
+	task.FileHash = fileHash
+
+	fileInStorage := n.FileHashToStoragePath(fileHash)
+
+	//SaveFileFromFileIndex()
+	//SaveFileHandler
+	fileIndex, err := n.collectFileInStorageToFileIndex(fileInStorage, fileHash, fileName, fileSize)
+	if err != nil {
+		log.Errorf("offlinetask(%s) save to fileIndex error:%v", task.Id, err)
+		return err
+	}
+
+	if fileIndex == nil {
+		log.Errorf("offlinetask(%d) save to fileIndex failed, why?", task.Id)
+		return err
+	}
+
+	parrentDir := "/"
+	if task.ParentUserFileId > 0 {
+
+		parrentUserFile, err := dao.GetUserFileById(task.ParentUserFileId)
+		if err != nil {
+			log.Warnf("get user(%d) parrentUserFile(%d) error:%v", task.UserId, task.ParentUserFileId)
+			// return err
+		}
+		if parrentUserFile != nil {
+			parrentDir = parrentUserFile.FilePath + parrentUserFile.FileName
+		}
+	}
+
+	// makeUserFileIndex
+	userFile := &dao.UserFile{
+		UserId:      task.UserId,
+		FileIndexId: fileIndex.Id,
+		FilePath:    parrentDir,
+		FileHash:    fileHash,
+		FileName:    fileName,
+		Size:        fileSize,
+		Space:       fileSize/1024 + 1,
+	}
+
+	_, err = base.Insert(userFile)
+	if err != nil {
+		log.Errorf("save offlinetask(%d) to userFile error:%v", task.Id)
+		return err
+	}
+
+	task.UserFileId = userFile.Id
+	log.Debugf("offlinetask(%d) is done", task.Id)
+
+	return nil
 }

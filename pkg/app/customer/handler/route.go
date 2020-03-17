@@ -83,6 +83,10 @@ func StartHttpServer(addr string) error {
 	authRouter.POST("/my/order/notify", MockpayForm)
 	authRouter.GET("/my/order/list", OrderList)
 
+	authRouter.GET("/my/offlinetask/list", OfflineTaskList)
+	authRouter.GET("/my/offlinetask/add", OfflineTaskAdd)
+	authRouter.GET("/my/offlinetask/enable/:id/:enable", OfflineTaskEnable)
+
 	authRouter.GET("/my/profile", Profile)
 
 	authRouter.GET("/my/file/list", UserFileList)

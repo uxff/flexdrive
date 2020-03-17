@@ -156,5 +156,20 @@ ON "share" (
   "shareHash"
 );
 
+CREATE TABLE "offline_task" (
+  "id" integer PRIMARY KEY AUTOINCREMENT,
+  "userId" integer NOT NULL DEFAULT 0,
+  "dataurl" text NOT NULL DEFAULT '',
+  "fileName" TEXT NOT NULL DEFAULT '',
+  "created" timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  "updated" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "status" integer NOT NULL DEFAULT 1,
+  "parentUserFileId" INTEGER NOT NULL DEFAULT 0,
+  "userFileId" INTEGER NOT NULL DEFAULT 0,
+  "fileHash" TEXT NOT NULL DEFAULT '',
+  "size" integer NOT NULL DEFAULT 0,
+  "remark" TEXT NOT NULL
+);
+
 insert into manager (email,pwd,status,isSuper) values("admin@admin.com","e10adc3949ba59abbe56e057f20f883e",1,1);
 

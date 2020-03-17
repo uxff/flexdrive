@@ -95,8 +95,8 @@ func OfflineTaskList(c *gin.Context) {
 }
 
 type OfflineTaskAddRequest struct {
-	//UserFileId int `form:"userFileId"` // 文件
-	Dataurl string `form:"dataurl"` // 资源地址
+	ParentUserFileId int    `form:"parentUserFileId"` // 文件
+	Dataurl          string `form:"dataurl"`          // 资源地址
 	// ExpiredTime time.Time `form:"-"`
 }
 
@@ -120,8 +120,9 @@ func OfflineTaskAdd(c *gin.Context) {
 	loginInfo := getLoginInfo(c)
 
 	offlineTaskItem := &dao.OfflineTask{
-		UserId:  loginInfo.UserId,
-		Dataurl: req.Dataurl,
+		UserId:           loginInfo.UserId,
+		Dataurl:          req.Dataurl,
+		ParentUserFileId: req.ParentUserFileId,
 		//UserFileId: req.UserFileId,
 		//FileName:   userFile.FileName,
 		//FileHash:   userFile.FileHash,
