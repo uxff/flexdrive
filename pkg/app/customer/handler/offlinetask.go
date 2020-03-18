@@ -145,7 +145,10 @@ func OfflineTaskAdd(c *gin.Context) {
 		node := storagemodel.GetCurrentNode()
 		if node != nil {
 			//startOfflineTask(offlineTaskItem)
-			node.ExecOfflineTask(offlineTaskItem)
+			err := node.ExecOfflineTask(offlineTaskItem)
+			if err != nil {
+				log.Trace(requestId).Errorf("exec offlinetask(%d) failed:%v", offlineTaskItem.Id, err)
+			}
 		}
 	}()
 
