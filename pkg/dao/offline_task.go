@@ -8,6 +8,14 @@ import (
 	"github.com/uxff/flexdrive/pkg/dao/base"
 )
 
+const (
+	OfflineTaskStatusExecuting = 1
+	//OfflineTaskStatusDone      = 2
+	OfflineTaskStatusFail    = 3
+	OfflineTaskStatusSaved   = 4
+	OfflineTaskStatusRemoved = 99
+)
+
 type OfflineTask struct {
 	Id               int       `xorm:"not null pk autoincr comment('主键id') INT(10)"`
 	UserId           int       `xorm:"not null default 0 comment('用户id') INT(11)"`

@@ -374,45 +374,56 @@ func (n *NodeStorage) FileHashToOutPath(fileHash string) string {
 	// return "/file/" + curDir
 }
 
-func (n *NodeStorage) ExecOfflineTask(task *dao.OfflineTask) error {
+func (n *NodeStorage) ExecOfflineTask(task *dao.OfflineTask) (err error) {
+
+	defer func() {
+		//task.Status = dao.OfflineTaskStatusDone
+		if err != nil {
+			task.Remark = err.Error()
+			task.Status = dao.OfflineTaskStatusFail
+		}
+		task.UpdateById([]string{"status", "remark", "fileName", "size", "fileHash", "userFileId"})
+	}()
 
 	if task.Dataurl == "" {
 		log.Errorf("dataurl is invalid when exec offlinetask")
-		return fmt.Errorf("dataurl is invalid ")
+		task.Status = dao.OfflineTaskStatusFail
+		err = fmt.Errorf("dataurl is invalid ")
+		return err
 	}
 
 	os.MkdirAll("./tmp/", os.ModeDir)
 
 	localPath := fmt.Sprintf("./tmp/offline-%d", task.Id)
 
-	fileName, fileSize, err := downloadFile(task.Dataurl, localPath)
+	task.FileName, task.Size, err = downloadFile(task.Dataurl, localPath)
 	if err != nil {
 		log.Errorf("download dataurl(%s) error when exec offlinetask(%d): %v", task.Dataurl, task.Id, err)
 		return err
 	}
 
-	log.Debugf("offline task %d has done. fileName:%s size:%d", task.Id, fileName, fileSize)
+	log.Debugf("offline task %d has done. fileName:%s size:%d", task.Id, task.FileName, task.Size)
 
-	if DirExist(localPath) {
-		task.FileName = fileName
-		task.Size = fileSize
+	if !DirExist(localPath) {
+		err = fmt.Errorf("download offlinetask(%d) dataurl(%s) failed no local file", task.Id, task.Dataurl)
+		log.Errorf(err.Error())
+		return err
 	}
 
-	defer task.UpdateById([]string{"fileName", "size", "fileHash", "userFileId", "remark"})
+	//defer task.UpdateById([]string{"fileName", "size", "fileHash", "userFileId", "remark"})
 
-	fileHash, err := filehash.CalcSha1(localPath)
+	task.FileHash, err = filehash.CalcSha1(localPath)
 	if err != nil {
 		log.Errorf("calc filehash error when exec offlinetask(%d): %v", task.Id, err)
 		return err
 	}
 
-	task.FileHash = fileHash
-
-	fileInStorage := n.FileHashToStoragePath(fileHash)
+	fileInStorage := n.FileHashToStoragePath(task.FileHash)
 
 	//SaveFileFromFileIndex()
 	//SaveFileHandler
-	fileIndex, err := n.collectFileInStorageToFileIndex(fileInStorage, fileHash, fileName, fileSize)
+	var fileIndex *dao.FileIndex
+	fileIndex, err = n.collectFileInStorageToFileIndex(fileInStorage, task.FileHash, task.FileName, task.Size)
 	if err != nil {
 		log.Errorf("offlinetask(%s) save to fileIndex error:%v", task.Id, err)
 		return err
@@ -420,8 +431,11 @@ func (n *NodeStorage) ExecOfflineTask(task *dao.OfflineTask) error {
 
 	if fileIndex == nil {
 		log.Errorf("offlinetask(%d) save to fileIndex failed, why?", task.Id)
+		err = fmt.Errorf("offlinetask(%d) save to fileIndex failed, why?", task.Id)
 		return err
 	}
+
+	//task.Status = dao.OfflineTaskStatusSaved
 
 	parrentDir := "/"
 	if task.ParentUserFileId > 0 {
@@ -441,10 +455,10 @@ func (n *NodeStorage) ExecOfflineTask(task *dao.OfflineTask) error {
 		UserId:      task.UserId,
 		FileIndexId: fileIndex.Id,
 		FilePath:    parrentDir,
-		FileHash:    fileHash,
-		FileName:    fileName,
-		Size:        fileSize,
-		Space:       fileSize/1024 + 1,
+		FileHash:    task.FileHash,
+		FileName:    task.FileName,
+		Size:        task.Size,
+		Space:       task.Size/1024 + 1,
 	}
 
 	userFile.MakePathHash()
@@ -457,6 +471,8 @@ func (n *NodeStorage) ExecOfflineTask(task *dao.OfflineTask) error {
 
 	task.UserFileId = userFile.Id
 	log.Debugf("offlinetask(%d) is done", task.Id)
+
+	task.Status = dao.OfflineTaskStatusSaved
 
 	return nil
 }

@@ -157,7 +157,9 @@ func OfflineTaskAdd(c *gin.Context) {
 
 }
 
+// todo 还允许重新开始吗
 func OfflineTaskEnable(c *gin.Context) {
+	requestId := c.GetString(CtxKeyRequestId)
 	offlineTaskId, _ := strconv.ParseInt(c.Param("id"), 10, 64)
 	if offlineTaskId <= 0 {
 		StdErrResponse(c, ErrInvalidParam)
@@ -183,7 +185,18 @@ func OfflineTaskEnable(c *gin.Context) {
 
 	if enable == 1 {
 		// 启用
-		offlineTaskEnt.Status = base.StatusNormal
+		offlineTaskEnt.Status = dao.OfflineTaskStatusExecuting
+
+		go func() {
+			node := storagemodel.GetCurrentNode()
+			if node != nil {
+				//startOfflineTask(offlineTaskItem)
+				err := node.ExecOfflineTask(offlineTaskEnt)
+				if err != nil {
+					log.Trace(requestId).Errorf("exec offlinetask(%d) failed:%v", offlineTaskEnt.Id, err)
+				}
+			}
+		}()
 	} else if enable == 9 {
 		// 停用
 		offlineTaskEnt.Status = base.StatusDeleted
