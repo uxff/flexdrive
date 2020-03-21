@@ -148,28 +148,28 @@ func (n *NodeStorage) GetFreeSpace() int64 {
 }
 
 // 将文件保存到本地 fileHash用于校验 未完成 暂无调用
-func (n *NodeStorage) SaveFile(filepath string, fileHash string) (*dao.FileIndex, error) {
-	fileHandle, err := os.Open(filepath)
-	if err != nil {
-		log.Errorf("open %s failed:%v", filepath, err)
-		return nil, err
-	}
+// func (n *NodeStorage) SaveFile(filepath string, fileHash string) (*dao.FileIndex, error) {
+// 	fileHandle, err := os.Open(filepath)
+// 	if err != nil {
+// 		log.Errorf("open %s failed:%v", filepath, err)
+// 		return nil, err
+// 	}
 
-	defer fileHandle.Close()
+// 	defer fileHandle.Close()
 
-	fileHash, err = filehash.CalcFileSha1(fileHandle)
-	if err != nil {
-		log.Errorf("calc filehash if uploaded file failed:%v", err)
-		//StdErrResponse(c, ErrInternal)
-		return nil, err
-	}
+// 	fileHash, err = filehash.CalcFileSha1(fileHandle)
+// 	if err != nil {
+// 		log.Errorf("calc filehash if uploaded file failed:%v", err)
+// 		//StdErrResponse(c, ErrInternal)
+// 		return nil, err
+// 	}
 
-	return &dao.FileIndex{
-		FileName: filepath,
-		FileHash: fileHash,
-	}, nil
+// 	return &dao.FileIndex{
+// 		FileName: filepath,
+// 		FileHash: fileHash,
+// 	}, nil
 
-}
+// }
 
 // 从第一node复制过来
 func (n *NodeStorage) SaveFileFromFileIndex(fileIndexId int, asNodeLevel string) (*dao.FileIndex, error) {
@@ -301,6 +301,7 @@ func (n *NodeStorage) collectFileInStorageToFileIndex(filePathInStorage string, 
 		OuterPath: "", // todo
 		Size:      fileSize,
 		Space:     fileSize/1024 + 1,
+		Status:    base.StatusNormal,
 	}
 
 	_, err := base.Insert(fileIndex)
