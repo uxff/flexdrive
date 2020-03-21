@@ -67,7 +67,7 @@
                     <td>{{.Id}}</td>
                     <td>{{.FileName}}</td>
                     <td>{{.FileHash}}</td>
-                    <td>{{.NodeId }}, {{.NodeId2}}, {{.NodeId2}}</td>
+                    <td>{{.NodeId }}, {{.NodeId2}}, {{.NodeId3}}</td>
                     <td>{{.Created }}</td>
                     <td>{{.ReferCount }}</td>
                     <td>{{.Size }}</td>

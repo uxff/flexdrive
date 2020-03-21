@@ -220,20 +220,20 @@ func loadFuncMap() {
 	tplFuncMap["mgrStatus"] = func(status int) string {
 		return base.StatusMap[status]
 	}
-	// 所有的空间单位必须是int64
+	// 所有的空间单位必须是int64 基础为kB
 	tplFuncMap["space4Human"] = func(space int64) string {
 		if space < 1024 {
 			return fmt.Sprintf("%d kB", space)
 		}
 		if space < 1024*1024 {
-			return fmt.Sprintf("%d MB", space/1024)
+			return fmt.Sprintf("%.01f MB", float32(space)/1024)
 		}
 		if space < 1024*1024*1024 {
-			return fmt.Sprintf("%d GB", space/1024/1024)
+			return fmt.Sprintf("%.01f GB", float32(space)/1024/1024)
 		}
-		return fmt.Sprintf("%d TB", space/1024/1024/1024)
+		return fmt.Sprintf("%.02f TB", float32(space)/1024/1024/1024)
 	}
-	// 所有的空间单位必须是int64
+	// 所有的大小单位必须是int64 基础为Byte
 	tplFuncMap["size4Human"] = func(space int64) string {
 		if space < 1024 {
 			return fmt.Sprintf("%d B", space)
