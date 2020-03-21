@@ -47,39 +47,12 @@ func (r *UserListRequest) ToCondition() (condition map[string]interface{}) {
 
 // 接口返回的元素
 type UserItem struct {
-	Id          int    `json:"id" form:"id"`
-	Email       string `json:"email" form:"email" binding:"required"`
-	Name        string `json:"name" form:"name"`
-	LastLoginAt string `json:"lastLoginAt"`
-	LastLoginIp string `json:"lastLoginIp"`
-	//Pwd         string `json:"pwd" form:"pwd"`
-	LevelId     int    `json:"levelId"`
-	LevelName   string `json:"levelName"`
-	TotalCharge int    `json:"totalCharge"`
-	QuotaSpace  int64  `json:"quotaSpace"`
-	UsedSpace   int64  `json:"usedSpace"`
-	FileCount   int64  `json:"fileCount"`
-	Created     string `json:"created"`
-	Updated     string `json:"updated"`
-	Status      int    `json:"status"`
+	dao.User
 }
 
 func NewUserItemFromEnt(userEnt *dao.User) *UserItem {
 	return &UserItem{
-		Id:          userEnt.Id,
-		Email:       userEnt.Email,
-		Name:        userEnt.Name,
-		LastLoginAt: userEnt.LastLoginAt.String(),
-		LastLoginIp: userEnt.LastLoginIp,
-		//RoleId:      mgruserEntEnt.RoleId,
-		// Pwd:         userEnt.Pwd, // 不返回密码，如果更新时提交了密码则代表修改密码
-		//RoleName: userEnt.RoleName,
-		FileCount:  userEnt.FileCount,
-		QuotaSpace: userEnt.QuotaSpace,
-		UsedSpace:  userEnt.UsedSpace,
-		Created:    userEnt.Created.String(),
-		Updated:    userEnt.Updated.String(),
-		Status:     userEnt.Status,
+		User: *userEnt,
 	}
 }
 
@@ -109,12 +82,6 @@ func UserList(c *gin.Context) {
 		resItems = append(resItems, NewUserItemFromEnt(v))
 	}
 
-	// StdResponse(c, ErrSuccess, map[string]interface{}{
-	// 	"total":    total,
-	// 	"page":     req.Page,
-	// 	"pagesize": req.PageSize,
-	// 	"data":     resItems,
-	// })
 	c.HTML(http.StatusOK, "user/list.tpl", gin.H{
 		"LoginInfo": getLoginInfo(c),
 		"IsLogin":   isLoginIn(c),

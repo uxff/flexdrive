@@ -37,10 +37,6 @@ func (r *RoleListRequest) ToCondition() (condition map[string]interface{}) {
 		condition["name like ?"] = "%" + r.Name + "%"
 	}
 
-	// if r.Email != "" {
-	// 	condition["email = ?"] = r.Email
-	// }
-
 	log.Debugf("r=%+v tocondition:%+v", r, condition)
 	return condition
 }

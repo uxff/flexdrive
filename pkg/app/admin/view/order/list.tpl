@@ -75,7 +75,7 @@
                 <td>{{.User.Email}} </td>
                 <td>{{.LevelName }}</td>
                 <td>获得空间 {{space4Human .AwardSpace }}</td>
-                <td>{{.TotalAmount }}</td>
+                <td>{{amount4Human .TotalAmount }}</td>
                 <td>{{.Created }}</td>
                 <td>{{orderStatus .Status}}</td>
                 <td>

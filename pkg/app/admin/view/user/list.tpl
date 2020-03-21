@@ -27,7 +27,7 @@
                         <div class="col-sm-2">
                             <input type="text" class="form-control" id="txt_search_name" name="email" value="{{.reqParam.Email}}">
                         </div>
-                        <label class="control-label col-sm-1" for="txt_search_created">时间</label>
+                        <label class="control-label col-sm-1" for="txt_search_created">注册时间</label>
                         <div class="col-sm-2">
                             <input type="text" class="form-control" id="txt_search_created_start" name="createStart" value="{{.reqParam.CreateStart}}">
                         </div>
@@ -50,6 +50,7 @@
                     <th>累计充值(元)</th>
                     <th>已用/配额空间</th>
                     <th>文件数</th>
+                    <th>注册时间</th>
                     <th>最后登录时间</th>
                     <th>最后登录ip</th>
                     <th>状态</th>
@@ -61,9 +62,10 @@
                 <tr>
                     <td>{{.Id}}</td>
                     <td>{{.Email}}</td>
-                    <td>{{.TotalCharge }}</td>
+                    <td>{{amount4Human .TotalCharge }}</td>
                     <td>{{space4Human .UsedSpace }} / {{space4Human .QuotaSpace }}</td>
                     <td>{{.FileCount}}</td>
+                    <td>{{.Created}}</td>
                     <td>{{.LastLoginAt}}</td>
                     <td>{{.LastLoginIp}}</td>
                     <td>{{mgrStatus .Status}}</td>

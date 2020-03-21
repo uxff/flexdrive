@@ -23,6 +23,10 @@
             <div class="panel-body">
                 <form id="formSearch" class="form-horizontal" method="GET" action="/share/list">
                     <div class="form-group" >
+                        <label class="control-label col-sm-1" for="txt_search_name">会员id</label>
+                        <div class="col-sm-2">
+                            <input type="text" class="form-control" id="txt_search_name" name="userId" value="{{.reqParam.Name}}">
+                        </div>
                         <label class="control-label col-sm-1" for="txt_search_name">文件名称</label>
                         <div class="col-sm-2">
                             <input type="text" class="form-control" id="txt_search_name" name="name" value="{{.reqParam.Name}}">
@@ -34,8 +38,8 @@
                         <div class="col-sm-2">
                             <input type="text" class="form-control" id="txt_search_created_end" name="createEnd" value="{{.reqParam.CreateEnd}}">
                         </div>
-                        <div class="col-sm-3" style="text-align:left;">
-                            <button type="submit" style="margin-left:50px" class="btn btn-primary">查询</button>
+                        <div class="col-sm-1" style="text-align:left;">
+                            <button type="submit" class="btn btn-primary">查询</button>
                         </div>
                     </div>
                 </form>

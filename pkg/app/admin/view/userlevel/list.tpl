@@ -27,7 +27,7 @@
                         <div class="col-sm-2">
                             <input type="text" class="form-control" id="txt_search_name" name="name" value="{{.reqParam.Name}}">
                         </div>
-                        <label class="control-label col-sm-1" for="txt_search_created">时间</label>
+                        <label class="control-label col-sm-1" for="txt_search_created">创建时间</label>
                         <div class="col-sm-2">
                             <input type="text" class="form-control" id="txt_search_created_start" name="createStart" value="{{.reqParam.CreateStart}}">
                         </div>
@@ -50,8 +50,8 @@
                     <th>升级包名称</th>
                     <th>介绍</th>
                     <th>是否默认</th>
-                    <th>配额空间(KB)</th>
-                    <th>价格(分)</th>
+                    <th>配额空间</th>
+                    <th>价格(元)</th>
                     <th>创建时间</th>
                     <th>状态</th>
                     <th>操作</th>

@@ -22,7 +22,7 @@
 
     <!--当前排版方式1-->
     <div class="row" style="margin-bottom: 4px;">
-        <div class="col-md-6" style="padding: 5px;">
+        <div class="col-md-4" style="padding: 5px;">
             <!--当前等级：{{.userLevel.Name}} &nbsp;&nbsp;-->
             当前空间：已用 {{space4Human .LoginInfo.UserEnt.UsedSpace}} / 总共 {{space4Human .LoginInfo.UserEnt.QuotaSpace}}
             [<a href="/my/order/create" style="text-align: right;" >升级扩容</a>]
@@ -34,7 +34,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <form class="form-horizontal" method="GET" action="/my/file/list">
                 <div class="input-group " style="margin-top:0px; position:relative">
                     <input type="text" class="form-control" name="fileName" placeholder="搜索我的文件" value="{{.reqParam.FileName}}" />
@@ -44,7 +44,7 @@
                 </div>
             </form>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <button class="btn btn-info " type="button" data-toggle="modal" data-target="#newFolderModal">新建文件夹</button>
             <a href="javascript:;" class="btn btn-info " type="button" data-toggle="modal" data-target="#uploadModal"><span class="glyphicon glyphicon-cloud-upload"></span>上传</a>
             <button class="btn btn-info " type="button" data-toggle="modal" data-target="#offlineTaskModal">离线下载</button>

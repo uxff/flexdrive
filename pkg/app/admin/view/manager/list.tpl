@@ -60,6 +60,7 @@
                     <th>mid</th>
                     <th>Email</th>
                     <th>角色</th>
+                    <th>创建时间</th>
                     <th>最后登录时间</th>
                     <th>最后登录ip</th>
                     <th>状态</th>
@@ -72,6 +73,7 @@
                     <td>{{.Mid}}</td>
                     <td>{{.Email}}</td>
                     <td>{{.RoleName}}</td>
+                    <td>{{.Created}}</td>
                     <td>{{.LastLoginAt}}</td>
                     <td>{{.LastLoginIp}}</td>
                     <td>{{mgrStatus .Status}}</td>

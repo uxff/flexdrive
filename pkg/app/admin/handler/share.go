@@ -18,6 +18,7 @@ type ShareListRequest struct {
 	CreateStart string `form:"createStart"`
 	CreateEnd   string `form:"createEnd"`
 	Name        string `form:"name"`
+	UserId      int    `form:"userId"`
 	Page        int    `form:"page"`
 	PageSize    int    `form:"pagesize"`
 }
@@ -35,6 +36,10 @@ func (r *ShareListRequest) ToCondition() (condition map[string]interface{}) {
 
 	if r.Name != "" {
 		condition["fileName like ?"] = "%" + r.Name + "%"
+	}
+
+	if r.UserId != 0 {
+		condition["userId=?"] = r.UserId
 	}
 
 	log.Debugf("r=%+v tocondition:%+v", r, condition)

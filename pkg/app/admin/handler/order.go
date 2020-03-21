@@ -113,9 +113,6 @@ func OrderRefund(c *gin.Context) {
 	}
 
 	orderEnt, err := dao.GetOrderById(int(orderId))
-
-	//_, err := base.GetByCol("id", mid, orderEnt)
-	// exist, err := base.GetByCol("mid", mid, orderEnt)
 	if err != nil {
 		log.Errorf("db error:%v", err)
 		StdErrResponse(c, ErrInternal)
@@ -131,6 +128,8 @@ func OrderRefund(c *gin.Context) {
 		StdErrMsgResponse(c, ErrInternal, "该订单不允许退款")
 		return
 	}
+
+	// todo call api for refund
 
 	orderEnt.Status = dao.OrderStatusRefended
 
