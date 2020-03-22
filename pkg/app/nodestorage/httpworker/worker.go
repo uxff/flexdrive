@@ -303,6 +303,19 @@ func (w *Worker) PerformMaster() {
 //}
 
 func (w *Worker) PingNode(workerId string) *PingRes {
+	// req := pingablepb.PingRequest{
+	// 	FromId: w.Id,
+	// 	MasterId: w.MasterId,
+	// 	MetaData: w.WrapMetaData(),
+	// }
+	// res := w.GrpcClient.Ping(req)
+	// if res.Code != 0 {
+	// 	log.Errorf("ping node failed:%+v", res)
+	// }
+	// pingRes := &pingRes{}
+	// pingRes.CopyFromPb(res)
+	// return pingRes
+
 	if workerId == w.Id {
 		w.RegisterIn(workerId, w.MasterId)
 		return &PingRes{Code: 0, WorkerId: w.Id, MasterId: w.MasterId, Members: w.ClusterMembers}

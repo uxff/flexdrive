@@ -1,4 +1,4 @@
-package httpworker
+package grpcworker
 
 // 依赖翻转的可操作接口说明
 

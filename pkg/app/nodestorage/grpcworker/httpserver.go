@@ -16,6 +16,20 @@ type PingRes struct {
 	Members  map[string]*Worker
 }
 
+// type GrpcWorker struct {
+// 	worker *Worker
+// }
+
+// func (g *GrpcWorker) Ping(ctx context.Context, req *pingablepb.PingRequest) (*pingablepb.PingResponse, error) {
+// 	g.worker.RegisterIn(fromId, masterId)
+// 	res := &pingablepb.PingResponse{
+// 		Code: 0,
+// 		Msg: "ok",
+// 		Members: w.Members,
+// 		MetaData: w.WrapMetaData(),
+// 	}
+// }
+
 func (w *Worker) ServePingable() error {
 
 	router := gin.Default()

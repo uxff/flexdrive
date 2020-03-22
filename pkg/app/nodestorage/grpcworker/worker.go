@@ -1,4 +1,4 @@
-package worker
+package grpcworker
 
 import (
 	"encoding/json"
@@ -112,7 +112,7 @@ func (w *Worker) Start() error {
 		//	log.Printf("master changed from:%s to %s", w.MasterId, newMasterId)
 		//	w.Follow(newMasterId)
 
-		case _, ok:=<-w.quitChan:
+		case _, ok := <-w.quitChan:
 			if !ok {
 				log.Printf("quitChan is closed in start while Start()")
 			}
@@ -237,7 +237,7 @@ func (w *Worker) FindFollowedMaster() string {
 	}
 
 	for masterId, followerNum := range masterMap {
-		if followerNum>=len(w.ClusterMembers)/2 {
+		if followerNum >= len(w.ClusterMembers)/2 {
 			return masterId
 		}
 	}
@@ -288,7 +288,7 @@ func (w *Worker) PerformMaster() {
 func (w *Worker) PingNode(workerId string) *PingRes {
 	if workerId == w.Id {
 		w.RegisterIn(workerId, w.MasterId)
-		return &PingRes{Code:0,WorkerId:w.Id,MasterId:w.MasterId,Members:w.ClusterMembers}
+		return &PingRes{Code: 0, WorkerId: w.Id, MasterId: w.MasterId, Members: w.ClusterMembers}
 	}
 
 	res := w.MessageTo("ping", workerId, nil)
@@ -326,7 +326,7 @@ func (w *Worker) MessageTo(method string, targetId string, val url.Values) *Ping
 	targetUrl := target.genServeUrl(method, val)
 	resp, err := http.Get(targetUrl)
 	if err != nil {
-		res.Msg = "Http Error:"+err.Error()
+		res.Msg = "Http Error:" + err.Error()
 		res.Code = 13
 		return res
 	}
@@ -334,14 +334,14 @@ func (w *Worker) MessageTo(method string, targetId string, val url.Values) *Ping
 	buf, err := ioutil.ReadAll(resp.Body)
 	defer resp.Body.Close()
 	if err != nil {
-		res.Msg = "Read Response Error:"+err.Error()
+		res.Msg = "Read Response Error:" + err.Error()
 		res.Code = 14
 		return res
 	}
 
 	err = json.Unmarshal(buf, res)
 	if err != nil {
-		res.Msg = "Unmarshall Error:"+err.Error()
+		res.Msg = "Unmarshall Error:" + err.Error()
 		res.Code = 15
 	}
 
@@ -428,9 +428,9 @@ func (w *Worker) RegisterIn(mateId string, masterIdOfMate string) {
 
 func (w *Worker) genServeUrl(method string, params url.Values) string {
 	u := url.URL{
-		Scheme:"http",
-		Host: w.ServiceAddr,
-		Path:"/"+method,
+		Scheme:   "http",
+		Host:     w.ServiceAddr,
+		Path:     "/" + method,
 		RawQuery: params.Encode(),
 	}
 	return u.String()
