@@ -1,0 +1,52 @@
+syntax = "proto3";
+package pingable;
+
+// 成员节点
+message NodeMember {
+    string id = 1; 
+    string masterId = 2;
+    string lastRegistered = 3;
+    string serviceAddr = 4;
+    string clusterId = 5;
+}
+
+// 心跳请求结构体
+message PingRequest {
+    string fromId = 1;
+    string masterId = 2;
+    string metaData = 3;
+}
+
+// 心跳响应结构体
+message PingResponse {
+    int32 code = 1;
+    string msg = 2;
+    repeated NodeMember members = 3; // 数组
+    string metaData = 4;
+}
+
+// 消息请求结构体
+message MsgRequest {
+    string fromId = 1;
+    string toId = 2;
+    string msgId = 3;
+    string action = 4;
+    string data = 5;
+}
+
+// 消息想用结构体
+message MsgResponse {
+    int32 code = 1;
+    string msg = 2;
+    string msgId = 3;
+    string action = 4;
+    string data = 5;
+}
+
+// grpc 服务端接口
+service PingableInterface {
+    // ping 心跳服务
+    rpc Ping(PingRequest) returns (PingResponse) {}
+    // msg 消息服务 用于接收同伴发送来的消息
+    rpc Msg(MsgRequest) returns (MsgResponse) {}
+}

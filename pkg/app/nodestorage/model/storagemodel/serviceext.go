@@ -78,6 +78,7 @@ func (n *NodeStorage) AttachService() {
 		w.JsonOk(c)
 	})
 
+	// todo 不应该在此处服务
 	n.Worker.AttachGetAction("/file/:fileHash", func(c *gin.Context) {
 		fileHash := c.Param("fileHash")
 		if fileHash == "" {
@@ -95,6 +96,7 @@ func (n *NodeStorage) AttachService() {
 	})
 }
 
+//
 type NodeMsg struct {
 	FromId       string
 	Action       string

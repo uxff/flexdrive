@@ -13,7 +13,6 @@ require (
 	github.com/go-xorm/builder v0.0.0-20170519032130-c8871c857d25 // indirect
 	github.com/go-xorm/core v0.5.7-0.20170614060517-e9b7412d750d
 	github.com/go-xorm/xorm v0.6.3-0.20170625093504-32d688fd965e
-	github.com/golang/protobuf v1.3.3 // indirect
 	github.com/lib/pq v1.3.0 // indirect
 	github.com/mattn/go-isatty v0.0.13-0.20200128103942-cb30d6282491 // indirect
 	github.com/mattn/go-runewidth v0.0.3
@@ -21,5 +20,6 @@ require (
 	github.com/ugorji/go v1.1.8-0.20190812104308-42bc974514ff // indirect
 	go.uber.org/zap v1.14.1
 	google.golang.org/appengine v1.6.5 // indirect
+	google.golang.org/grpc v1.28.0 // indirect
 	gopkg.in/yaml.v2 v2.2.8 // indirect
 )
