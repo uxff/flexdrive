@@ -170,8 +170,6 @@ func OfflineTaskEnable(c *gin.Context) {
 
 	offlineTaskEnt, err := dao.GetOfflineTaskById(int(offlineTaskId))
 
-	//_, err := base.GetByCol("id", mid, offlineTaskEnt)
-	// exist, err := base.GetByCol("mid", mid, offlineTaskEnt)
 	if err != nil {
 		log.Errorf("db error:%v", err)
 		StdErrResponse(c, ErrInternal)

@@ -7,3 +7,9 @@ type PingableHandler interface {
 	//MsgTo(jsonableData interface{})
 	OnMsg(fromId, data string)
 }
+
+// todo ?
+type MetaNode interface {
+	GetMeta(metaKey string) interface{}
+	SetMeta(metaKey string, metaValue interface{})
+}

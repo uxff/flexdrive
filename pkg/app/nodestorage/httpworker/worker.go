@@ -39,6 +39,9 @@ type Worker struct {
 
 	// 外部操作者
 	OuterHandler PingableHandler `json:"-"`
+
+	// 实现meta map
+	metaMap map[string]interface{}
 }
 
 func NewWorker(serviceAddr string, clusterId string) *Worker {
@@ -69,9 +72,7 @@ func (w *Worker) Start() error {
 	// 等待别的worker注册成功
 	time.Sleep(time.Millisecond * 20)
 
-	//log.Debugf("waiting mates registered in")
 	log.Debugf("waiting mates registered in")
-	//log.Debugf("only %d/%d mates has been registered, continuing checking", registeredCount, len(w.ClusterMembers))
 	// assure mate is registered
 	for {
 		// 检查节点是否就位

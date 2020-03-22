@@ -91,6 +91,7 @@ CREATE TABLE `node` (
   `nodeAddr` varchar(32) NOT NULL , 
   `totalSpace` integer NOT NULL DEFAULT '0' , 
   `usedSpace` integer NOT NULL DEFAULT '0' , 
+  `unusedSpace` integer NOT NULL DEFAULT '0' , 
   `fileCount` integer NOT NULL DEFAULT '0' , 
   `remark` text NOT NULL , 
   `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' , 

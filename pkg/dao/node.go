@@ -12,6 +12,7 @@ type Node struct {
 	NodeAddr       string    `xorm:"not null comment('节点在集群中的通信地址') VARCHAR(32)"`
 	TotalSpace     int64     `xorm:"not null default 0 comment('全部空间 单位KB') BIGINT(20)"`
 	UsedSpace      int64     `xorm:"not null default 0 comment('使用的空间 单位KB') BIGINT(20)"`
+	UnusedSpace    int64     `xorm:"not null default 0 comment('未使用的空间 单位KB') BIGINT(20)"`
 	FileCount      int64     `xorm:"not null default 0 comment('文件数量') BIGINT(20)"`
 	Remark         string    `xorm:"not null comment('房间备注') TEXT"`
 	Created        time.Time `xorm:"created not null default '0000-00-00 00:00:00' comment('添加时间') TIMESTAMP"`

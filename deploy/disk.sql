@@ -97,6 +97,7 @@ CREATE TABLE `node` (
   `nodeAddr` varchar(32) NOT NULL COMMENT '节点地址 集群中服务地址',
   `totalSpace` bigint(20) NOT NULL DEFAULT '0' COMMENT '全部空间 单位KB',
   `usedSpace` bigint(20) NOT NULL DEFAULT '0' COMMENT '使用的空间 单位KB',
+  `unusedSpace` bigint(20) NOT NULL DEFAULT '0' COMMENT '未使用空间',
   `fileCount` bigint(20) NOT NULL DEFAULT '0' COMMENT '文件数量',
   `remark` text NOT NULL COMMENT '房间备注',
   `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '添加时间',

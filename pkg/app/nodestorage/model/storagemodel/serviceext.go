@@ -107,7 +107,7 @@ type NodeMsgSaveFile struct {
 	AsNodeLevel string
 }
 
-func (node *NodeStorage) HandleSaveFile(msg *NodeMsgSaveFile) error {
+func (n *NodeStorage) HandleSaveFile(msg *NodeMsgSaveFile) error {
 
 	type Aaa struct {
 		A string
@@ -118,7 +118,7 @@ func (node *NodeStorage) HandleSaveFile(msg *NodeMsgSaveFile) error {
 		return errors.New("when handle saveFile, fileIndexId cannot be 0")
 	}
 
-	fromNode := node.Worker.ClusterMembers[msg.FromId]
+	fromNode := n.Worker.ClusterMembers[msg.FromId]
 	if fromNode == nil {
 		//w.JsonError(c, "fromId has no real node")
 		return errors.New("fromId has no real node")
@@ -132,18 +132,18 @@ func (node *NodeStorage) HandleSaveFile(msg *NodeMsgSaveFile) error {
 	}
 
 	if fileIndexEnt == nil {
-		//
 		//w.JsonError(c, "cannot find fileIndexEnt")
 		return errors.New("cannot find fileIndexEnt")
 	}
 
 	//fileTargetUrl := fromNode.ServiceAddr + "/file/" + fileIndexEnt.FileHash + "/" + fileIndexEnt.FileName
-	node.SaveFileFromFileIndex(msg.FileIndexId, msg.AsNodeLevel)
+	n.SaveFileFromFileIndex(msg.FileIndexId, msg.AsNodeLevel)
 
 	return nil
 }
 
-func (node *NodeStorage) OnMsg(fromId, data string) {
+// 依赖注入的设计方式 收到消息的回调
+func (n *NodeStorage) OnMsg(fromId, data string) {
 	action, err := jsonparser.GetString([]byte(data), "action")
 	if err != nil {
 		log.Errorf("parse msg error:%v", err)
@@ -151,18 +151,13 @@ func (node *NodeStorage) OnMsg(fromId, data string) {
 	}
 	switch action {
 	case "savefile":
-		msg := &NodeMsgSaveFile{
-			// NodeMsg: NodeMsg{	// no effected
-			// 	FromId: fromId,
-			// 	Action: action,
-			// },
-		}
+		msg := &NodeMsgSaveFile{}
 		err = json.Unmarshal([]byte(data), msg)
 		if err != nil {
 			log.Errorf("unmarshal msg error:%v", err)
 			return
 		}
-		err = node.HandleSaveFile(msg)
+		err = n.HandleSaveFile(msg)
 		if err != nil {
 			log.Errorf("handle msg error:%v", err)
 			return
@@ -172,21 +167,21 @@ func (node *NodeStorage) OnMsg(fromId, data string) {
 	}
 }
 
-func (node *NodeStorage) OnRegistered(w *httpworker.Worker) {
+func (n *NodeStorage) OnRegistered(w *httpworker.Worker) {
 	//node.RegisterTo
-	node.NodeEnt.LastRegistered = time.Now()
+	n.NodeEnt.LastRegistered = time.Now()
 	//node.NodeEnt.Status
-	node.NodeEnt.UpdateById([]string{"lastRegistered"})
+	n.NodeEnt.UpdateById([]string{"lastRegistered"})
 }
 
 // 要求同伴保存文件
-func (node *NodeStorage) DemandMateSaveFile(mateId string, fileIndexId int, asNodeLevel string) {
+func (n *NodeStorage) DemandMateSaveFile(mateId string, fileIndexId int, asNodeLevel string) {
 	msg := &NodeMsgSaveFile{
 		NodeMsg: NodeMsg{ // no effected
-			FromId: node.Worker.Id,
+			FromId: n.Worker.Id,
 			Action: "savefile",
 		},
 	}
 	val, _ := json.Marshal(msg)
-	node.Worker.MsgTo(mateId, string(val))
+	n.Worker.MsgTo(mateId, string(val))
 }

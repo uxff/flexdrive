@@ -97,8 +97,6 @@ func ShareList(c *gin.Context) {
 
 type ShareAddRequest struct {
 	UserFileId int `form:"userFileId"` // 文件
-	//ExpiredText string    `form:"expiredText"` // 有效期秒数
-	// ExpiredTime time.Time `form:"-"`
 }
 
 func ShareAdd(c *gin.Context) {
@@ -165,12 +163,6 @@ func ShareAdd(c *gin.Context) {
 
 		// 生成分享访问链接
 		genShareOutPath(c, shareItem)
-
-		//req.ExpiredTime, err = time.Parse("2006-01-02 15:04", req.ExpiredText)
-
-		// if req.ExpiredTime.Unix() > 1 {
-		// 	shareItem.Expired = req.ExpiredTime //time.Now().Add(time.Second * time.Duration(req.ExpiredSec))
-		// }
 
 		_, err = base.Insert(shareItem)
 		if err != nil {
@@ -241,8 +233,6 @@ func ShareEnable(c *gin.Context) {
 
 	shareEnt, err := dao.GetShareById(int(shareId))
 
-	//_, err := base.GetByCol("id", mid, shareEnt)
-	// exist, err := base.GetByCol("mid", mid, shareEnt)
 	if err != nil {
 		log.Errorf("db error:%v", err)
 		StdErrResponse(c, ErrInternal)
