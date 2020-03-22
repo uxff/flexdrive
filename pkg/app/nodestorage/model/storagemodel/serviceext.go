@@ -9,7 +9,7 @@ import (
 
 	"github.com/buger/jsonparser"
 
-	"github.com/uxff/flexdrive/pkg/app/nodestorage/httpworker"
+	worker "github.com/uxff/flexdrive/pkg/app/nodestorage/httpworker"
 
 	"github.com/gin-gonic/gin"
 	"github.com/uxff/flexdrive/pkg/dao"
@@ -167,7 +167,7 @@ func (n *NodeStorage) OnMsg(fromId, data string) {
 	}
 }
 
-func (n *NodeStorage) OnRegistered(w *httpworker.Worker) {
+func (n *NodeStorage) OnRegistered(w *worker.Worker) {
 	//node.RegisterTo
 	n.NodeEnt.LastRegistered = time.Now()
 	//node.NodeEnt.Status

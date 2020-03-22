@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/uxff/flexdrive/pkg/app/nodestorage/httpworker"
+	worker "github.com/uxff/flexdrive/pkg/app/nodestorage/httpworker"
 	"github.com/uxff/flexdrive/pkg/log"
 	"github.com/uxff/flexdrive/pkg/utils/filehash"
 
@@ -32,7 +32,7 @@ type NodeStorage struct {
 	WorkerAddr     string
 
 	NodeEnt *dao.Node
-	Worker  *httpworker.Worker
+	Worker  *worker.Worker
 }
 
 var node *NodeStorage
@@ -65,7 +65,7 @@ func StartNode(storageDir string, httpAddr string, clusterId string, clusterMemb
 		}
 	}
 
-	node.Worker = httpworker.NewWorker(node.WorkerAddr, node.ClusterId)
+	node.Worker = worker.NewWorker(node.WorkerAddr, node.ClusterId)
 	node.Worker.AddMates(strings.Split(node.ClusterMembers, ","))
 
 	var err error
