@@ -121,6 +121,7 @@ func OfflineTaskAdd(c *gin.Context) {
 
 	loginInfo := getLoginInfo(c)
 
+	// 先增加离线任务记录
 	offlineTaskItem := &dao.OfflineTask{
 		UserId:           loginInfo.UserId,
 		Dataurl:          req.Dataurl,
@@ -141,10 +142,10 @@ func OfflineTaskAdd(c *gin.Context) {
 		return
 	}
 
+	// 异步通知storagemodel执行离线下载任务
 	go func() {
 		node := storagemodel.GetCurrentNode()
 		if node != nil {
-			//startOfflineTask(offlineTaskItem)
 			err := node.ExecOfflineTask(offlineTaskItem)
 			if err != nil {
 				log.Trace(requestId).Errorf("exec offlinetask(%d) failed:%v", offlineTaskItem.Id, err)
