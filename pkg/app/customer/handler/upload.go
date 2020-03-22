@@ -3,6 +3,7 @@ package handler
 import (
 	"io"
 	"net/http"
+	"net/url"
 
 	"github.com/uxff/flexdrive/pkg/utils/filehash"
 
@@ -222,6 +223,8 @@ func UploadForm(c *gin.Context) {
 	}(userInfo.UserId)
 
 	// 同步到其他节点上
+	p := url.Values{}
+	p.Add("dir", parentDir)
 
-	c.Redirect(http.StatusMovedPermanently, RouteUserFileList+"?dir="+parentDir)
+	c.Redirect(http.StatusMovedPermanently, RouteUserFileList+"?"+p.Encode())
 }

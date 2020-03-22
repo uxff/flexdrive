@@ -69,11 +69,10 @@
                     <td>{{.Status}}</td>
                     <td>
                         {{if eq .Status 1}}
-                        <a href="/my/offlinetask/enable/{{.Id}}/9">禁用</a>
+                        <a href="/my/offlinetask/enable/{{.Id}}/9">删除</a>
                         {{else}}
-                        <a href="/my/offlinetask/enable/{{.Id}}/1">启用</a>
+                        <a href="/my/offlinetask/enable/{{.Id}}/1">重新下载</a>
                         {{end}}
-                        <a href="/file/{{.FileHash}}/{{.FileName}}">查看分享</a>
                     </td>
                 </tr>
                 {{else}}

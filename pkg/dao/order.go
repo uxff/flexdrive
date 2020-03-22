@@ -33,6 +33,7 @@ type Order struct {
 	LevelName     string    `xorm:"not null default '' comment('等级名') VARCHAR(12)"`
 	TotalAmount   int       `xorm:"not null default 0 comment('订单价格 单位分') INT(11)"`
 	PayAmount     int       `xorm:"not null default 0 comment('实付款金额 单位分') INT(11)"`
+	OutOrderNo    string    `xorm:"not null comment('第三方支付通道订单号') VARCHAR(40)"`
 	Remark        string    `xorm:"not null comment('订单备注') TEXT"`
 	Created       time.Time `xorm:"created not null default '0000-00-00 00:00:00' comment('创建时间') TIMESTAMP"`
 	Updated       time.Time `xorm:"updated not null default 'CURRENT_TIMESTAMP' TIMESTAMP"`

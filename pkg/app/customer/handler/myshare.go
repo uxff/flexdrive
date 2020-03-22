@@ -145,12 +145,13 @@ func ShareAdd(c *gin.Context) {
 		return
 	}
 
+	// 如果文件已经分享，不再重复创建分享记录
 	if existShare != nil {
-		//if existShare.Expired = // todo redirect
 		genShareOutPath(c, existShare)
 		StdResponse(c, ErrSuccess, existShare)
 		return
 	} else {
+		// 增加分享记录
 		shareItem := &dao.Share{
 			UserId:     loginInfo.UserId,
 			UserFileId: req.UserFileId,

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"net/url"
 	"path"
 	"strconv"
 	"strings"
@@ -232,7 +233,10 @@ func UserFileNewFolder(c *gin.Context) {
 
 	log.Trace(requestId).Debugf("创建目录%s成功", dirEnt.FilePath)
 
-	c.Redirect(http.StatusMovedPermanently, RouteUserFileList+"?dir="+req.ParentDir)
+	p := url.Values{}
+	p.Add("dir", req.ParentDir)
+
+	c.Redirect(http.StatusMovedPermanently, RouteUserFileList+"?"+p.Encode())
 
 }
 
@@ -276,7 +280,9 @@ func UserFileEnable(c *gin.Context) {
 	}
 
 	//StdResponse(c, ErrSuccess, nil)
-	c.Redirect(http.StatusMovedPermanently, RouteUserFileList)
+	p := url.Values{}
+	p.Add("dir", userFile.FilePath)
+	c.Redirect(http.StatusMovedPermanently, RouteUserFileList+"?"+p.Encode())
 }
 
 func UserFileRename(c *gin.Context) {
@@ -332,5 +338,7 @@ func UserFileRename(c *gin.Context) {
 	}
 
 	//StdResponse(c, ErrSuccess, nil)
-	c.Redirect(http.StatusMovedPermanently, RouteUserFileList)
+	p := url.Values{}
+	p.Add("dir", userFile.FilePath)
+	c.Redirect(http.StatusMovedPermanently, RouteUserFileList+"?"+p.Encode())
 }

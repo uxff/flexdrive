@@ -83,6 +83,7 @@ CREATE TABLE `order` (
   `levelName` varchar(12) NOT NULL DEFAULT '' COMMENT '等级名',
   `totalAmount` int(11) NOT NULL DEFAULT '0' COMMENT '订单价格 单位分',
   `payAmount` int(11) NOT NULL DEFAULT '0' COMMENT '实付款金额 单位分',
+  `outOrderNo` varchar(40) NOT NULL DEFAULT '' COMMENT '第三方支付通道订单号',
   `remark` text NOT NULL COMMENT '订单备注',
   `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '创建时间',
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

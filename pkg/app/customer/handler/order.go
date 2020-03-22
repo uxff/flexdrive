@@ -248,18 +248,14 @@ func MockpayForm(c *gin.Context) {
 
 	orderId, _ := strconv.Atoi(orderIdStr)
 
+	// 模拟支付使用验证码验证人工参与支付
 	verifyCode := c.PostForm("verifyCode")
 	if !checkVerifyCode(orderId, verifyCode) {
 		StdErrMsgResponse(c, ErrInvalidParam, "验证码不对")
 		return
 	}
 
-	token := c.PostForm("token")
-	if token == "" {
-		StdErrMsgResponse(c, ErrInvalidParam, "表单token失效")
-		return
-	}
-
+	// 校验参数正确性
 	orderInfo, err := dao.GetOrderById(orderId)
 	if err != nil {
 		StdErrMsgResponse(c, ErrInvalidParam, "查询错误")
@@ -271,9 +267,8 @@ func MockpayForm(c *gin.Context) {
 		return
 	}
 
-	loginInfo := getLoginInfo(c)
-	if loginInfo.UserId != orderInfo.UserId {
-		StdErrMsgResponse(c, ErrInvalidParam, "无权限操作该订单")
+	if orderInfo.User == nil || orderInfo.User.Id == 0 {
+		StdErrMsgResponse(c, ErrInvalidParam, "订单对应的会员查不到")
 		return
 	}
 
@@ -283,16 +278,17 @@ func MockpayForm(c *gin.Context) {
 		return
 	}
 
-	orderInfo.Remark = outOrderNo
+	// 更新订单状态
+	orderInfo.OutOrderNo = outOrderNo
 	orderInfo.Status = dao.OrderStatusPaid
-	orderInfo.UpdateById([]string{"remark", "status"})
+	orderInfo.UpdateById([]string{"outOrderNo", "status"})
 
-	// 用户升级
-	loginInfo.UserEnt.QuotaSpace += orderInfo.AwardSpace
-	loginInfo.UserEnt.TotalCharge += orderInfo.TotalAmount
-	loginInfo.UserEnt.LevelId = orderInfo.AwardLevelId
+	// 用户配额空间升级
+	orderInfo.User.QuotaSpace += orderInfo.AwardSpace
+	orderInfo.User.TotalCharge += orderInfo.TotalAmount
+	orderInfo.User.LevelId = orderInfo.AwardLevelId
 
-	loginInfo.UserEnt.UpdateById([]string{"quotaSpace", "totalCharge", "levelId"})
+	orderInfo.User.UpdateById([]string{"quotaSpace", "totalCharge", "levelId"})
 
 	StdErrMsgResponse(c, ErrSuccess, "支付完成")
 }

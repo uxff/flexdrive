@@ -26,11 +26,11 @@
             <div class="panel-body">
                 <form id="formSearch" class="form-horizontal" method="GET" action="/my/order/list">
                     <div class="form-group" >
-                        <label class="control-label col-sm-1" for="txt_search_name">名称</label>
+                        <label class="control-label col-sm-1" for="txt_search_name">订单编号</label>
                         <div class="col-sm-2">
                             <input type="text" class="form-control" id="txt_search_name" name="name" value="{{.reqParam.Name}}">
                         </div>
-                        <label class="control-label col-sm-1" for="txt_search_created">时间</label>
+                        <label class="control-label col-sm-1" for="txt_search_created">下单时间</label>
                         <div class="col-sm-2">
                             <input type="text" class="form-control" id="txt_search_created_start" name="createStart" value="{{.reqParam.CreateStart}}">
                         </div>
