@@ -37,10 +37,10 @@ type MsgHandler func(fromId, toId, msgId string, reqParam url.Values) (url.Value
 // GrpcWorker implements this interface
 type PingableWorker interface {
 	Serve() error
-	//Ping()                                                // ping out to other
-	//Pong()                                                // like recv ping
+	PingTo(toId string) (*pingablepb.PingResponse, error) // ping out to other
+	//OnPing(MsgHandler)   // like recv ping, grpcServer.Ping instead
 	RegisterMsgHandler(action string, handler MsgHandler) // like recv OnMsg
-	MsgTo(fromId, toId, action, msgId string, param url.Values) (url.Values, error)
+	MsgTo(toId, action, msgId string, param url.Values) (url.Values, error)
 }
 
 // 集成GrpcServer 和 grpc client
@@ -56,7 +56,6 @@ type GrpcWorker struct {
 }
 
 func NewGrpcWorker(worker *Worker) *GrpcWorker {
-
 	return &GrpcWorker{
 		worker:       worker,
 		rpcClientMap: make(map[string]pingablepb.PingableInterfaceClient),
@@ -106,6 +105,22 @@ func (g *GrpcWorker) Msg(ctx context.Context, req *pingablepb.MsgRequest) (*ping
 	return res, nil
 }
 
+func (g *GrpcWorker) PingTo(toId string) (*pingablepb.PingResponse, error) {
+	req := &pingablepb.PingRequest{
+		FromId:   g.worker.Id,
+		MasterId: g.worker.MasterId,
+		MetaData: g.worker.WrapMetaData(),
+	}
+
+	ctx := context.Background()
+	rpcClient := g.getClient(toId)
+	if rpcClient == nil {
+		return nil, errors.New("cannot gen rpcClient of %s", toId)
+	}
+	res, err := rpcClient.Ping(ctx, req)
+	return res, err
+}
+
 func (g *GrpcWorker) RegisterMsgHandler(action string, handler MsgHandler) {
 	if g.msgHandlerMap == nil {
 		g.msgHandlerMap = make(map[string]MsgHandler, 0)
@@ -114,9 +129,9 @@ func (g *GrpcWorker) RegisterMsgHandler(action string, handler MsgHandler) {
 }
 
 // msg out
-func (g *GrpcWorker) MsgTo(fromId, toId, action, msgId string, param url.Values) (url.Values, error) {
+func (g *GrpcWorker) MsgTo(toId, action, msgId string, param url.Values) (url.Values, error) {
 	req := &pingablepb.MsgRequest{
-		FromId: fromId,
+		FromId: g.worker.Id,
 		ToId:   toId,
 		MsgId:  msgId,
 		Action: action,
@@ -195,6 +210,7 @@ func (w *Worker) ServePingable() error {
 		return nil, nil
 	})
 
+	// dont return error
 	w.pingableWorker.RegisterMsgHandler(MsgActionFollow, func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error) {
 		masterId := reqParam.Get("masterId")
 		if w.MasterId == masterId {
@@ -205,11 +221,18 @@ func (w *Worker) ServePingable() error {
 			log.Errorf("will follow but masterId:" + masterId + " not exist")
 			return nil, nil
 		}
-		masterPingRes := w.PingNode(masterId)
+
+		// masterPingRes := w.PingNode(masterId)
+		masterPingRes, err := w.pingableWorker.PingTo(masterId)
+		if err != nil {
+			log.Errorf("will follow(%s) but ping error:%v", err)
+			return nil, err
+		}
 		if masterPingRes.Code != 0 {
 			log.Errorf("will follow(%s) but ping error:" + masterPingRes.Msg)
 			return nil, nil
 		}
+
 		masterId = masterPingRes.MasterId // follow master's master
 		w.Follow(masterId)
 		return nil, nil

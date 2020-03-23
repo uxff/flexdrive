@@ -145,7 +145,13 @@ func (w *Worker) RegisterToMates() {
 		wg.Add(1)
 		go func(mateId string) {
 			defer wg.Done()
-			w.PingNode(mateId)
+			//w.PingNode(mateId)
+			if w.Id != mateId {
+				res, err := w.pingableWorker.PingTo(mateId)
+				if err != nil && res != nil && res.Code == 0 {
+					w.RegisterIn(mateId, res.MasterId)
+				}
+			}
 		}(mateId)
 	}
 
@@ -291,29 +297,29 @@ func (w *Worker) PerformMaster() {
 //	}
 //}
 
-func (w *Worker) PingNode(workerId string) *PingRes {
-	if workerId == w.Id {
-		w.RegisterIn(workerId, w.MasterId)
-		return &PingRes{Code: 0, WorkerId: w.Id, MasterId: w.MasterId, Members: w.ClusterMembers}
-	}
+// func (w *Worker) PingNode(workerId string) *PingRes {
+// 	if workerId == w.Id {
+// 		w.RegisterIn(workerId, w.MasterId)
+// 		return &PingRes{Code: 0, WorkerId: w.Id, MasterId: w.MasterId, Members: w.ClusterMembers}
+// 	}
 
-	res := w.MessageTo("ping", workerId, nil)
-	//res := w.pingableWorker.Ping(workerId)
+// 	res := w.MessageTo("ping", workerId, nil)
+// 	//res := w.pingableWorker.Ping(workerId)
 
-	if res.Code != 0 {
-		log.Printf("ping failed:%v", res)
-		return res
-	}
+// 	if res.Code != 0 {
+// 		log.Printf("ping failed:%v", res)
+// 		return res
+// 	}
 
-	w.RegisterIn(workerId, res.MasterId)
+// 	w.RegisterIn(workerId, res.MasterId)
 
-	// todo 如果收到的mate.MasterId和自己的不一样怎么办？
+// 	// todo 如果收到的mate.MasterId和自己的不一样怎么办？
 
-	return res
-}
+// 	return res
+// }
 
 /**
-@deprecated
+@deprecated tobe instead by pingable
 */
 func (w *Worker) MessageTo(method string, targetId string, val url.Values) *PingRes {
 	res := &PingRes{}
