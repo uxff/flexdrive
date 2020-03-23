@@ -2,13 +2,12 @@ package grpcworker
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"net"
 
 	"net/url"
 	"strings"
 
-	"github.com/gin-gonic/gin"
 	"github.com/uxff/flexdrive/pkg/app/nodestorage/grpcworker/pb/pingablepb"
 	"github.com/uxff/flexdrive/pkg/log"
 
@@ -31,26 +30,40 @@ const (
 	MsgActionEraseMaster = "cluster.erasemaster"
 )
 
+// 消息处理句柄 问题：回到弱类型 但是能兼容grpc和http的实现
 type MsgHandler func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error)
 
+// 通信组件 每一个既可以收信又可以发信
 // GrpcWorker implements this interface
 type PingableWorker interface {
-	//Start() error
-	RegisterMsgHandler(action string, handler MsgHandler)
+	Serve() error
+	//Ping()                                                // ping out to other
+	//Pong()                                                // like recv ping
+	RegisterMsgHandler(action string, handler MsgHandler) // like recv OnMsg
+	MsgTo(fromId, toId, action, msgId string, param url.Values) (url.Values, error)
 }
 
+// 集成GrpcServer 和 grpc client
 type GrpcWorker struct {
 	worker *Worker
+
+	rpcServer *grpc.Server
+
+	// need a map of connections
+	rpcClientMap map[string]pingablepb.PingableInterfaceClient
 
 	msgHandlerMap map[string]MsgHandler
 }
 
 func NewGrpcWorker(worker *Worker) *GrpcWorker {
+
 	return &GrpcWorker{
-		worker: worker,
+		worker:       worker,
+		rpcClientMap: make(map[string]pingablepb.PingableInterfaceClient),
 	}
 }
 
+// on ping
 func (g *GrpcWorker) Ping(ctx context.Context, req *pingablepb.PingRequest) (*pingablepb.PingResponse, error) {
 
 	g.worker.RegisterIn(req.FromId, req.MasterId)
@@ -58,11 +71,12 @@ func (g *GrpcWorker) Ping(ctx context.Context, req *pingablepb.PingRequest) (*pi
 		Code: 0,
 		Msg:  "ok",
 		//Members:  w.Members,
-		MetaData: g.worker.WrapMetaData(),
+		MetaData: g.worker.WrapMetaData(), // todo rely on interface
 	}
 	return res, nil
 }
 
+// on msg
 func (g *GrpcWorker) Msg(ctx context.Context, req *pingablepb.MsgRequest) (*pingablepb.MsgResponse, error) {
 	res := &pingablepb.MsgResponse{
 		MsgId:  req.MsgId,
@@ -93,11 +107,70 @@ func (g *GrpcWorker) Msg(ctx context.Context, req *pingablepb.MsgRequest) (*ping
 }
 
 func (g *GrpcWorker) RegisterMsgHandler(action string, handler MsgHandler) {
-
 	if g.msgHandlerMap == nil {
 		g.msgHandlerMap = make(map[string]MsgHandler, 0)
 	}
 	g.msgHandlerMap[action] = handler
+}
+
+// msg out
+func (g *GrpcWorker) MsgTo(fromId, toId, action, msgId string, param url.Values) (url.Values, error) {
+	req := &pingablepb.MsgRequest{
+		FromId: fromId,
+		ToId:   toId,
+		MsgId:  msgId,
+		Action: action,
+		Data:   param.Encode(),
+	}
+
+	ctx := context.Background()
+	rpcClient := g.getClient(toId)
+	if rpcClient == nil {
+		return nil, errors.New("cannot gen rpcClient of %s", toId)
+	}
+	res, err := rpcClient.Msg(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	resVal, err := url.ParseQuery(res.GetData())
+	return resVal, err
+}
+
+func (g *GrpcWorker) getClient(targetWorkerId string) pingablepb.PingableInterfaceClient {
+	if client, exist := g.rpcClientMap[targetWorkerId]; exist {
+		return client
+	}
+	if targetWorker, exist := g.worker.ClusterMembers[targetWorkerId]; exist {
+		conn, err := grpc.Dial(targetWorker.ServiceAddr, grpc.WithInsecure())
+		if err != nil {
+			log.Errorf("did not connect: %v", err)
+			return nil
+		}
+		client := pingablepb.NewPingableInterfaceClient(conn)
+		g.rpcClientMap[targetWorkerId] = client
+		return client
+	}
+	log.Errorf("cannot gen grpcClient because targetWorker %s not exist", targetWorkerId)
+	return nil
+}
+
+func (g *GrpcWorker) Serve() error {
+	// 开启RPC服务
+	lis, err := net.Listen("tcp", g.worker.ServiceAddr)
+	if err != nil {
+		log.Errorf("监听gRPC端口失败：%v", err)
+		return err
+	}
+
+	// gRPC通用启动流程
+	var opts []grpc.ServerOption
+	g.rpcServer = grpc.NewServer(opts...)
+
+	pingablepb.RegisterPingableInterfaceServer(g.rpcServer, &GrpcWorker{})
+	reflection.Register(g.rpcServer)
+
+	return g.rpcServer.Serve(lis)
 }
 
 func (w *Worker) ServePingable() error {
@@ -125,14 +198,16 @@ func (w *Worker) ServePingable() error {
 	w.pingableWorker.RegisterMsgHandler(MsgActionFollow, func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error) {
 		masterId := reqParam.Get("masterId")
 		if w.MasterId == masterId {
+			log.Errorf("i(%s) have already follow %s while recv demand follow", w.Id, masterId)
 			return nil, nil
 		}
 		if _, ok := w.ClusterMembers[masterId]; !ok {
+			log.Errorf("will follow but masterId:" + masterId + " not exist")
 			return nil, nil
 		}
 		masterPingRes := w.PingNode(masterId)
 		if masterPingRes.Code != 0 {
-			// w.jsonError(c, "will follow(%s) but ping error:"+masterPingRes.Msg)
+			log.Errorf("will follow(%s) but ping error:" + masterPingRes.Msg)
 			return nil, nil
 		}
 		masterId = masterPingRes.MasterId // follow master's master
@@ -140,188 +215,5 @@ func (w *Worker) ServePingable() error {
 		return nil, nil
 	})
 
-	// 开启RPC服务
-	lis, err := net.Listen("tcp", w.ServiceAddr)
-	if err != nil {
-		log.Errorf("监听端口失败：%v", err)
-		return err
-	}
-
-	// gRPC通用启动流程
-	var opts []grpc.ServerOption
-	rpcServer := grpc.NewServer(opts...)
-
-	pingablepb.RegisterPingableInterfaceServer(rpcServer, &GrpcWorker{})
-	reflection.Register(rpcServer)
-
-	return rpcServer.Serve(lis)
-
-	router := gin.Default()
-
-	router.GET("/", func(c *gin.Context) {
-		w.jsonOk(c)
-	})
-
-	// 接收对方的ping 表示良好
-	router.GET("/ping", func(c *gin.Context) {
-		fromId := c.Query("fromId")
-		if fromId == "" {
-			w.jsonError(c, "fromId must no be empty")
-			return
-		}
-
-		if _, ok := w.ClusterMembers[fromId]; !ok {
-			w.jsonError(c, "fromId:"+fromId+" not exist")
-			return
-		}
-
-		masterId := c.Query("masterId")
-
-		w.RegisterIn(fromId, masterId)
-
-		w.jsonOk(c)
-	})
-
-	// 增加节点 支持批量添加 使用msg替代
-	// @param nodes=http://127.0.0.1:10010,http://127.0.0.1:10011
-	router.GET("/add", func(c *gin.Context) {
-		nodesStr := c.Query("nodes")
-		if nodesStr == "" {
-			w.jsonError(c, "nodes must not be empty")
-			return
-		}
-
-		nodesArr := strings.Split(nodesStr, ",")
-		// todo 通知别人add
-		w.AddMates(nodesArr)
-
-		w.jsonOk(c)
-	})
-
-	// 删除节点 使用msg替代
-	router.GET("/remove", func(c *gin.Context) {
-		nodeId := c.Query("nodeId")
-		if nodeId == "" {
-			w.jsonError(c, "nodeId must no be empty")
-			return
-		}
-
-		if nodeId == w.Id {
-			w.Quit()
-			w.jsonOk(c)
-			return
-		}
-
-		delete(w.ClusterMembers, nodeId)
-		w.jsonOk(c)
-	})
-
-	// 被命令跟随某个master 使用msg替代
-	router.GET("/follow", func(c *gin.Context) {
-		fromId := c.Query("fromId")
-		if fromId == "" {
-			w.jsonError(c, "fromId must no be empty")
-			return
-		}
-
-		masterId := c.Query("masterId")
-		if masterId == "" {
-			w.jsonError(c, "masterId must no be empty")
-			return
-		}
-
-		if masterId == w.MasterId {
-			log.Errorf("i have already follow %s while recv demand follow", masterId)
-			w.jsonOk(c)
-			return
-		}
-
-		if _, ok := w.ClusterMembers[masterId]; !ok {
-			w.jsonError(c, "will follow but masterId:"+masterId+" not exist")
-			return
-		}
-
-		masterPingRes := w.PingNode(masterId)
-		if masterPingRes.Code != 0 {
-			w.jsonError(c, "will follow(%s) but ping error:"+masterPingRes.Msg)
-			return
-		}
-
-		masterId = masterPingRes.MasterId
-
-		w.Follow(masterId)
-		log.Debugf("%s demand me(%s) follow: %s", fromId, w.Id, masterId)
-		w.jsonOk(c)
-
-	})
-
-	// 删除master 重新选举 是用msg替代
-	router.GET("/erasemaster", func(c *gin.Context) {
-		masterId := c.Query("masterId")
-		if masterId == "" {
-			w.jsonError(c, "node must no be empty")
-			return
-		}
-
-		w.MasterId = ""
-		//w.masterGoneChan <- true
-		log.Debugf("erasemaster: %s", masterId)
-		w.jsonOk(c)
-	})
-
-	// 其他节点向本节点提交其投票
-	//router.GET("/collectvotedmaster", func(c *gin.Context) {
-	//	fromId := c.Query("fromId")
-	//	if fromId == "" {
-	//		w.jsonError(c, "fromId must no be empty")
-	//		return
-	//	}
-	//
-	//	voteId := c.Query("voteId")
-	//	if voteId == "" {
-	//		w.jsonError(c, "voteId must no be empty")
-	//		return
-	//	}
-	//
-	//	if _, ok := w.ClusterMembers[fromId]; !ok {
-	//		w.jsonError(c, "fromId:"+fromId+" not exist")
-	//		return
-	//	}
-	//
-	//	w.ClusterMembers[fromId].VotedMasterId = voteId
-	//	log.Debugf("collect from %s voted master %s", fromId, voteId)
-	//	w.jsonOk(c)
-	//})
-
-	return router.Run(w.ServiceAddr)
-
-}
-
-func (w *Worker) jsonError(c *gin.Context, msg string) {
-	c.IndentedJSON(200, PingRes{
-		Code:     1,
-		Msg:      msg,
-		WorkerId: w.Id,
-		MasterId: w.MasterId,
-		Members:  w.ClusterMembers,
-	})
-}
-func (w *Worker) jsonOk(c *gin.Context) {
-	c.IndentedJSON(200, PingRes{
-		Code:     0,
-		Msg:      "ok",
-		WorkerId: w.Id,
-		MasterId: w.MasterId,
-		Members:  w.ClusterMembers,
-	})
-}
-
-func newPingRes(buf []byte) *PingRes {
-	res := &PingRes{}
-	err := json.Unmarshal(buf, res)
-	if err != nil {
-		res.Msg = "Unmarshall PingRes Error:" + err.Error()
-		res.Code = 11
-	}
-	return res
+	return w.pingableWorker.Serve()
 }

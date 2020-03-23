@@ -298,6 +298,7 @@ func (w *Worker) PingNode(workerId string) *PingRes {
 	}
 
 	res := w.MessageTo("ping", workerId, nil)
+	//res := w.pingableWorker.Ping(workerId)
 
 	if res.Code != 0 {
 		log.Printf("ping failed:%v", res)
@@ -311,6 +312,9 @@ func (w *Worker) PingNode(workerId string) *PingRes {
 	return res
 }
 
+/**
+@deprecated
+*/
 func (w *Worker) MessageTo(method string, targetId string, val url.Values) *PingRes {
 	res := &PingRes{}
 
