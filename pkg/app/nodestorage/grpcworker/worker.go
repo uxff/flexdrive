@@ -30,6 +30,10 @@ type Worker struct {
 	quitChan       chan bool
 	masterGoneChan chan bool
 	//masterChangeChan chan string
+
+	metaData map[string]interface{}
+
+	pingableWorker PingableWorker // pointer to GrpcWorker
 }
 
 func NewWorker(serviceAddr string, clusterId string) *Worker {
@@ -45,6 +49,8 @@ func NewWorker(serviceAddr string, clusterId string) *Worker {
 	w.quitChan = make(chan bool, 0)
 	w.masterGoneChan = make(chan bool, 1)
 	//w.masterChangeChan = make(chan string, 1) // useful?
+
+	w.metaData = make(map[string]interface{}, 0)
 
 	return w
 }
@@ -434,4 +440,13 @@ func (w *Worker) genServeUrl(method string, params url.Values) string {
 		RawQuery: params.Encode(),
 	}
 	return u.String()
+}
+
+func (w *Worker) WrapMetaData() string {
+	b, _ := json.Marshal(w.metaData)
+	return string(b)
+}
+
+func (w *Worker) DecodeMetaData(str string) {
+	json.Unmarshal([]byte(str), &w.metaData)
 }

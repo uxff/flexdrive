@@ -4,7 +4,7 @@ package grpcworker
 
 type PingableHandler interface {
 	OnRegistered(w *Worker)
-	//MsgTo(jsonableData interface{})
+	//OnPing(w *Worker)
 	OnMsg(fromId, data string)
 }
 
