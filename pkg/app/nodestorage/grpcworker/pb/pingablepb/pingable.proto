@@ -1,5 +1,5 @@
 syntax = "proto3";
-package pingable;
+package pingablepb;
 
 // 成员节点
 message NodeMember {
@@ -22,7 +22,8 @@ message PingResponse {
     int32 code = 1;
     string msg = 2;
     repeated NodeMember members = 3; // 数组
-    string metaData = 4;
+    string masterId = 4;
+    string metaData = 5;
 }
 
 // 消息请求结构体
