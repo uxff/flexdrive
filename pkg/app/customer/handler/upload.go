@@ -161,11 +161,6 @@ func UploadForm(c *gin.Context) {
 		return
 	}
 
-	// fileIndex := &dao.FileIndex{
-	// 	FileHash: "",
-	// 	FileName: header.Filename,
-	// }
-
 	userFile := &dao.UserFile{
 		FileIndexId: fileIndex.Id,
 		UserId:      userInfo.UserId,

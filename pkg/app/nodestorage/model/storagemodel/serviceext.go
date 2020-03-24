@@ -134,9 +134,9 @@ func (n *NodeStorage) HandleSaveFile(msg *NodeMsgSaveFile) error {
 	}
 
 	//fileTargetUrl := fromNode.ServiceAddr + "/file/" + fileIndexEnt.FileHash + "/" + fileIndexEnt.FileName
-	n.SaveFileFromFileIndex(msg.FileIndexId, msg.AsNodeLevel)
+	_, err = n.SaveFileFromFileIndex(msg.FileIndexId, msg.AsNodeLevel)
 
-	return nil
+	return err
 }
 
 // 依赖注入的设计方式 收到消息的回调

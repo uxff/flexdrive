@@ -50,8 +50,9 @@ type GrpcWorker struct {
 
 func NewGrpcWorker(worker *clusterworker.Worker) *GrpcWorker {
 	return &GrpcWorker{
-		worker:       worker,
-		rpcClientMap: make(map[string]pingablepb.PingableInterfaceClient),
+		worker:        worker,
+		rpcClientMap:  make(map[string]pingablepb.PingableInterfaceClient),
+		msgHandlerMap: make(map[string]clusterworker.MsgHandler, 0),
 	}
 }
 
@@ -117,9 +118,6 @@ func (g *GrpcWorker) PingTo(toId string) (*pingablepb.PingResponse, error) {
 
 // implement pingableif for clusterworker
 func (g *GrpcWorker) RegisterMsgHandler(action string, handler clusterworker.MsgHandler) {
-	if g.msgHandlerMap == nil {
-		g.msgHandlerMap = make(map[string]clusterworker.MsgHandler, 0)
-	}
 	g.msgHandlerMap[action] = handler
 }
 
