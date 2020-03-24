@@ -3,9 +3,7 @@ package grpcworker
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
-	"net/http"
 	"net/url"
 	"sort"
 	"sync"
@@ -257,7 +255,7 @@ func (w *Worker) FindFollowedMaster() string {
 	return ""
 }
 
-// useful?
+//
 func (w *Worker) PerformMaster() {
 
 	log.Printf("worker %s will perform master", w.Id)
@@ -283,87 +281,6 @@ func (w *Worker) PerformMaster() {
 	}
 }
 
-// 在命令行主动要求的时候调用
-//func (w *Worker) EraseRegisteredMaster() {
-//	for _, mate := range w.ClusterMembers {
-//		go w.DemandEraseMaster(mate)
-//	}
-//}
-
-// 通过命令行主动要求删除的时候才调用这里 选举和意外掉线不调用这里
-//func (w *Worker) EraseRegisteredWorker(workerId string) {
-//	for _, mate := range w.ClusterMembers {
-//		go w.DemandRemoveWorker(mate, workerId)
-//	}
-//}
-
-// func (w *Worker) PingNode(workerId string) *PingRes {
-// 	if workerId == w.Id {
-// 		w.RegisterIn(workerId, w.MasterId)
-// 		return &PingRes{Code: 0, WorkerId: w.Id, MasterId: w.MasterId, Members: w.ClusterMembers}
-// 	}
-
-// 	res := w.MessageTo("ping", workerId, nil)
-// 	//res := w.pingableWorker.Ping(workerId)
-
-// 	if res.Code != 0 {
-// 		log.Printf("ping failed:%v", res)
-// 		return res
-// 	}
-
-// 	w.RegisterIn(workerId, res.MasterId)
-
-// 	// todo 如果收到的mate.MasterId和自己的不一样怎么办？
-
-// 	return res
-// }
-
-/**
-@deprecated tobe instead by pingable
-*/
-func (w *Worker) MessageTo(method string, targetId string, val url.Values) *PingRes {
-	res := &PingRes{}
-
-	target := w.ClusterMembers[targetId]
-
-	if target == nil {
-		res.Msg = fmt.Sprintf("worker(%s) has no target when pingNode(%s)", w.Id, targetId)
-		res.Code = 11
-		return res
-	}
-
-	if val == nil {
-		val = make(url.Values)
-	}
-
-	val.Set("fromId", w.Id)
-	val.Set("masterId", w.MasterId)
-
-	targetUrl := target.genServeUrl(method, val)
-	resp, err := http.Get(targetUrl)
-	if err != nil {
-		res.Msg = "Http Error:" + err.Error()
-		res.Code = 13
-		return res
-	}
-
-	buf, err := ioutil.ReadAll(resp.Body)
-	defer resp.Body.Close()
-	if err != nil {
-		res.Msg = "Read Response Error:" + err.Error()
-		res.Code = 14
-		return res
-	}
-
-	err = json.Unmarshal(buf, res)
-	if err != nil {
-		res.Msg = "Unmarshall Error:" + err.Error()
-		res.Code = 15
-	}
-
-	return res
-}
-
 //
 func (w *Worker) ToString() string {
 	buf, _ := json.Marshal(w)
@@ -372,25 +289,16 @@ func (w *Worker) ToString() string {
 
 func (w *Worker) DemandFollow(mateId string, masterId string) error {
 
-	res := w.MessageTo("follow", mateId, nil)
+	_, err := w.pingableWorker.MsgTo(mateId, MsgActionFollow, "", url.Values{"masterId": {masterId}})
+	//res := w.MessageTo("follow", mateId, nil) // instead by pingableWorker.MsgTo
 
-	if res.Code != 0 {
-		log.Printf("i:%s demand:%s follow:%s error:%v", w.Id, mateId, masterId, res.Msg)
-		return fmt.Errorf(res.Msg)
+	if err != nil {
+		log.Printf("i:%s demand:%s follow:%s error:%v", w.Id, mateId, masterId, err)
+		return err
 	}
 
 	return nil
 }
-
-//func (w *Worker) DemandEraseMaster(mate *Worker) {
-//
-//}
-//func (w *Worker) DemandRemoveWorker(mate *Worker, workerId string) {
-//
-//}
-//func (w *Worker) DemandCollectVotedMaster(mate *Worker, workerId string) {
-//
-//}
 
 func (w *Worker) Quit() {
 	m := sync.Mutex{}

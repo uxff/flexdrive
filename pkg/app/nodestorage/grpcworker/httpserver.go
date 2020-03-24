@@ -2,7 +2,7 @@ package grpcworker
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"net"
 
 	"net/url"
@@ -115,7 +115,7 @@ func (g *GrpcWorker) PingTo(toId string) (*pingablepb.PingResponse, error) {
 	ctx := context.Background()
 	rpcClient := g.getClient(toId)
 	if rpcClient == nil {
-		return nil, errors.New("cannot gen rpcClient of %s", toId)
+		return nil, fmt.Errorf("cannot gen rpcClient of %s", toId)
 	}
 	res, err := rpcClient.Ping(ctx, req)
 	return res, err
@@ -141,7 +141,7 @@ func (g *GrpcWorker) MsgTo(toId, action, msgId string, param url.Values) (url.Va
 	ctx := context.Background()
 	rpcClient := g.getClient(toId)
 	if rpcClient == nil {
-		return nil, errors.New("cannot gen rpcClient of %s", toId)
+		return nil, fmt.Errorf("cannot gen rpcClient of %s", toId)
 	}
 	res, err := rpcClient.Msg(ctx, req)
 	if err != nil {
@@ -159,7 +159,7 @@ func (g *GrpcWorker) getClient(targetWorkerId string) pingablepb.PingableInterfa
 	if targetWorker, exist := g.worker.ClusterMembers[targetWorkerId]; exist {
 		conn, err := grpc.Dial(targetWorker.ServiceAddr, grpc.WithInsecure())
 		if err != nil {
-			log.Errorf("did not connect: %v", err)
+			log.Errorf("can not connect member(%s): %s %v", targetWorkerId, targetWorker.ServiceAddr, err)
 			return nil
 		}
 		client := pingablepb.NewPingableInterfaceClient(conn)
@@ -192,6 +192,7 @@ func (w *Worker) ServePingable() error {
 
 	w.pingableWorker = NewGrpcWorker(w)
 
+	// @param string nodes node1,node2
 	w.pingableWorker.RegisterMsgHandler(MsgActionAddNode, func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error) {
 		if nodesStr := reqParam.Get("nodes"); nodesStr != "" {
 			nodesArr := strings.Split(nodesStr, ",")
@@ -200,6 +201,7 @@ func (w *Worker) ServePingable() error {
 		return nil, nil
 	})
 
+	// @param string nodeId
 	w.pingableWorker.RegisterMsgHandler(MsgActionKickNode, func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error) {
 		delete(w.ClusterMembers, reqParam.Get("nodeId"))
 		return nil, nil
@@ -211,6 +213,7 @@ func (w *Worker) ServePingable() error {
 	})
 
 	// dont return error
+	// @param string masterId
 	w.pingableWorker.RegisterMsgHandler(MsgActionFollow, func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error) {
 		masterId := reqParam.Get("masterId")
 		if w.MasterId == masterId {
