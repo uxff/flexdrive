@@ -6,8 +6,8 @@ import (
 	"net"
 
 	"net/url"
-	"strings"
 
+	"github.com/uxff/flexdrive/pkg/app/nodestorage/clusterworker"
 	"github.com/uxff/flexdrive/pkg/app/nodestorage/grpcworker/pb/pingablepb"
 	"github.com/uxff/flexdrive/pkg/log"
 
@@ -15,25 +15,12 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-type PingRes struct {
-	Code     int
-	Msg      string
-	WorkerId string
-	MasterId string
-	Members  map[string]*Worker
-}
-
-const (
-	MsgActionFollow      = "cluster.follow"
-	MsgActionKickNode    = "cluster.kick"
-	MsgActionAddNode     = "cluster.add"
-	MsgActionEraseMaster = "cluster.erasemaster"
-)
-
+// 实现pingableWorker
+/**
+// 依赖翻转的可操作接口说明
 // 消息处理句柄 问题：回到弱类型 但是能兼容grpc和http的实现
 type MsgHandler func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error)
 
-// 通信组件 每一个既可以收信又可以发信
 // GrpcWorker implements this interface
 type PingableWorker interface {
 	Serve() error
@@ -41,28 +28,34 @@ type PingableWorker interface {
 	//OnPing(MsgHandler)   // like recv ping, grpcServer.Ping instead
 	RegisterMsgHandler(action string, handler MsgHandler) // like recv OnMsg
 	MsgTo(toId, action, msgId string, param url.Values) (url.Values, error)
+	// todo: extend as worker with all functions inlcuding Follow,Remove,Add,EraseMaster,etc
 }
+**/
 
+// 通信组件 每一个既可以收信又可以发信
 // 集成GrpcServer 和 grpc client
+
 type GrpcWorker struct {
-	worker *Worker
+	serviceAddr string
+
+	worker *clusterworker.Worker
 
 	rpcServer *grpc.Server
 
 	// need a map of connections
 	rpcClientMap map[string]pingablepb.PingableInterfaceClient
 
-	msgHandlerMap map[string]MsgHandler
+	msgHandlerMap map[string]clusterworker.MsgHandler
 }
 
-func NewGrpcWorker(worker *Worker) *GrpcWorker {
+func NewGrpcWorker(worker *clusterworker.Worker) *GrpcWorker {
 	return &GrpcWorker{
 		worker:       worker,
 		rpcClientMap: make(map[string]pingablepb.PingableInterfaceClient),
 	}
 }
 
-// on ping
+// on ping, implement grpc
 func (g *GrpcWorker) Ping(ctx context.Context, req *pingablepb.PingRequest) (*pingablepb.PingResponse, error) {
 
 	g.worker.RegisterIn(req.FromId, req.MasterId)
@@ -75,7 +68,7 @@ func (g *GrpcWorker) Ping(ctx context.Context, req *pingablepb.PingRequest) (*pi
 	return res, nil
 }
 
-// on msg
+// on msg, implement grpc
 func (g *GrpcWorker) Msg(ctx context.Context, req *pingablepb.MsgRequest) (*pingablepb.MsgResponse, error) {
 	res := &pingablepb.MsgResponse{
 		MsgId:  req.MsgId,
@@ -105,6 +98,7 @@ func (g *GrpcWorker) Msg(ctx context.Context, req *pingablepb.MsgRequest) (*ping
 	return res, nil
 }
 
+// implement pingableif for clusterworker
 func (g *GrpcWorker) PingTo(toId string) (*pingablepb.PingResponse, error) {
 	req := &pingablepb.PingRequest{
 		FromId:   g.worker.Id,
@@ -121,14 +115,16 @@ func (g *GrpcWorker) PingTo(toId string) (*pingablepb.PingResponse, error) {
 	return res, err
 }
 
-func (g *GrpcWorker) RegisterMsgHandler(action string, handler MsgHandler) {
+// implement pingableif for clusterworker
+func (g *GrpcWorker) RegisterMsgHandler(action string, handler clusterworker.MsgHandler) {
 	if g.msgHandlerMap == nil {
-		g.msgHandlerMap = make(map[string]MsgHandler, 0)
+		g.msgHandlerMap = make(map[string]clusterworker.MsgHandler, 0)
 	}
 	g.msgHandlerMap[action] = handler
 }
 
 // msg out
+// implement pingableif for clusterworker
 func (g *GrpcWorker) MsgTo(toId, action, msgId string, param url.Values) (url.Values, error) {
 	req := &pingablepb.MsgRequest{
 		FromId: g.worker.Id,
@@ -170,9 +166,11 @@ func (g *GrpcWorker) getClient(targetWorkerId string) pingablepb.PingableInterfa
 	return nil
 }
 
-func (g *GrpcWorker) Serve() error {
+// implement pingableif for clusterworker
+func (g *GrpcWorker) Serve(serviceAddr string) error {
+	//g.serviceAddr = serviceAddr
 	// 开启RPC服务
-	lis, err := net.Listen("tcp", g.worker.ServiceAddr)
+	lis, err := net.Listen("tcp", serviceAddr)
 	if err != nil {
 		log.Errorf("监听gRPC端口失败：%v", err)
 		return err
@@ -186,60 +184,4 @@ func (g *GrpcWorker) Serve() error {
 	reflection.Register(g.rpcServer)
 
 	return g.rpcServer.Serve(lis)
-}
-
-func (w *Worker) ServePingable() error {
-
-	w.pingableWorker = NewGrpcWorker(w)
-
-	// @param string nodes node1,node2
-	w.pingableWorker.RegisterMsgHandler(MsgActionAddNode, func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error) {
-		if nodesStr := reqParam.Get("nodes"); nodesStr != "" {
-			nodesArr := strings.Split(nodesStr, ",")
-			w.AddMates(nodesArr)
-		}
-		return nil, nil
-	})
-
-	// @param string nodeId
-	w.pingableWorker.RegisterMsgHandler(MsgActionKickNode, func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error) {
-		delete(w.ClusterMembers, reqParam.Get("nodeId"))
-		return nil, nil
-	})
-
-	w.pingableWorker.RegisterMsgHandler(MsgActionEraseMaster, func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error) {
-		w.MasterId = ""
-		return nil, nil
-	})
-
-	// dont return error
-	// @param string masterId
-	w.pingableWorker.RegisterMsgHandler(MsgActionFollow, func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error) {
-		masterId := reqParam.Get("masterId")
-		if w.MasterId == masterId {
-			log.Errorf("i(%s) have already follow %s while recv demand follow", w.Id, masterId)
-			return nil, nil
-		}
-		if _, ok := w.ClusterMembers[masterId]; !ok {
-			log.Errorf("will follow but masterId:" + masterId + " not exist")
-			return nil, nil
-		}
-
-		// masterPingRes := w.PingNode(masterId)
-		masterPingRes, err := w.pingableWorker.PingTo(masterId)
-		if err != nil {
-			log.Errorf("will follow(%s) but ping error:%v", err)
-			return nil, err
-		}
-		if masterPingRes.Code != 0 {
-			log.Errorf("will follow(%s) but ping error:" + masterPingRes.Msg)
-			return nil, nil
-		}
-
-		masterId = masterPingRes.MasterId // follow master's master
-		w.Follow(masterId)
-		return nil, nil
-	})
-
-	return w.pingableWorker.Serve()
 }

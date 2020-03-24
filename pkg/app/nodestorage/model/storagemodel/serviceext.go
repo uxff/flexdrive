@@ -3,7 +3,6 @@ package storagemodel
 import (
 	"encoding/json"
 	"errors"
-	"net/http"
 	"strconv"
 	"time"
 
@@ -79,21 +78,21 @@ func (n *NodeStorage) AttachService() {
 	})
 
 	// todo 不应该在此处服务
-	n.Worker.AttachGetAction("/file/:fileHash", func(c *gin.Context) {
-		fileHash := c.Param("fileHash")
-		if fileHash == "" {
-			c.String(http.StatusBadRequest, "")
-			return
-		}
+	// n.Worker.AttachGetAction("/file/:fileHash", func(c *gin.Context) {
+	// 	fileHash := c.Param("fileHash")
+	// 	if fileHash == "" {
+	// 		c.String(http.StatusBadRequest, "")
+	// 		return
+	// 	}
 
-		localFilePath := n.FileHashToStoragePath(fileHash)
-		if !DirExist(localFilePath) {
-			c.String(http.StatusNotFound, "")
-			return
-		}
+	// 	localFilePath := n.FileHashToStoragePath(fileHash)
+	// 	if !DirExist(localFilePath) {
+	// 		c.String(http.StatusNotFound, "")
+	// 		return
+	// 	}
 
-		c.File(localFilePath)
-	})
+	// 	c.File(localFilePath)
+	// })
 }
 
 //
@@ -110,10 +109,6 @@ type NodeMsgSaveFile struct {
 }
 
 func (n *NodeStorage) HandleSaveFile(msg *NodeMsgSaveFile) error {
-
-	type Aaa struct {
-		A string
-	}
 
 	if msg.FileIndexId == 0 {
 		log.Errorf("when handle saveFile, fileIndexId cannot be 0")
