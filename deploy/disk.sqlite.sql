@@ -89,6 +89,7 @@ CREATE TABLE `node` (
   `id` integer PRIMARY KEY AUTOINCREMENT , 
   `nodeName` varchar(40) NOT NULL , 
   `nodeAddr` varchar(32) NOT NULL , 
+  `clusterName` varchar(40) NOT NULL DEFAULT '', 
   `totalSpace` integer NOT NULL DEFAULT '0' , 
   `usedSpace` integer NOT NULL DEFAULT '0' , 
   `unusedSpace` integer NOT NULL DEFAULT '0' , 
