@@ -95,7 +95,7 @@ CREATE TABLE `node` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键id',
   `nodeName` varchar(40) NOT NULL COMMENT '节点名',
   `nodeAddr` varchar(32) NOT NULL COMMENT '节点地址 集群中服务地址',
-  `clusterName` varchar(40) NOT NULL DEFAULT '' COMMENT '集群名称',
+  `clusterId` varchar(40) NOT NULL DEFAULT '' COMMENT '集群id',
   `totalSpace` bigint(20) NOT NULL DEFAULT '0' COMMENT '全部空间 单位KB',
   `usedSpace` bigint(20) NOT NULL DEFAULT '0' COMMENT '使用的空间 单位KB',
   `unusedSpace` bigint(20) NOT NULL DEFAULT '0' COMMENT '未使用空间',
