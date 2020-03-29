@@ -169,6 +169,7 @@ func (n *NodeStorage) OnRegistered(w *worker.Worker) {
 	n.NodeEnt.LastRegistered = time.Now()
 	//node.NodeEnt.Status
 	n.NodeEnt.UpdateById([]string{"lastRegistered"})
+	// todo kick node who timeout
 }
 
 // 要求同伴保存文件

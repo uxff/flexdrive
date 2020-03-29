@@ -6,7 +6,6 @@ import (
 	"os"
 	"sort"
 	"strconv"
-	"strings"
 	"time"
 
 	worker "github.com/uxff/flexdrive/pkg/app/nodestorage/httpworker"
@@ -53,7 +52,7 @@ func StartNode(storageDir string, httpAddr string, clusterId string, clusterMemb
 
 	node.StorageDir = storageDir
 	node.ClusterId = clusterId
-	node.ClusterMembers = clusterMembers
+	//node.ClusterMembers = clusterMembers
 	node.WorkerAddr = httpAddr
 
 	// 准备makedir
@@ -66,7 +65,7 @@ func StartNode(storageDir string, httpAddr string, clusterId string, clusterMemb
 	}
 
 	node.Worker = worker.NewWorker(node.WorkerAddr, node.ClusterId)
-	node.Worker.AddMates(strings.Split(node.ClusterMembers, ","))
+	//node.Worker.AddMates(strings.Split(node.ClusterMembers, ","))
 
 	var err error
 	node.NodeEnt, err = dao.GetNodeByWorkerId(node.Worker.Id) //&dao.Node{}
@@ -88,6 +87,7 @@ func StartNode(storageDir string, httpAddr string, clusterId string, clusterMemb
 	node.NodeEnt.Status = 0
 	node.NodeEnt.TotalSpace = node.GetFreeSpace()
 	node.NodeEnt.LastRegistered = time.Now()
+	node.NodeEnt.ClusterId = clusterId
 
 	// 启动信息写入数据库
 	err = node.NodeEnt.UpdateById([]string{"nodeAddr", "status", "totalSpace"})
@@ -100,7 +100,12 @@ func StartNode(storageDir string, httpAddr string, clusterId string, clusterMemb
 	// 准备启动服务
 	serveErrorChan := make(chan error, 1)
 
-	// start pingable server
+	// watch and found mates from db whom registered
+	go func() {
+		serveErrorChan <- node.WatchMates()
+	}()
+
+	// start pingable server, implements by grpc or http
 	go func() {
 		log.Debugf("http server will start at %v", node.WorkerAddr)
 		serveErrorChan <- node.Worker.ServePingable()
@@ -120,6 +125,7 @@ func StartNode(storageDir string, httpAddr string, clusterId string, clusterMemb
 
 // 获取节点可用空闲空间
 func (n *NodeStorage) GetFreeSpace() int64 {
+	//return node.NodeEnt.TotalSpace
 	return 1024 * 1024 * 1024
 }
 
