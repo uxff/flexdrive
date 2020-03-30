@@ -90,7 +90,7 @@ func StartNode(storageDir string, httpAddr string, clusterId string, clusterMemb
 	node.NodeEnt.ClusterId = clusterId
 
 	// 启动信息写入数据库
-	err = node.NodeEnt.UpdateById([]string{"nodeAddr", "status", "totalSpace"})
+	err = node.NodeEnt.UpdateById([]string{"nodeAddr", "status", "totalSpace", "clusterId"})
 	if err != nil {
 		return err
 	}

@@ -9,6 +9,7 @@ import (
 	"github.com/buger/jsonparser"
 
 	worker "github.com/uxff/flexdrive/pkg/app/nodestorage/httpworker"
+	"github.com/uxff/flexdrive/pkg/dao/base"
 
 	"github.com/gin-gonic/gin"
 	"github.com/uxff/flexdrive/pkg/dao"
@@ -167,8 +168,8 @@ func (n *NodeStorage) OnMsg(fromId, data string) {
 func (n *NodeStorage) OnRegistered(w *worker.Worker) {
 	//node.RegisterTo
 	n.NodeEnt.LastRegistered = time.Now()
-	//node.NodeEnt.Status
-	n.NodeEnt.UpdateById([]string{"lastRegistered"})
+	n.NodeEnt.Status = base.StatusNormal
+	n.NodeEnt.UpdateById([]string{"lastRegistered", "status"})
 	// todo kick node who timeout
 }
 
