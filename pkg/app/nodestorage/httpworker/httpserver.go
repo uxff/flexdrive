@@ -222,3 +222,32 @@ func newPingRes(buf []byte) *PingRes {
 	}
 	return res
 }
+
+type handler func(req interface{}) interface{}
+type callableHandler interface {
+	Call(req interface{}) interface{}
+}
+
+var handlerMap map[string]callableHandler
+
+func registerHandler(action string, h1 callableHandler) {
+	if handlerMap == nil {
+		handlerMap = make(map[string]callableHandler)
+	}
+	handlerMap[action] = h1
+}
+
+type helloReq struct{}
+type helloRes struct{}
+type helloAction func(req helloReq) helloRes
+
+// helloAction implement callableHandler
+func (h helloAction) Call(req interface{}) interface{} {
+	reqForMe := req.(helloReq)
+	return h(reqForMe)
+}
+
+func registerHelloAction() {
+	var hello helloAction
+	registerHandler("hello", hello)
+}
