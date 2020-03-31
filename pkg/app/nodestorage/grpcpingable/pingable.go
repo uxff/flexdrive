@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"sync"
 
 	"net/url"
 
@@ -47,10 +48,11 @@ type GrpcWorker struct {
 
 	// need a map of connections
 	rpcClientMap map[string]pingablepb.PingableInterfaceClient
+	//rpcClientMap sync.Map
 
 	msgHandlerMap map[string]pingableif.MsgHandler
 
-	tpl pingableif.PingableWorker
+	lock sync.Mutex
 }
 
 func NewGrpcWorker() *GrpcWorker {
@@ -58,6 +60,7 @@ func NewGrpcWorker() *GrpcWorker {
 		//worker:        worker,
 		rpcClientMap:  make(map[string]pingablepb.PingableInterfaceClient),
 		msgHandlerMap: make(map[string]pingableif.MsgHandler, 0),
+		lock:          sync.Mutex{},
 	}
 }
 
@@ -181,16 +184,19 @@ func (g *GrpcWorker) getClient(targetServiceAddr string) pingablepb.PingableInte
 	if client, exist := g.rpcClientMap[targetServiceAddr]; exist {
 		return client
 	}
+
 	conn, err := grpc.Dial(targetServiceAddr, grpc.WithInsecure())
 	if err != nil {
 		log.Errorf("can not connect :%s %v", targetServiceAddr, err)
 		return nil
 	}
 	client := pingablepb.NewPingableInterfaceClient(conn)
+
+	g.lock.Lock()
+	defer g.lock.Unlock()
+
 	g.rpcClientMap[targetServiceAddr] = client
 	return client
-	log.Errorf("cannot gen grpcClient because targetWorker %s not exist", targetServiceAddr)
-	return nil
 }
 
 // implement pingableif for clusterworker
