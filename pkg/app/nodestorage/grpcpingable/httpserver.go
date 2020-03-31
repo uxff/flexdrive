@@ -8,7 +8,7 @@ import (
 
 	"net/url"
 
-	"github.com/uxff/flexdrive/pkg/app/nodestorage/grpcworker/pb/pingablepb"
+	"github.com/uxff/flexdrive/pkg/app/nodestorage/grpcpingable/pb/pingablepb"
 	"github.com/uxff/flexdrive/pkg/app/nodestorage/pingableif"
 	"github.com/uxff/flexdrive/pkg/log"
 

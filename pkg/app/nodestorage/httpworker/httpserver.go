@@ -151,9 +151,9 @@ func (w *Worker) ServePingable() error {
 		//w.masterGoneChan <- true
 		log.Debugf("msg from: %s, data=%s", fromId, data)
 
-		if w.OuterHandler != nil {
-			w.OuterHandler.OnMsg(fromId, data)
-		}
+		// if w.OuterHandler != nil {
+		// 	w.OuterHandler.OnMsg(fromId, data)
+		// }
 
 		w.JsonOk(c)
 	})

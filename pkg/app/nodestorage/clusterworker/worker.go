@@ -162,7 +162,10 @@ func (w *Worker) RegisterToMates() {
 			defer wg.Done()
 			//w.PingNode(mateId)
 			if w.Id != mateId {
-				res, err := w.pingableWorker.PingTo(w.ClusterMembers[mateId].ServiceAddr, w.Id, w.WrapMetaData())
+				metaData := url.Values{
+					"masterId": w.MasterId,
+				}
+				res, err := w.pingableWorker.PingTo(w.ClusterMembers[mateId].ServiceAddr, w.Id, metaData)
 				if err == nil && res != nil {
 					w.RegisterIn(mateId, res.Get("masterId"))
 				}
@@ -427,7 +430,10 @@ func (w *Worker) ServePingable() error {
 		}
 
 		// masterPingRes := w.PingNode(masterId)
-		masterPingRes, err := w.pingableWorker.PingTo(masterWorker.ServiceAddr, w.Id, w.WrapMetaData())
+		metaData := url.Values{
+			"masterId": w.MasterId,
+		}
+		masterPingRes, err := w.pingableWorker.PingTo(masterWorker.ServiceAddr, w.Id, metaData))
 		if err != nil || masterPingRes == nil {
 			log.Printf("will follow(%s) but ping error:%v", err)
 			return nil, err
