@@ -148,7 +148,7 @@ func (g *GrpcWorker) RegisterMsgHandler(action string, handler pingableif.MsgHan
 // proto: MsgTo(mateAddr, action, msgId string, param url.Values) (url.Values, error)
 func (g *GrpcWorker) MsgTo(mateAddr, action, msgId string, param url.Values) (url.Values, error) {
 	req := &pingablepb.MsgRequest{
-		FromId: g.worker.Id,
+		FromId: "", // useless?
 		//ToId:   toId,
 		MsgId:  msgId,
 		Action: action,
