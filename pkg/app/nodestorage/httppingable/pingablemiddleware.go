@@ -1,4 +1,4 @@
-package httppingableworker
+package httppingable
 
 // tobe instead httpworker
 

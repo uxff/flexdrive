@@ -1,4 +1,4 @@
-package grpcworker
+package grpcpingable
 
 import (
 	"context"

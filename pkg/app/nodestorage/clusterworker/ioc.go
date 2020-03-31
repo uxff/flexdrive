@@ -1,5 +1,7 @@
 package clusterworker
 
+// use pingableif instead the interface bellow:
+
 // 依赖翻转的可操作接口说明
 // 消息处理句柄 问题：回到弱类型 但是能兼容grpc和http的实现 reqParam as metaData
 // type MsgHandler func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error)

@@ -9,6 +9,7 @@ import (
 	"github.com/buger/jsonparser"
 
 	worker "github.com/uxff/flexdrive/pkg/app/nodestorage/httpworker"
+	//worker "github.com/uxff/flexdrive/pkg/app/nodestorage/clusterworker"
 	"github.com/uxff/flexdrive/pkg/dao/base"
 
 	"github.com/gin-gonic/gin"
