@@ -12,6 +12,7 @@ const (
 	RegisterTimeoutSec = 300
 )
 
+// watch and clear lost mates in db
 func (n *NodeStorage) WatchMates() error {
 	for {
 		nodeList := make([]dao.Node, 0)

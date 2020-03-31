@@ -2,13 +2,14 @@ package grpcworker
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 
 	"net/url"
 
-	"github.com/uxff/flexdrive/pkg/app/nodestorage/clusterworker"
 	"github.com/uxff/flexdrive/pkg/app/nodestorage/grpcworker/pb/pingablepb"
+	"github.com/uxff/flexdrive/pkg/app/nodestorage/pingableif"
 	"github.com/uxff/flexdrive/pkg/log"
 
 	"google.golang.org/grpc"
@@ -38,35 +39,47 @@ type PingableWorker interface {
 type GrpcWorker struct {
 	serviceAddr string
 
-	worker *clusterworker.Worker
+	//worker *clusterworker.Worker
 
 	rpcServer *grpc.Server
+
+	pongHandler pingableif.PongHandler
 
 	// need a map of connections
 	rpcClientMap map[string]pingablepb.PingableInterfaceClient
 
-	msgHandlerMap map[string]clusterworker.MsgHandler
+	msgHandlerMap map[string]pingableif.MsgHandler
+
+	tpl pingableif.PingableWorker
 }
 
-func NewGrpcWorker(worker *clusterworker.Worker) *GrpcWorker {
+func NewGrpcWorker() *GrpcWorker {
 	return &GrpcWorker{
-		worker:        worker,
+		//worker:        worker,
 		rpcClientMap:  make(map[string]pingablepb.PingableInterfaceClient),
-		msgHandlerMap: make(map[string]clusterworker.MsgHandler, 0),
+		msgHandlerMap: make(map[string]pingableif.MsgHandler, 0),
 	}
 }
 
-// on ping, implement grpc
+// ========== start implement grpc =============
+// ping to other, implement grpc
 func (g *GrpcWorker) Ping(ctx context.Context, req *pingablepb.PingRequest) (*pingablepb.PingResponse, error) {
-
-	g.worker.RegisterIn(req.FromId, req.MasterId)
-	res := &pingablepb.PingResponse{
-		Code: 0,
-		Msg:  "ok",
-		//Members:  w.Members,
-		MetaData: g.worker.WrapMetaData(), // todo rely on interface
+	if g.pongHandler != nil {
+		resMap, err := g.pongHandler(req.FromId, req.MasterId, req.MetaData)
+		res := &pingablepb.PingResponse{
+			Code: 0,
+			Msg:  "",
+			//Members:  w.Members,
+			MetaData: resMap.Encode(), // todo rely on interface
+		}
+		if err != nil {
+			//return nil, err
+			res.Msg = err.Error()
+			res.Code = 1
+		}
+		return res, nil
 	}
-	return res, nil
+	return nil, errors.New("no pong handler registered in GrpcWorker")
 }
 
 // on msg, implement grpc
@@ -99,43 +112,53 @@ func (g *GrpcWorker) Msg(ctx context.Context, req *pingablepb.MsgRequest) (*ping
 	return res, nil
 }
 
+// ========== end implement grpc =============
+
+// ========== start implement pingableif =============
+
+func (g *GrpcWorker) RegisterPong(h pingableif.PongHandler) {
+	g.pongHandler = h
+}
+
 // implement pingableif for clusterworker
-func (g *GrpcWorker) PingTo(toId string) (*pingablepb.PingResponse, error) {
+// proto: PingTo(mateAddr string, fromId string, metaData interface{}) (url.Values, error)
+func (g *GrpcWorker) PingTo(mateAddr string, fromId string, metaData url.Values) (*pingablepb.PingResponse, error) {
 	req := &pingablepb.PingRequest{
-		FromId:   g.worker.Id,
-		MasterId: g.worker.MasterId,
-		MetaData: g.worker.WrapMetaData(),
+		FromId: fromId,
+		//MasterId: g.worker.MasterId,
+		MetaData: metaData.Encode(),
 	}
 
 	ctx := context.Background()
-	rpcClient := g.getClient(toId)
+	rpcClient := g.getClient(mateAddr)
 	if rpcClient == nil {
-		return nil, fmt.Errorf("cannot gen rpcClient of %s", toId)
+		return nil, fmt.Errorf("cannot gen rpcClient of %s", mateAddr)
 	}
 	res, err := rpcClient.Ping(ctx, req)
 	return res, err
 }
 
 // implement pingableif for clusterworker
-func (g *GrpcWorker) RegisterMsgHandler(action string, handler clusterworker.MsgHandler) {
+func (g *GrpcWorker) RegisterMsgHandler(action string, handler pingableif.MsgHandler) {
 	g.msgHandlerMap[action] = handler
 }
 
 // msg out
 // implement pingableif for clusterworker
-func (g *GrpcWorker) MsgTo(toId, action, msgId string, param url.Values) (url.Values, error) {
+// proto: MsgTo(mateAddr, action, msgId string, param url.Values) (url.Values, error)
+func (g *GrpcWorker) MsgTo(mateAddr, action, msgId string, param url.Values) (url.Values, error) {
 	req := &pingablepb.MsgRequest{
 		FromId: g.worker.Id,
-		ToId:   toId,
+		//ToId:   toId,
 		MsgId:  msgId,
 		Action: action,
 		Data:   param.Encode(),
 	}
 
 	ctx := context.Background()
-	rpcClient := g.getClient(toId)
+	rpcClient := g.getClient(mateAddr)
 	if rpcClient == nil {
-		return nil, fmt.Errorf("cannot gen rpcClient of %s", toId)
+		return nil, fmt.Errorf("cannot gen rpcClient of %s", mateAddr)
 	}
 	res, err := rpcClient.Msg(ctx, req)
 	if err != nil {
@@ -146,21 +169,19 @@ func (g *GrpcWorker) MsgTo(toId, action, msgId string, param url.Values) (url.Va
 	return resVal, err
 }
 
-func (g *GrpcWorker) getClient(targetWorkerId string) pingablepb.PingableInterfaceClient {
-	if client, exist := g.rpcClientMap[targetWorkerId]; exist {
+func (g *GrpcWorker) getClient(targetServiceAddr string) pingablepb.PingableInterfaceClient {
+	if client, exist := g.rpcClientMap[targetServiceAddr]; exist {
 		return client
 	}
-	if targetWorker, exist := g.worker.ClusterMembers[targetWorkerId]; exist {
-		conn, err := grpc.Dial(targetWorker.ServiceAddr, grpc.WithInsecure())
-		if err != nil {
-			log.Errorf("can not connect member(%s): %s %v", targetWorkerId, targetWorker.ServiceAddr, err)
-			return nil
-		}
-		client := pingablepb.NewPingableInterfaceClient(conn)
-		g.rpcClientMap[targetWorkerId] = client
-		return client
+	conn, err := grpc.Dial(targetServiceAddr, grpc.WithInsecure())
+	if err != nil {
+		log.Errorf("can not connect :%s %v", targetServiceAddr, err)
+		return nil
 	}
-	log.Errorf("cannot gen grpcClient because targetWorker %s not exist", targetWorkerId)
+	client := pingablepb.NewPingableInterfaceClient(conn)
+	g.rpcClientMap[targetServiceAddr] = client
+	return client
+	log.Errorf("cannot gen grpcClient because targetWorker %s not exist", targetServiceAddr)
 	return nil
 }
 
@@ -183,3 +204,5 @@ func (g *GrpcWorker) Serve(serviceAddr string) error {
 
 	return g.rpcServer.Serve(lis)
 }
+
+// ========== end implement pingableif =============

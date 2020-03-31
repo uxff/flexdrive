@@ -1,24 +1,29 @@
-package httpworker
+package clusterworker
+
+// tobe instead httpworker
 
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-
-	"github.com/gin-gonic/gin"
-
-	//"log"
-	"net/http"
+	"log"
 	"net/url"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
-	"github.com/uxff/flexdrive/pkg/log"
+	"github.com/uxff/flexdrive/pkg/app/nodestorage/pingableif"
 )
 
-const RegisterTimeoutSec = 300  // 已注册的超时检测
-const RegisterIntervalSec = 100 // 作为worker或master注册间隔
+const RegisterTimeoutSec = 2  // 已注册的超时检测
+const RegisterIntervalSec = 1 // 作为worker或master注册间隔
+
+const (
+	MsgActionFollow      = "cluster.follow"
+	MsgActionKickNode    = "cluster.kick"
+	MsgActionAddNode     = "cluster.add"
+	MsgActionEraseMaster = "cluster.erasemaster"
+)
 
 type Worker struct {
 	Id             string // from redis incr? // uniq in cluster, different from other nodes
@@ -35,13 +40,10 @@ type Worker struct {
 	quitChan       chan bool
 	masterGoneChan chan bool
 	//masterChangeChan chan string
-	router *gin.Engine
 
-	// 外部操作者
-	//OuterHandler PingableHandler `json:"-"` // will implement OnMsg OnRegister
+	metaData map[string]interface{}
 
-	// 实现meta map
-	metaMap map[string]interface{}
+	pingableWorker pingableif.PingableWorker // pointer to GrpcWorker
 }
 
 func NewWorker(serviceAddr string, clusterId string) *Worker {
@@ -58,13 +60,18 @@ func NewWorker(serviceAddr string, clusterId string) *Worker {
 	w.masterGoneChan = make(chan bool, 1)
 	//w.masterChangeChan = make(chan string, 1) // useful?
 
-	w.router = gin.Default()
+	w.metaData = make(map[string]interface{}, 0)
 
 	return w
 }
 
+func (w *Worker) SetPingableWorker(pingableWorker pingableif.PingableWorker) error {
+	w.pingableWorker = pingableWorker
+	return nil
+}
+
 func (w *Worker) Start() error {
-	log.Debugf("worker %s will start", w.Id)
+	log.Printf("worker %s will start", w.Id)
 
 	go w.KeepRegistered()
 	go w.PerformMaster()
@@ -72,7 +79,8 @@ func (w *Worker) Start() error {
 	// 等待别的worker注册成功
 	time.Sleep(time.Millisecond * 20)
 
-	log.Debugf("waiting mates registered in")
+	log.Printf("waiting mates registered in")
+	//log.Printf("only %d/%d mates has been registered, continuing checking", registeredCount, len(w.ClusterMembers))
 	// assure mate is registered
 	for {
 		// 检查节点是否就位
@@ -85,18 +93,18 @@ func (w *Worker) Start() error {
 
 		// 有半数节点就位就可以继续了
 		if registeredCount > len(w.ClusterMembers)/2 {
-			log.Debugf("%d/%d mates has been registered", registeredCount, len(w.ClusterMembers))
+			log.Printf("%d/%d mates has been registered", registeredCount, len(w.ClusterMembers))
 			break
 		}
 
-		//log.Debugf("only %d/%d mates has been registered, continuing checking", registeredCount, len(w.ClusterMembers))
+		//log.Printf("only %d/%d mates has been registered, continuing checking", registeredCount, len(w.ClusterMembers))
 		time.Sleep(time.Millisecond * 100)
 	}
 
 	// 抢占式选举 最快选举好的直接广播给别人 让别人无条件服从
 	masterId := w.FindFollowedMaster()
 	if masterId != "" {
-		log.Debugf("%s will follow %s from existing cluster", w.Id, masterId)
+		log.Printf("%s will follow %s from existing cluster", w.Id, masterId)
 		w.Follow(masterId)
 	} else {
 		w.ElectMaster()
@@ -108,7 +116,7 @@ func (w *Worker) Start() error {
 
 		// 来自自身监控master
 		case <-w.masterGoneChan:
-			log.Debugf("will elect when master %s timeout", w.MasterId)
+			log.Printf("will elect when master %s timeout", w.MasterId)
 
 			// 清掉已经注册的master 需要重新注册
 			w.MasterId = ""
@@ -122,14 +130,14 @@ func (w *Worker) Start() error {
 		//case <-w.masterShift:
 
 		//case newMasterId := <-w.masterChangeChan:
-		//	log.Debugf("master changed from:%s to %s", w.MasterId, newMasterId)
+		//	log.Printf("master changed from:%s to %s", w.MasterId, newMasterId)
 		//	w.Follow(newMasterId)
 
 		case _, ok := <-w.quitChan:
 			if !ok {
-				log.Debugf("quitChan is closed in start while Start()")
+				log.Printf("quitChan is closed in start while Start()")
 			}
-			log.Debugf("recv quit signal, than stop Start()")
+			log.Printf("recv quit signal, than stop Start()")
 			return fmt.Errorf("worker(%s) master(%s) will quit", w.Id, w.MasterId)
 		}
 	}
@@ -152,7 +160,13 @@ func (w *Worker) RegisterToMates() {
 		wg.Add(1)
 		go func(mateId string) {
 			defer wg.Done()
-			w.PingNode(mateId)
+			//w.PingNode(mateId)
+			if w.Id != mateId {
+				res, err := w.pingableWorker.PingTo(w.ClusterMembers[mateId].ServiceAddr, w.Id, w.WrapMetaData())
+				if err == nil && res != nil {
+					w.RegisterIn(mateId, res.Get("masterId"))
+				}
+			}
 		}(mateId)
 	}
 
@@ -175,17 +189,13 @@ func (w *Worker) KeepRegistered() {
 	for {
 		select {
 		case <-w.quitChan:
-			log.Debugf("recv quit signal, than stop KeepRegistered")
+			log.Printf("recv quit signal, than stop KeepRegistered")
 			return
 		default:
 			// register self
 			w.RegisterToMates()
 
-			log.Debugf("id:%s has registered to mates, master:%s", w.Id, w.MasterId)
-
-			// if w.OuterHandler != nil {
-			// 	w.OuterHandler.OnRegistered(w)
-			// }
+			log.Printf("id:%s has registered to mates, master:%s", w.Id, w.MasterId)
 
 			time.Sleep(time.Second * RegisterIntervalSec)
 		}
@@ -197,7 +207,7 @@ func (w *Worker) Follow(masterId string) {
 	if target.MasterId != "" && target.MasterId != target.Id {
 		// 跟随主人的主人
 		//return w.Follow(target.MasterId)
-		log.Debugf("will follow master(%s)'s master(%s)?", target.Id, target.MasterId)
+		log.Printf("will follow master(%s)'s master(%s)?", target.Id, target.MasterId)
 	}
 
 	w.MasterId = masterId
@@ -223,7 +233,7 @@ func (w *Worker) VoteMaster() string {
 
 	if len(allMateIds) == 0 {
 		// must use self
-		log.Debugf("vote to self:%s", w.Id)
+		log.Printf("vote to self:%s", w.Id)
 		return w.Id
 	}
 
@@ -231,7 +241,7 @@ func (w *Worker) VoteMaster() string {
 
 	expectedMasterId := allMateIds[0]
 
-	log.Debugf("w(%v) elected master:%v", w.Id, expectedMasterId)
+	log.Printf("w(%v) elected master:%v", w.Id, expectedMasterId)
 
 	return expectedMasterId
 }
@@ -262,10 +272,10 @@ func (w *Worker) FindFollowedMaster() string {
 	return ""
 }
 
-// useful?
+//
 func (w *Worker) PerformMaster() {
 
-	log.Debugf("worker %s will perform master", w.Id)
+	log.Printf("worker %s will perform master", w.Id)
 
 	tick := time.NewTicker(time.Second * RegisterIntervalSec)
 	defer tick.Stop()
@@ -276,109 +286,19 @@ func (w *Worker) PerformMaster() {
 				for mateId := range w.ClusterMembers {
 					if mateId != w.Id && w.ClusterMembers[mateId].MasterId != w.MasterId {
 						// if timeout?
-						log.Debugf("demand %s to follow me %s", mateId, w.MasterId)
+						log.Printf("demand %s to follow me %s", mateId, w.MasterId)
 						go w.DemandFollow(mateId, w.MasterId)
 					}
 				}
 			}
 		case <-w.quitChan:
-			log.Debugf("recv quit signal, than stop PerformMaster")
+			log.Printf("recv quit signal, than stop PerformMaster")
 			return
 		}
 	}
 }
 
-// 在命令行主动要求的时候调用
-//func (w *Worker) EraseRegisteredMaster() {
-//	for _, mate := range w.ClusterMembers {
-//		go w.DemandEraseMaster(mate)
-//	}
-//}
-
-// 通过命令行主动要求删除的时候才调用这里 选举和意外掉线不调用这里
-//func (w *Worker) EraseRegisteredWorker(workerId string) {
-//	for _, mate := range w.ClusterMembers {
-//		go w.DemandRemoveWorker(mate, workerId)
-//	}
-//}
-
-func (w *Worker) PingNode(workerId string) *PingRes {
-	// req := pingablepb.PingRequest{
-	// 	FromId: w.Id,
-	// 	MasterId: w.MasterId,
-	// 	MetaData: w.WrapMetaData(),
-	// }
-	// res := w.GrpcClient.Ping(req)
-	// if res.Code != 0 {
-	// 	log.Errorf("ping node failed:%+v", res)
-	// }
-	// pingRes := &pingRes{}
-	// pingRes.CopyFromPb(res)
-	// return pingRes
-
-	if workerId == w.Id {
-		w.RegisterIn(workerId, w.MasterId)
-		return &PingRes{Code: 0, WorkerId: w.Id, MasterId: w.MasterId, Members: w.ClusterMembers}
-	}
-
-	res := w.MessageTo("ping", workerId, nil)
-
-	if res.Code != 0 {
-		log.Debugf("ping failed:%v", res)
-		return res
-	}
-
-	w.RegisterIn(workerId, res.MasterId)
-
-	// todo 如果收到的mate.MasterId和自己的不一样怎么办？
-
-	return res
-}
-
-func (w *Worker) MessageTo(method string, targetId string, val url.Values) *PingRes {
-	res := &PingRes{}
-
-	target := w.ClusterMembers[targetId]
-
-	if target == nil {
-		res.Msg = fmt.Sprintf("worker(%s) has no target when pingNode(%s)", w.Id, targetId)
-		res.Code = 11
-		return res
-	}
-
-	if val == nil {
-		val = make(url.Values)
-	}
-
-	val.Set("fromId", w.Id)
-	val.Set("masterId", w.MasterId)
-
-	targetUrl := target.genServeUrl(method, val)
-	resp, err := http.Get(targetUrl)
-	if err != nil {
-		res.Msg = "Http Error:" + err.Error()
-		res.Code = 13
-		return res
-	}
-
-	buf, err := ioutil.ReadAll(resp.Body)
-	defer resp.Body.Close()
-	if err != nil {
-		res.Msg = "Read Response Error:" + err.Error()
-		res.Code = 14
-		return res
-	}
-
-	err = json.Unmarshal(buf, res)
-	if err != nil {
-		res.Msg = "Unmarshall Error:" + err.Error()
-		res.Code = 15
-	}
-
-	return res
-}
-
-//
+// @deprecated replaced by WrapMetaData()
 func (w *Worker) ToString() string {
 	buf, _ := json.Marshal(w)
 	return string(buf)
@@ -386,25 +306,16 @@ func (w *Worker) ToString() string {
 
 func (w *Worker) DemandFollow(mateId string, masterId string) error {
 
-	res := w.MessageTo("follow", mateId, nil)
+	_, err := w.pingableWorker.MsgTo(mateId, MsgActionFollow, "", url.Values{"masterId": {masterId}})
+	//res := w.MessageTo("follow", mateId, nil) // instead by pingableWorker.MsgTo
 
-	if res.Code != 0 {
-		log.Debugf("i:%s demand:%s follow:%s error:%v", w.Id, mateId, masterId, res.Msg)
-		return fmt.Errorf(res.Msg)
+	if err != nil {
+		log.Printf("i:%s demand:%s follow:%s error:%v", w.Id, mateId, masterId, err)
+		return err
 	}
 
 	return nil
 }
-
-//func (w *Worker) DemandEraseMaster(mate *Worker) {
-//
-//}
-//func (w *Worker) DemandRemoveWorker(mate *Worker, workerId string) {
-//
-//}
-//func (w *Worker) DemandCollectVotedMaster(mate *Worker, workerId string) {
-//
-//}
 
 func (w *Worker) Quit() {
 	m := sync.Mutex{}
@@ -414,9 +325,9 @@ func (w *Worker) Quit() {
 	if w.quitChan != nil {
 		close(w.quitChan)
 		w.quitChan = nil
-		log.Debugf("quit chan is closed")
+		log.Printf("quit chan is closed")
 	} else {
-		log.Debugf("quit chan has already closed yet sometimes ago")
+		log.Printf("quit chan has already closed yet sometimes ago")
 	}
 }
 
@@ -447,7 +358,7 @@ func (w *Worker) AddMates(mateServiceAddrs []string) {
 
 func (w *Worker) RegisterIn(mateId string, masterIdOfMate string) {
 	if _, ok := w.ClusterMembers[mateId]; !ok {
-		log.Debugf("when %s register in, not exist, my members:%+v", mateId, w.ClusterMembers)
+		log.Printf("when %s register in, not exist, my members:%+v", mateId, w.ClusterMembers)
 		return
 	}
 
@@ -466,18 +377,70 @@ func (w *Worker) genServeUrl(method string, params url.Values) string {
 	return u.String()
 }
 
-// 给某个节点发信息 外层调用
-func (w *Worker) MsgTo(mateId string, jsonData string) error {
+func (w *Worker) WrapMetaData() string {
+	b, _ := json.Marshal(w.metaData)
+	return string(b)
+}
 
-	//val, _ := json.Marshal(jsonableData)
-	res := w.MessageTo("msg", mateId, url.Values{
-		"data": []string{jsonData},
+func (w *Worker) DecodeMetaData(str string) {
+	json.Unmarshal([]byte(str), &w.metaData)
+}
+
+func (w *Worker) ServePingable() error {
+
+	//w.pingableWorker = NewGrpcWorker(w)
+	// todo: Follow,Add,Remove,EraseMaster should use native gRPC functions
+	// register is only for outer biz
+
+	// @param string nodes node1,node2
+	w.pingableWorker.RegisterMsgHandler(MsgActionAddNode, func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error) {
+		if nodesStr := reqParam.Get("nodes"); nodesStr != "" {
+			nodesArr := strings.Split(nodesStr, ",")
+			w.AddMates(nodesArr)
+		}
+		return nil, nil
 	})
 
-	if res.Code != 0 {
-		log.Debugf("i:%s msgto:%s  error:%v", w.Id, mateId, res.Msg)
-		return fmt.Errorf(res.Msg)
-	}
+	// @param string nodeId
+	w.pingableWorker.RegisterMsgHandler(MsgActionKickNode, func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error) {
+		delete(w.ClusterMembers, reqParam.Get("nodeId"))
+		return nil, nil
+	})
 
-	return nil
+	w.pingableWorker.RegisterMsgHandler(MsgActionEraseMaster, func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error) {
+		w.MasterId = ""
+		return nil, nil
+	})
+
+	// dont return error
+	// @param string masterId
+	w.pingableWorker.RegisterMsgHandler(MsgActionFollow, func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error) {
+		masterId := reqParam.Get("masterId")
+		if w.MasterId == masterId {
+			log.Printf("i(%s) have already follow %s while recv demand follow", w.Id, masterId)
+			return nil, nil
+		}
+		masterWorker, masterExist := w.ClusterMembers[masterId]
+		if !masterExist {
+			log.Printf("will follow but masterId:" + masterId + " not exist")
+			return nil, nil
+		}
+
+		// masterPingRes := w.PingNode(masterId)
+		masterPingRes, err := w.pingableWorker.PingTo(masterWorker.ServiceAddr, w.Id, w.WrapMetaData())
+		if err != nil || masterPingRes == nil {
+			log.Printf("will follow(%s) but ping error:%v", err)
+			return nil, err
+		}
+		// if masterPingRes.Code != 0 {
+		// 	log.Printf("will follow(%s) but ping error:" + masterPingRes.Get("masterId"))
+		// 	return nil, nil
+		// }
+
+		masterId = masterPingRes.Get("masterId") // follow master's master
+		w.Follow(masterId)
+		return nil, nil
+	})
+
+	return w.pingableWorker.Serve(w.ServiceAddr)
 }
