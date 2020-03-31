@@ -8,8 +8,9 @@ import (
 	"strconv"
 	"time"
 
-	worker "github.com/uxff/flexdrive/pkg/app/nodestorage/httpworker"
-	//worker "github.com/uxff/flexdrive/pkg/app/nodestorage/clusterworker"
+	//worker "github.com/uxff/flexdrive/pkg/app/nodestorage/httpworker"
+	worker "github.com/uxff/flexdrive/pkg/app/nodestorage/clusterworker"
+	"github.com/uxff/flexdrive/pkg/app/nodestorage/httppingable"
 	"github.com/uxff/flexdrive/pkg/log"
 	"github.com/uxff/flexdrive/pkg/utils/filehash"
 
@@ -65,8 +66,8 @@ func StartNode(storageDir string, httpAddr string, clusterId string, clusterMemb
 		}
 	}
 
-	node.Worker = worker.NewWorker(node.WorkerAddr, node.ClusterId) //httpworker
-	//node.Worker = httppingable(node.WorkerAddr, node.ClusterId)//httppingable
+	//node.Worker = worker.NewWorker(node.WorkerAddr, node.ClusterId) //httpworker
+	node.Worker.SetPingableWorker(httppingable.NewHttpPingableWorker()) //httppingable
 	//node.Worker.AddMates(strings.Split(node.ClusterMembers, ","))
 
 	var err error

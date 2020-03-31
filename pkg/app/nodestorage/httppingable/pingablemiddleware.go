@@ -53,7 +53,7 @@ func NewHttpPingableWorker() *HttpPingableWorker {
 	}
 }
 
-func (w *HttpPingableWorker) PingTo(mateAddr string, fromId string, metaData url.Values) (*pingablepb.PingResponse, error) {
+func (w *HttpPingableWorker) PingTo(mateAddr string, fromId string, metaData url.Values) (url.Values, error) {
 	res := &pingablepb.PingResponse{}
 
 	req := &pingablepb.PingRequest{
@@ -72,13 +72,13 @@ func (w *HttpPingableWorker) PingTo(mateAddr string, fromId string, metaData url
 	if err != nil {
 		log.Errorf("ping error:%v", err)
 		res.Code, res.Msg = 1, err.Error()
-		return res, err
+		return nil, err
 	}
 
 	resBuf, err := ioutil.ReadAll(resp.Body)
 	defer resp.Body.Close()
 	if err != nil {
-		return res, err
+		return nil, err
 	}
 
 	//res := url.ParseQuery(string(resBuf))
@@ -86,10 +86,14 @@ func (w *HttpPingableWorker) PingTo(mateAddr string, fromId string, metaData url
 	if err != nil {
 		res.Code = 1
 		res.Msg = err.Error()
-		return res, err
+		return nil, err
 	}
 
-	return res, nil
+	resVal := url.Values{}
+	resVal.Add("masterId", res.MasterId)
+	resVal.Add("metaData", res.MetaData)
+
+	return resVal, nil
 }
 
 func (w *HttpPingableWorker) RegisterPong(h pingableif.PongHandler) {

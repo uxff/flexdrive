@@ -1,18 +1,15 @@
 package storagemodel
 
 import (
-	"encoding/json"
 	"errors"
+	"net/url"
 	"strconv"
 	"time"
 
-	"github.com/buger/jsonparser"
-
-	worker "github.com/uxff/flexdrive/pkg/app/nodestorage/httpworker"
-	//worker "github.com/uxff/flexdrive/pkg/app/nodestorage/clusterworker"
+	//worker "github.com/uxff/flexdrive/pkg/app/nodestorage/httpworker"
+	worker "github.com/uxff/flexdrive/pkg/app/nodestorage/clusterworker"
 	"github.com/uxff/flexdrive/pkg/dao/base"
 
-	"github.com/gin-gonic/gin"
 	"github.com/uxff/flexdrive/pkg/dao"
 	"github.com/uxff/flexdrive/pkg/log"
 )
@@ -24,60 +21,60 @@ const (
 func (n *NodeStorage) AttachService() {
 	// 保存文件 但是循环依赖
 	// TODO 用onmsg代替
-	w := n.Worker
+	//w := n.Worker
 	// 备份文件 fileIndexId fromId nodeLevel
-	n.Worker.AttachPostAction("/savefile", func(c *gin.Context) {
-		fileIndexIdStr := c.Query("fileIndexId")
-		if fileIndexIdStr == "" {
-			w.JsonError(c, "fileIndexId must no be empty")
-			return
-		}
+	// n.Worker.AttachPostAction("/savefile", func(c *gin.Context) {
+	// 	fileIndexIdStr := c.Query("fileIndexId")
+	// 	if fileIndexIdStr == "" {
+	// 		w.JsonError(c, "fileIndexId must no be empty")
+	// 		return
+	// 	}
 
-		fileIndexId, _ := strconv.Atoi(fileIndexIdStr)
-		if fileIndexId <= 0 {
-			w.JsonError(c, "fileIndexId must no be empty")
-			return
+	// 	fileIndexId, _ := strconv.Atoi(fileIndexIdStr)
+	// 	if fileIndexId <= 0 {
+	// 		w.JsonError(c, "fileIndexId must no be empty")
+	// 		return
 
-		}
+	// 	}
 
-		fromId := c.Query("fromId")
-		if fromId == "" {
-			w.JsonError(c, "fromId must no be empty")
-			return
-		}
+	// 	fromId := c.Query("fromId")
+	// 	if fromId == "" {
+	// 		w.JsonError(c, "fromId must no be empty")
+	// 		return
+	// 	}
 
-		fromNode := w.ClusterMembers[fromId]
-		if fromNode == nil {
-			w.JsonError(c, "fromId has no real node")
-			return
-		}
+	// 	fromNode := w.ClusterMembers[fromId]
+	// 	if fromNode == nil {
+	// 		w.JsonError(c, "fromId has no real node")
+	// 		return
+	// 	}
 
-		fileIndexEnt, err := dao.GetFileIndexById(fileIndexId)
-		if err != nil {
-			w.JsonError(c, "getFileIndex "+fileIndexIdStr+" error")
-			log.Errorf("get fileIndexId(%d) error:%v", fileIndexId, err)
-			return
-		}
+	// 	fileIndexEnt, err := dao.GetFileIndexById(fileIndexId)
+	// 	if err != nil {
+	// 		w.JsonError(c, "getFileIndex "+fileIndexIdStr+" error")
+	// 		log.Errorf("get fileIndexId(%d) error:%v", fileIndexId, err)
+	// 		return
+	// 	}
 
-		if fileIndexEnt == nil {
-			//
-			w.JsonError(c, "cannot find fileIndexEnt")
-			return
-		}
+	// 	if fileIndexEnt == nil {
+	// 		//
+	// 		w.JsonError(c, "cannot find fileIndexEnt")
+	// 		return
+	// 	}
 
-		// 拼出外地址
-		//fileUrl := fromNode.ServiceAddr + "://" + fileIndexEnt.OuterPath
+	// 	// 拼出外地址
+	// 	//fileUrl := fromNode.ServiceAddr + "://" + fileIndexEnt.OuterPath
 
-		// 下载文件
-		// 计算校验hash
-		// 保存
-		//curNode := storagemodel.GetCurrentNode()
-		//localSavePath := curNode.SaveFile()
+	// 	// 下载文件
+	// 	// 计算校验hash
+	// 	// 保存
+	// 	//curNode := storagemodel.GetCurrentNode()
+	// 	//localSavePath := curNode.SaveFile()
 
-		//w.masterGoneChan <- true
-		log.Debugf("savefile from: %s", fromId)
-		w.JsonOk(c)
-	})
+	// 	//w.masterGoneChan <- true
+	// 	log.Debugf("savefile from: %s", fromId)
+	// 	w.JsonOk(c)
+	// })
 
 	// todo 不应该在此处服务
 	// n.Worker.AttachGetAction("/file/:fileHash", func(c *gin.Context) {
@@ -95,6 +92,29 @@ func (n *NodeStorage) AttachService() {
 
 	// 	c.File(localFilePath)
 	// })
+
+	n.Worker.GetPingableWorker().RegisterMsgHandler("savefile", func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error) {
+
+		msg := &NodeMsgSaveFile{}
+		//msg.Action = ""
+		msg.FileIndexId, _ = strconv.Atoi(reqParam.Get("fileIndexId"))
+		msg.FromId = fromId
+		msg.AsNodeLevel = reqParam.Get("asNodeLevel")
+
+		// err = json.Unmarshal([]byte(data), msg)
+		// if err != nil {
+		// 	log.Errorf("unmarshal msg error:%v", err)
+		// 	return nil, err
+		// }
+		err := n.HandleSaveFile(msg)
+		if err != nil {
+			log.Errorf("handle msg error:%v", err)
+			return nil, err
+		}
+
+		return nil, nil
+
+	})
 }
 
 //
@@ -142,30 +162,31 @@ func (n *NodeStorage) HandleSaveFile(msg *NodeMsgSaveFile) error {
 }
 
 // 依赖注入的设计方式 收到消息的回调
-func (n *NodeStorage) OnMsg(fromId, data string) {
-	action, err := jsonparser.GetString([]byte(data), "action")
-	if err != nil {
-		log.Errorf("parse msg error:%v", err)
-		return
-	}
-	switch action {
-	case "savefile":
-		msg := &NodeMsgSaveFile{}
-		err = json.Unmarshal([]byte(data), msg)
-		if err != nil {
-			log.Errorf("unmarshal msg error:%v", err)
-			return
-		}
-		err = n.HandleSaveFile(msg)
-		if err != nil {
-			log.Errorf("handle msg error:%v", err)
-			return
-		}
-	default:
-		log.Warnf("no action when handle msg:%s", data)
-	}
-}
+// func (n *NodeStorage) OnMsg(fromId, data string) {
+// 	action, err := jsonparser.GetString([]byte(data), "action")
+// 	if err != nil {
+// 		log.Errorf("parse msg error:%v", err)
+// 		return
+// 	}
+// 	switch action {
+// 	case "savefile":
+// 		msg := &NodeMsgSaveFile{}
+// 		err = json.Unmarshal([]byte(data), msg)
+// 		if err != nil {
+// 			log.Errorf("unmarshal msg error:%v", err)
+// 			return
+// 		}
+// 		err = n.HandleSaveFile(msg)
+// 		if err != nil {
+// 			log.Errorf("handle msg error:%v", err)
+// 			return
+// 		}
+// 	default:
+// 		log.Warnf("no action when handle msg:%s", data)
+// 	}
+// }
 
+// useful
 func (n *NodeStorage) OnRegistered(w *worker.Worker) {
 	//node.RegisterTo
 	n.NodeEnt.LastRegistered = time.Now()
@@ -176,12 +197,20 @@ func (n *NodeStorage) OnRegistered(w *worker.Worker) {
 
 // 要求同伴保存文件
 func (n *NodeStorage) DemandMateSaveFile(mateId string, fileIndexId int, asNodeLevel string) {
-	msg := &NodeMsgSaveFile{
-		NodeMsg: NodeMsg{ // no effected
-			FromId: n.Worker.Id,
-			Action: "savefile",
-		},
+	// msg := &NodeMsgSaveFile{
+	// 	NodeMsg: NodeMsg{ // no effected
+	// 		FromId: n.Worker.Id,
+	// 		Action: "savefile",
+	// 	},
+	// 	FileIndexId: fileIndexId,
+	// }
+	urlVal := url.Values{}
+	urlVal.Add("fromId", n.Worker.Id)
+	urlVal.Add("fileIndexId", strconv.Itoa(fileIndexId))
+	urlVal.Add("asNodeLevel", asNodeLevel)
+	//val, _ := json.Marshal(msg)
+	_, err := n.Worker.GetPingableWorker().MsgTo(n.Worker.ClusterMembers[mateId].ServiceAddr, "savefile", "", urlVal)
+	if err != nil {
+		log.Errorf("demandMateSaveFile(%s, %d) failed:%v", mateId, fileIndexId, err)
 	}
-	val, _ := json.Marshal(msg)
-	n.Worker.MsgTo(mateId, string(val))
 }

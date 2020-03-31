@@ -450,3 +450,7 @@ func (w *Worker) ServePingable() error {
 
 	return w.pingableWorker.Serve(w.ServiceAddr)
 }
+
+func (w *Worker) GetPingableWorker() pingableif.PingableWorker {
+	return w.pingableWorker
+}
