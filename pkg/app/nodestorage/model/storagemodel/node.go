@@ -66,7 +66,7 @@ func StartNode(storageDir string, httpAddr string, clusterId string, clusterMemb
 		}
 	}
 
-	//node.Worker = worker.NewWorker(node.WorkerAddr, node.ClusterId) //httpworker
+	node.Worker = worker.NewWorker(node.WorkerAddr, node.ClusterId)     //httpworker
 	node.Worker.SetPingableWorker(httppingable.NewHttpPingableWorker()) //httppingable
 	//node.Worker.SetPingableWorker(grpcpingable.NewGrpcWorker())         //httppingable
 

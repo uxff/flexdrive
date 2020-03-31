@@ -15,6 +15,12 @@ const (
 // watch and clear lost mates in db
 func (n *NodeStorage) WatchMates() error {
 	for {
+		// register self
+		n.NodeEnt.LastRegistered = time.Now()
+		n.NodeEnt.Status = base.StatusNormal
+		n.NodeEnt.UpdateById([]string{"lastRegistered", "status"})
+
+		// check mates are registered
 		nodeList := make([]dao.Node, 0)
 		condition := map[string]interface{}{
 			"clusterId=?": n.ClusterId,
