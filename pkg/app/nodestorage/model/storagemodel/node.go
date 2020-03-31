@@ -68,6 +68,9 @@ func StartNode(storageDir string, httpAddr string, clusterId string, clusterMemb
 
 	//node.Worker = worker.NewWorker(node.WorkerAddr, node.ClusterId) //httpworker
 	node.Worker.SetPingableWorker(httppingable.NewHttpPingableWorker()) //httppingable
+	//node.Worker.SetPingableWorker(grpcpingable.NewGrpcWorker())         //httppingable
+
+	// addMates is instead by auto find mates
 	//node.Worker.AddMates(strings.Split(node.ClusterMembers, ","))
 
 	var err error

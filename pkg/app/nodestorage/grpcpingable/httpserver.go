@@ -25,7 +25,7 @@ type MsgHandler func(fromId, toId, msgId string, reqParam url.Values) (url.Value
 // GrpcWorker implements this interface
 type PingableWorker interface {
 	Serve() error
-	PingTo(toId string) (*pingablepb.PingResponse, error) // ping out to other
+	PingTo(toId string) (url.Values, error) // ping out to other
 	//OnPing(MsgHandler)   // like recv ping, grpcServer.Ping instead
 	RegisterMsgHandler(action string, handler MsgHandler) // like recv OnMsg
 	MsgTo(toId, action, msgId string, param url.Values) (url.Values, error)
@@ -122,7 +122,7 @@ func (g *GrpcWorker) RegisterPong(h pingableif.PongHandler) {
 
 // implement pingableif for clusterworker
 // proto: PingTo(mateAddr string, fromId string, metaData interface{}) (url.Values, error)
-func (g *GrpcWorker) PingTo(mateAddr string, fromId string, metaData url.Values) (*pingablepb.PingResponse, error) {
+func (g *GrpcWorker) PingTo(mateAddr string, fromId string, metaData url.Values) (url.Values, error) {
 	req := &pingablepb.PingRequest{
 		FromId: fromId,
 		//MasterId: g.worker.MasterId,
@@ -135,7 +135,15 @@ func (g *GrpcWorker) PingTo(mateAddr string, fromId string, metaData url.Values)
 		return nil, fmt.Errorf("cannot gen rpcClient of %s", mateAddr)
 	}
 	res, err := rpcClient.Ping(ctx, req)
-	return res, err
+	if err != nil {
+		return nil, err
+	}
+
+	resVal := url.Values{}
+	resVal.Add("masterId", res.MasterId)
+	resVal.Add("metaData", res.MetaData)
+
+	return resVal, err
 }
 
 // implement pingableif for clusterworker
