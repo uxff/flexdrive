@@ -23,65 +23,40 @@ func (n *NodeStorage) AttachService() {
 	// 保存文件 依赖注入
 	n.Worker.GetPingableWorker().RegisterMsgHandler("savefile", func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error) {
 
-		msg := &NodeMsgSaveFile{}
-		//msg.Action = ""
-		msg.FileIndexId, _ = strconv.Atoi(reqParam.Get("fileIndexId"))
-		msg.FromId = fromId
-		msg.AsNodeLevel = reqParam.Get("asNodeLevel")
+		fileIndexId, _ := strconv.Atoi(reqParam.Get("fileIndexId"))
+		if fileIndexId == 0 {
+			log.Errorf("when handle saveFile, fileIndexId cannot be 0")
+			return nil, errors.New("when handle saveFile, fileIndexId cannot be 0")
+		}
 
-		err := n.HandleSaveFile(msg)
+		fromNode := n.Worker.ClusterMembers[fromId]
+		if fromNode == nil {
+			//w.JsonError(c, "fromId has no real node")
+			return nil, errors.New("fromId has no real node")
+		}
+
+		fileIndexEnt, err := dao.GetFileIndexById(fileIndexId)
+		if err != nil {
+			//w.JsonError(c, "getFileIndex "+fileIndexIdStr+" error")
+			log.Errorf("get fileIndexId(%d) error:%v", fileIndexId, err)
+			return nil, err
+		}
+
+		if fileIndexEnt == nil {
+			//w.JsonError(c, "cannot find fileIndexEnt")
+			return nil, errors.New("cannot find fileIndexEnt")
+		}
+
+		//fileTargetUrl := fromNode.ServiceAddr + "/file/" + fileIndexEnt.FileHash + "/" + fileIndexEnt.FileName
+		asNodeLevel := reqParam.Get("asNodeLevel")
+		_, err = n.SaveFileFromFileIndex(fileIndexId, asNodeLevel)
+
 		if err != nil {
 			log.Errorf("handle msg error:%v", err)
 			return nil, err
 		}
-
 		return nil, nil
-
 	})
-}
-
-//
-type NodeMsg struct {
-	FromId       string
-	Action       string
-	CustomerAddr string
-}
-
-type NodeMsgSaveFile struct {
-	NodeMsg
-	FileIndexId int
-	AsNodeLevel string
-}
-
-func (n *NodeStorage) HandleSaveFile(msg *NodeMsgSaveFile) error {
-
-	if msg.FileIndexId == 0 {
-		log.Errorf("when handle saveFile, fileIndexId cannot be 0")
-		return errors.New("when handle saveFile, fileIndexId cannot be 0")
-	}
-
-	fromNode := n.Worker.ClusterMembers[msg.FromId]
-	if fromNode == nil {
-		//w.JsonError(c, "fromId has no real node")
-		return errors.New("fromId has no real node")
-	}
-
-	fileIndexEnt, err := dao.GetFileIndexById(msg.FileIndexId)
-	if err != nil {
-		//w.JsonError(c, "getFileIndex "+fileIndexIdStr+" error")
-		log.Errorf("get fileIndexId(%d) error:%v", msg.FileIndexId, err)
-		return err
-	}
-
-	if fileIndexEnt == nil {
-		//w.JsonError(c, "cannot find fileIndexEnt")
-		return errors.New("cannot find fileIndexEnt")
-	}
-
-	//fileTargetUrl := fromNode.ServiceAddr + "/file/" + fileIndexEnt.FileHash + "/" + fileIndexEnt.FileName
-	_, err = n.SaveFileFromFileIndex(msg.FileIndexId, msg.AsNodeLevel)
-
-	return err
 }
 
 // useful?
