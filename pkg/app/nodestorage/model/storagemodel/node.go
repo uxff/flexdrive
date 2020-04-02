@@ -102,6 +102,7 @@ func StartNode(storageDir string, httpAddr string, clusterId string, clusterMemb
 	}
 
 	//node.Worker.OuterHandler = node
+	node.AttachService()
 
 	// 准备启动服务
 	serveErrorChan := make(chan error, 1)
