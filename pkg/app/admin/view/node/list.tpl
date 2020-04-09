@@ -78,7 +78,7 @@
                     <td style="color:{{timeSmell .LastRegistered}}"><b>{{.LastRegistered}}</b></td>
                     <td>{{mgrStatus .Status}}</td>
                     <td>
-                        -
+                        <button class="btn btn-info setSpace " data-toggle1="modal" data-target1="#setspaceModal" data-id="{{.Id}}" data-space="{{.TotalSpace}}">设置空间</button>
                     </td>
                 </tr>
                 {{else}}
@@ -96,6 +96,53 @@
 
 </div>
 
+<!-- 模态框（Modal） setspace -->
+<div class="modal fade" id="setspaceModal" tabindex="-1" role="dialog" aria-labelledby="setspaceLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" 
+                        aria-hidden="true">×
+                </button>
+                <h4 class="modal-title" id="setspaceLabel">设置空间</h4>
+            </div>
+            <form id="setspaceForm" accept-charset="utf-8" role="form" class="form-horizontal" method="POST" action='/node/setspace' enctype="application/x-www-form-urlencoded">
+            <div class="modal-body">
+                <div class="row" style="margin: 10px;">
+                    <div class="col-md-4 text-right">
+                        当前节点：
+                    </div>
+                    <div class="col-md-6">
+                        <span id="nodeIdTextInSetspaceModal"></span>
+                        <input type="hidden" id="nodeIdInSetspaceModal" name="nodeId" value="">
+                    </div>
+                </div>
+                <div class="row" style="margin: 10px;">
+                    <div class="col-md-4 text-right">
+                        当前空间：
+                    </div>
+                    <div class="col-md-6">
+                        <span id="totalspaceTextInSetspaceModal"></span>KB
+                    </div>
+                </div>
+                <div class="row" style="margin: 10px;">
+                    <div class="col-md-4 text-right">
+                        设置为：
+                    </div>
+                    <div class="col-md-6">
+                        <input type="number" name="totalSpace" id="totalspaceInSetspaceModal" value="">KB
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="submit" class="btn btn-primary" id="setspaceSubmit">提交</button>
+            </div>
+            </form>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
 <script type="text/javascript">
     $("#txt_search_created_start").datetimepicker({
         format: 'YYYY-MM-DD HH:mm'
@@ -103,6 +150,25 @@
     $("#txt_search_created_end").datetimepicker({
         format: 'YYYY-MM-DD HH:mm'
     });
+
+    // -------- 重size ----------
+    $('.setSpace').on('click', function(){
+        $('#totalspaceTextInSetspaceModal').html($(this).attr('data-space'));
+        $('#totalspaceInSetspaceModal').val($(this).attr('data-space'));
+        $('#nodeIdInSetspaceModal').val($(this).attr('data-id'));
+        $('#nodeIdTextInSetspaceModal').html($(this).attr('data-id'));
+        $('#setspaceModal').modal('show');
+    })
+    $('#setspaceModal').on('show.bs.modal', function () {
+        // $('#dirPathTextInsetspaceModal').html($('#dirPath').val());
+        // $('#fileTextInsetspaceModal').html($('#dirPath').val());
+    });
+    $('#setspaceSubmit').on('click', function(){
+        $('#setspaceForm').submit();
+        $('#setspaceModal').modal('hide');
+    });
+
+
 </script>
     
 {{template "common/partfooter.tpl"}}

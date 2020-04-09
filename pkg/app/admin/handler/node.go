@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -93,4 +94,42 @@ func NodeList(c *gin.Context) {
 		"reqParam":  req,
 		"paginator": paginator.NewPaginator(c.Request, 10, int64(total)),
 	})
+}
+
+func NodeSetspace(c *gin.Context) {
+	requestId := c.GetString(CtxKeyRequestId)
+	nodeIdStr := c.PostForm("nodeId")
+	totalSpaceStr := c.PostForm("totalSpace")
+	nodeId, _ := strconv.Atoi(nodeIdStr)
+	totalSpace, _ := strconv.Atoi(totalSpaceStr)
+	if nodeId <= 0 {
+		StdErrMsgResponse(c, ErrInternal, "没有提交节点id")
+		return
+	}
+	nodeEnt, err := dao.GetNodeById(nodeId)
+	if err != nil {
+		log.Trace(requestId).Errorf("get node(%d) error:%v", nodeId, err)
+		StdErrMsgResponse(c, ErrInternal, "节点id查询失败:"+err.Error())
+		return
+	}
+	if nodeEnt == nil {
+		StdErrMsgResponse(c, ErrInternal, "节点id不存在")
+		return
+	}
+	if int64(totalSpace) < nodeEnt.UsedSpace {
+		StdErrMsgResponse(c, ErrInternal, "空间不能小于节点的已用空间")
+		return
+	}
+
+	nodeEnt.TotalSpace = int64(totalSpace)
+	nodeEnt.UnusedSpace = nodeEnt.TotalSpace - nodeEnt.UsedSpace
+
+	err = nodeEnt.UpdateById([]string{"totalSpace", "unusedSpace"})
+	if err != nil {
+		log.Trace(requestId).Errorf("update node(%d) error:%v", nodeId, err)
+		StdErrMsgResponse(c, ErrInternal, "节点id更新错误:"+err.Error())
+		return
+	}
+
+	c.Redirect(http.StatusMovedPermanently, RouteNodeList)
 }

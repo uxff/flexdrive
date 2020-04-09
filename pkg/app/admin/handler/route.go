@@ -112,7 +112,7 @@ func StartHttpServer(addr string) error {
 	rbacRouter.GET("/order/refund/:id", OrderRefund)
 
 	rbacRouter.GET("/node/list", NodeList)
-	// rbacRouter.GET("/share/enable/:id/:enable", UserEnable)
+	rbacRouter.POST("/node/setspace", NodeSetspace)
 
 	rbacRouter.GET("/fileindex/list", FileIndexList)
 	rbacRouter.GET("/fileindex/enable/:id/:enable", FileIndexEnable)
