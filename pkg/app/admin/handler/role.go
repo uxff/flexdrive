@@ -123,7 +123,7 @@ func (r *RoleAddRequest) ToEnt() *dao.Role {
 
 func RoleAdd(c *gin.Context) {
 	allAccessItems := rbac.GetAllMenu()
-	c.HTML(http.StatusOK, "role/edit.tpl", gin.H{
+	c.HTML(http.StatusOK, "role/add.tpl", gin.H{
 		"LoginInfo":      getLoginInfo(c),
 		"IsLogin":        isLoginIn(c),
 		"allAccessItems": allAccessItems,

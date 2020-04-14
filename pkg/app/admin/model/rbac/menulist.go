@@ -22,6 +22,10 @@ var defaultMenus = RoleAccess{
 				Name:        "文件列表",
 				PermitRoute: "/file",
 			},
+			&ResourceItem{
+				Name:        "文件启用禁用",
+				PermitRoute: "/file/enable",
+			},
 		},
 	},
 	&ResourceItem{

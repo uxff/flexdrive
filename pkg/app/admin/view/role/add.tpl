@@ -10,7 +10,7 @@
             <li><a href="/role/list">角色</a></li>
             <li class="active">添加角色</li>
         </ul>
-        <div class="col-md-8 col-md-offset-2">
+        <div class="col-md-10 col-md-offset-1">
     		<div class="panel panel-default">
 			  	<div class="panel-heading text-center">
 			    	<h3 class="panel-title"><strong>
@@ -37,7 +37,7 @@
                                 </div>
                                 <div class="panel-body">
                                     {{range $accessItem := $accessGroup.Sub}}
-                                        <label for="checkbox-{{$accessItem.PermitRoute}}" class="col-sm-4 ">
+                                        <label for="checkbox-{{$accessItem.PermitRoute}}" class="col-sm-3 ">
                                             <input id="checkbox-{{$accessItem.PermitRoute}}" name="accessRoute[{{$accessItem.PermitRoute}}]" value="1" type="checkbox" {{if $accessItem.Access}}checked{{end}} />{{$accessItem.Name}}
                                         </label>
                                     {{end}}
