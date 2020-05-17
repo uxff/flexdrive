@@ -93,6 +93,12 @@
 			"revisionTime": "2018-04-08T05:53:51Z"
 		},
 		{
+			"checksumSHA1": "vOU8oTlSs07Z6qIN0wU/Tvs9gpw=",
+			"path": "github.com/mattn/go-sqlite3",
+			"revision": "25ecb14adfc7543176f7d85291ec7dba82c6f7e4",
+			"revisionTime": "2018-05-30T13:44:54Z"
+		},
+		{
 			"checksumSHA1": "8mJ7vjP4pj4Y8FH5jVT22mW5acA=",
 			"path": "github.com/ugorji/go/codec",
 			"revision": "42bc974514ff101a54c6b72a0e4dee29d96c0b26",
@@ -136,6 +142,11 @@
 		{
 			"checksumSHA1": "iH3qg/pvsxQ9XW5t8FTc6veuYhY=",
 			"path": "go.uber.org/zap/zapcore",
+			"revision": ""
+		},
+		{
+			"checksumSHA1": "YfJoUcabFvOmA4QN35p4IqjVJlI=",
+			"path": "golang.org/x/sys/unix",
 			"revision": ""
 		},
 		{
