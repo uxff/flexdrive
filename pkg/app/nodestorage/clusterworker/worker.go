@@ -5,7 +5,6 @@ package clusterworker
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/url"
 	"sort"
 	"strings"
@@ -13,10 +12,11 @@ import (
 	"time"
 
 	"github.com/uxff/flexdrive/pkg/app/nodestorage/pingableif"
+	"github.com/uxff/flexdrive/pkg/log"
 )
 
-const RegisterTimeoutSec = 2  // 已注册的超时检测
-const RegisterIntervalSec = 1 // 作为worker或master注册间隔
+const RegisterTimeoutSec = 100 // 已注册的超时检测
+const RegisterIntervalSec = 5  // 作为worker或master注册间隔
 
 const (
 	MsgActionFollow      = "cluster.follow"
@@ -71,7 +71,7 @@ func (w *Worker) SetPingableWorker(pingableWorker pingableif.PingableWorker) err
 }
 
 func (w *Worker) Start() error {
-	log.Printf("worker %s will start", w.Id)
+	log.Debugf("worker %s will start", w.Id)
 
 	go w.KeepRegistered()
 	go w.PerformMaster()
@@ -79,8 +79,8 @@ func (w *Worker) Start() error {
 	// 等待别的worker注册成功
 	time.Sleep(time.Millisecond * 20)
 
-	log.Printf("waiting mates registered in")
-	//log.Printf("only %d/%d mates has been registered, continuing checking", registeredCount, len(w.ClusterMembers))
+	log.Debugf("waiting mates registered in")
+	//log.Debugf("only %d/%d mates has been registered, continuing checking", registeredCount, len(w.ClusterMembers))
 	// assure mate is registered
 	for {
 		// 检查节点是否就位
@@ -93,18 +93,18 @@ func (w *Worker) Start() error {
 
 		// 有半数节点就位就可以继续了
 		if registeredCount > len(w.ClusterMembers)/2 {
-			log.Printf("%d/%d mates has been registered", registeredCount, len(w.ClusterMembers))
+			log.Debugf("%d/%d mates has been registered", registeredCount, len(w.ClusterMembers))
 			break
 		}
 
-		//log.Printf("only %d/%d mates has been registered, continuing checking", registeredCount, len(w.ClusterMembers))
+		//log.Debugf("only %d/%d mates has been registered, continuing checking", registeredCount, len(w.ClusterMembers))
 		time.Sleep(time.Millisecond * 100)
 	}
 
 	// 抢占式选举 最快选举好的直接广播给别人 让别人无条件服从
 	masterId := w.FindFollowedMaster()
 	if masterId != "" {
-		log.Printf("%s will follow %s from existing cluster", w.Id, masterId)
+		log.Debugf("%s will follow %s from existing cluster", w.Id, masterId)
 		w.Follow(masterId)
 	} else {
 		w.ElectMaster()
@@ -116,7 +116,7 @@ func (w *Worker) Start() error {
 
 		// 来自自身监控master
 		case <-w.masterGoneChan:
-			log.Printf("will elect when master %s timeout", w.MasterId)
+			log.Debugf("will elect when master %s timeout", w.MasterId)
 
 			// 清掉已经注册的master 需要重新注册
 			w.MasterId = ""
@@ -130,14 +130,14 @@ func (w *Worker) Start() error {
 		//case <-w.masterShift:
 
 		//case newMasterId := <-w.masterChangeChan:
-		//	log.Printf("master changed from:%s to %s", w.MasterId, newMasterId)
+		//	log.Debugf("master changed from:%s to %s", w.MasterId, newMasterId)
 		//	w.Follow(newMasterId)
 
 		case _, ok := <-w.quitChan:
 			if !ok {
-				log.Printf("quitChan is closed in start while Start()")
+				log.Debugf("quitChan is closed in start while Start()")
 			}
-			log.Printf("recv quit signal, than stop Start()")
+			log.Debugf("recv quit signal, than stop Start()")
 			return fmt.Errorf("worker(%s) master(%s) will quit", w.Id, w.MasterId)
 		}
 	}
@@ -192,13 +192,13 @@ func (w *Worker) KeepRegistered() {
 	for {
 		select {
 		case <-w.quitChan:
-			log.Printf("recv quit signal, than stop KeepRegistered")
+			log.Debugf("recv quit signal, than stop KeepRegistered")
 			return
 		default:
 			// register self
 			w.RegisterToMates()
 
-			log.Printf("id:%s has registered to mates, master:%s", w.Id, w.MasterId)
+			log.Debugf("id:%s has registered to mates, master:%s", w.Id, w.MasterId)
 
 			time.Sleep(time.Second * RegisterIntervalSec)
 		}
@@ -210,7 +210,7 @@ func (w *Worker) Follow(masterId string) {
 	if target.MasterId != "" && target.MasterId != target.Id {
 		// 跟随主人的主人
 		//return w.Follow(target.MasterId)
-		log.Printf("will follow master(%s)'s master(%s)?", target.Id, target.MasterId)
+		log.Debugf("will follow master(%s)'s master(%s)?", target.Id, target.MasterId)
 	}
 
 	w.MasterId = masterId
@@ -236,7 +236,7 @@ func (w *Worker) VoteMaster() string {
 
 	if len(allMateIds) == 0 {
 		// must use self
-		log.Printf("vote to self:%s", w.Id)
+		log.Debugf("vote to self:%s", w.Id)
 		return w.Id
 	}
 
@@ -244,7 +244,7 @@ func (w *Worker) VoteMaster() string {
 
 	expectedMasterId := allMateIds[0]
 
-	log.Printf("w(%v) elected master:%v", w.Id, expectedMasterId)
+	log.Debugf("w(%v) elected master:%v", w.Id, expectedMasterId)
 
 	return expectedMasterId
 }
@@ -278,7 +278,7 @@ func (w *Worker) FindFollowedMaster() string {
 //
 func (w *Worker) PerformMaster() {
 
-	log.Printf("worker %s will perform master", w.Id)
+	log.Debugf("worker %s will perform master", w.Id)
 
 	tick := time.NewTicker(time.Second * RegisterIntervalSec)
 	defer tick.Stop()
@@ -289,13 +289,13 @@ func (w *Worker) PerformMaster() {
 				for mateId := range w.ClusterMembers {
 					if mateId != w.Id && w.ClusterMembers[mateId].MasterId != w.MasterId {
 						// if timeout?
-						log.Printf("demand %s to follow me %s", mateId, w.MasterId)
+						log.Debugf("demand %s to follow me %s", mateId, w.MasterId)
 						go w.DemandFollow(mateId, w.MasterId)
 					}
 				}
 			}
 		case <-w.quitChan:
-			log.Printf("recv quit signal, than stop PerformMaster")
+			log.Debugf("recv quit signal, than stop PerformMaster")
 			return
 		}
 	}
@@ -313,7 +313,7 @@ func (w *Worker) DemandFollow(mateId string, masterId string) error {
 	//res := w.MessageTo("follow", mateId, nil) // instead by pingableWorker.MsgTo
 
 	if err != nil {
-		log.Printf("i:%s demand:%s follow:%s error:%v", w.Id, mateId, masterId, err)
+		log.Debugf("i:%s demand:%s follow:%s error:%v", w.Id, mateId, masterId, err)
 		return err
 	}
 
@@ -328,9 +328,9 @@ func (w *Worker) Quit() {
 	if w.quitChan != nil {
 		close(w.quitChan)
 		w.quitChan = nil
-		log.Printf("quit chan is closed")
+		log.Debugf("quit chan is closed")
 	} else {
-		log.Printf("quit chan has already closed yet sometimes ago")
+		log.Debugf("quit chan has already closed yet sometimes ago")
 	}
 }
 
@@ -361,7 +361,7 @@ func (w *Worker) AddMates(mateServiceAddrs []string) {
 
 func (w *Worker) RegisterIn(mateId string, masterIdOfMate string) {
 	if _, ok := w.ClusterMembers[mateId]; !ok {
-		log.Printf("when %s register in, not exist, my members:%+v", mateId, w.ClusterMembers)
+		log.Debugf("when %s register in, not exist, my members:%+v", mateId, w.ClusterMembers)
 		return
 	}
 
@@ -420,12 +420,12 @@ func (w *Worker) ServePingable() error {
 	w.pingableWorker.RegisterMsgHandler(MsgActionFollow, func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error) {
 		masterId := reqParam.Get("masterId")
 		if w.MasterId == masterId {
-			log.Printf("i(%s) have already follow %s while recv demand follow", w.Id, masterId)
+			log.Debugf("i(%s) have already follow %s while recv demand follow", w.Id, masterId)
 			return nil, nil
 		}
 		masterWorker, masterExist := w.ClusterMembers[masterId]
 		if !masterExist {
-			log.Printf("will follow but masterId:" + masterId + " not exist")
+			log.Debugf("will follow but masterId:" + masterId + " not exist")
 			return nil, nil
 		}
 
@@ -435,11 +435,11 @@ func (w *Worker) ServePingable() error {
 		}
 		masterPingRes, err := w.pingableWorker.PingTo(masterWorker.ServiceAddr, w.Id, metaData)
 		if err != nil || masterPingRes == nil {
-			log.Printf("will follow(%s) but ping error:%v", err)
+			log.Debugf("will follow(%s) but ping error:%v", err)
 			return nil, err
 		}
 		// if masterPingRes.Code != 0 {
-		// 	log.Printf("will follow(%s) but ping error:" + masterPingRes.Get("masterId"))
+		// 	log.Debugf("will follow(%s) but ping error:" + masterPingRes.Get("masterId"))
 		// 	return nil, nil
 		// }
 
