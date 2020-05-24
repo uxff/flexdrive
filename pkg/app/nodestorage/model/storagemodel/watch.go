@@ -9,7 +9,8 @@ import (
 )
 
 const (
-	RegisterTimeoutSec = 300
+	RegisterTimeoutSec  = 300
+	RegisterIntervalSec = 30
 )
 
 // watch and clear lost mates in db
@@ -45,6 +46,6 @@ func (n *NodeStorage) WatchMates() error {
 			}
 		}
 
-		time.Sleep(1 * time.Second)
+		time.Sleep(RegisterIntervalSec * time.Second)
 	}
 }
