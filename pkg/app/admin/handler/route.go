@@ -43,7 +43,7 @@ func init() {
 }
 
 func StartHttpServer(addr string) error {
-	gin.SetMode(gin.DebugMode)
+	//gin.SetMode(gin.DebugMode)
 
 	hostName, _ := os.Hostname()
 	router.GET("/health", func(c *gin.Context) {

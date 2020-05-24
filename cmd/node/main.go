@@ -17,7 +17,6 @@ import (
 	"os"
 	"sync"
 
-	"github.com/gin-gonic/gin"
 	"github.com/uxff/flexdrive/pkg/app/nodestorage/model/storagemodel"
 
 	"github.com/uxff/flexdrive/pkg/common"
@@ -108,8 +107,6 @@ func main() {
 	}
 
 	log.Infof("db %s init ok", dataDsn)
-
-	gin.SetMode(gin.ReleaseMode)
 
 	envMap := make(map[string]string)
 
