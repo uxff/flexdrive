@@ -75,7 +75,7 @@
 
     <div class="row">
         <ul class="breadcrumb" style="margin: 0px;">
-            <a href="/my/file/list?dir={{.parentPath}}"><span class="glyphicon glyphicon-circle-arrow-left"></span>返回上一级</a>&nbsp;
+            <a href="/my/file/list?dir={{.parentPath}}"><span class="glyphicon glyphicon-circle-arrow-up"></span>返回上一级</a>&nbsp;
                 位置：
             <li><a href="/my/file/list">全部文件</a></li>
             {{range $lk, $lv := .dirLis}}
