@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/http/httputil"
 	"strconv"
 	"strings"
 	"time"
@@ -106,8 +105,8 @@ func TraceMiddleWare(c *gin.Context) {
 	c.Set(CtxKeyRequestId, requestId)
 	c.Set(CtxKeyURI, uri)
 
-	rawBody, _ := httputil.DumpRequest(c.Request, true)
-	log.Trace(requestId).Debugf("原始请求体：%s", rawBody)
+	//rawBody, _ := httputil.DumpRequest(c.Request, true)
+	//log.Trace(requestId).Debugf("原始请求体：%s", rawBody)
 
 	// detect user from cookie
 	cuaToken, err := verifyFromCookie(c)
