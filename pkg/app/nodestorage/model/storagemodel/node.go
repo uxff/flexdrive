@@ -173,6 +173,10 @@ func (n *NodeStorage) SaveFileFromFileIndex(fileIndexId int, asNodeLevel string)
 		return nil, fmt.Errorf("when SaveFileFromFileIndex fileIndex:%d not exist", fileIndexId)
 	}
 
+	defer fileIndexEnt.CountRefers()
+	defer n.NodeEnt.CountFiles()
+	defer n.NodeEnt.SumSpace()
+
 	// 如果本地已经备份 则不用备份
 
 	fileInStorage := n.FileHashToStoragePath(fileIndexEnt.FileHash)
@@ -276,6 +280,8 @@ func (n *NodeStorage) SaveFileHandler(inputFileHandler io.Reader, fileHash strin
 
 // 将规范路径的本地文件记录到文件记录 fileHash必须提前计算好 fileName可空
 func (n *NodeStorage) collectFileInStorageToFileIndex(filePathInStorage string, fileHash string, fileName string, fileSize int64) (*dao.FileIndex, error) {
+	defer n.NodeEnt.CountFiles()
+	defer n.NodeEnt.SumSpace()
 
 	fileIndex := &dao.FileIndex{
 		FileName:  fileName,

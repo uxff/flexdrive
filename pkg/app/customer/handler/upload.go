@@ -207,17 +207,12 @@ func UploadForm(c *gin.Context) {
 
 	// 更新用户自己的空间使用记录
 	go func(userId int) {
-		usedSpace := userFile.SumSpace()
-		fileCount := userFile.CountFiles()
-		userInfo.UserEnt.UsedSpace = usedSpace
-		userInfo.UserEnt.FileCount = fileCount
-		err := userInfo.UserEnt.UpdateById([]string{"usedSpace", "fileCount"})
-		if err != nil {
-			log.Trace(requestId).Debugf("update user(%d) usedSpace failed:%v", userInfo.UserEnt.Id, err)
-		}
+		userInfo.UserEnt.SumSpace()
+		userInfo.UserEnt.CountFiles()
 	}(userInfo.UserId)
 
 	// 同步到其他节点上
+
 	p := url.Values{}
 	p.Add("dir", parentDir)
 

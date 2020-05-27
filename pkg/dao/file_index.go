@@ -3,7 +3,10 @@ package dao
 import (
 	"time"
 
+	"github.com/uxff/flexdrive/pkg/common"
 	"github.com/uxff/flexdrive/pkg/dao/base"
+	"github.com/uxff/flexdrive/pkg/envinit"
+	"github.com/uxff/flexdrive/pkg/log"
 )
 
 type FileIndex struct {
@@ -60,4 +63,23 @@ func GetFileIndexByFileHash(fileHash string) (*FileIndex, error) {
 		return nil, nil
 	}
 	return e, err
+}
+
+// 统计文件数
+func (t *FileIndex) CountRefers() int64 {
+	dbname := common.DBMysqlDrive // t.DbNamespace()
+	// total, err := engine.Where("id >?", 1).SumInt(ss, "money")
+	total, err := envinit.Dbs[dbname].Where("fileIndexId=? and status=?", t.Id, 1).Count(&UserFile{}, "id")
+
+	if err != nil {
+		log.Errorf("count fileIndex(%d).files failed:%v", t.Id, err)
+		return 0
+	}
+	t.ReferCount = int(total)
+	err = t.UpdateById([]string{"referCount"})
+	if err != nil {
+		log.Errorf("count fileIndex(%d).files failed:%v", t.Id, err)
+		return 0
+	}
+	return total
 }

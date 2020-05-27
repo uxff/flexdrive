@@ -3,7 +3,10 @@ package dao
 import (
 	"time"
 
+	"github.com/uxff/flexdrive/pkg/common"
 	"github.com/uxff/flexdrive/pkg/dao/base"
+	"github.com/uxff/flexdrive/pkg/envinit"
+	"github.com/uxff/flexdrive/pkg/log"
 )
 
 type Node struct {
@@ -59,4 +62,63 @@ func GetNodeByWorkerId(id string) (*Node, error) {
 		return nil, nil
 	}
 	return e, err
+}
+
+// 统计使用空间
+func (t *Node) SumSpace() int64 {
+	dbname := common.DBMysqlDrive // t.DbNamespace()
+	// total, err := engine.Where("id >?", 1).SumInt(ss, "money")
+	total1, err := envinit.Dbs[dbname].Where("nodeId=? and status=?", t.Id, 1).SumInt(&FileIndex{}, "space")
+	if err != nil {
+		log.Errorf("sum node(%d).usedSpace failed:%v", t.Id, err)
+		return 0
+	}
+	total2, err := envinit.Dbs[dbname].Where("nodeId2=? and status=?", t.Id, 1).SumInt(&FileIndex{}, "space")
+	if err != nil {
+		log.Errorf("sum node(%d).usedSpace failed:%v", t.Id, err)
+		return 0
+	}
+	total3, err := envinit.Dbs[dbname].Where("nodeId3=? and status=?", t.Id, 1).SumInt(&FileIndex{}, "space")
+	if err != nil {
+		log.Errorf("sum node(%d).usedSpace failed:%v", t.Id, err)
+		return 0
+	}
+	t.UsedSpace = total1 + total2 + total3
+	t.UnusedSpace = t.TotalSpace - t.UsedSpace
+	err = t.UpdateById([]string{"usedSpace", "unusedSpace"})
+	if err != nil {
+		log.Errorf("sum node(%d).usedSpace failed:%v", t.Id, err)
+		return 0
+	}
+
+	return t.UsedSpace
+}
+
+// 统计文件数
+func (t *Node) CountFiles() int64 {
+	dbname := common.DBMysqlDrive // t.DbNamespace()
+	// total, err := engine.Where("id >?", 1).SumInt(ss, "money")
+	total1, err := envinit.Dbs[dbname].Where("nodeId=? and status=?", t.Id, 1).Count(&FileIndex{}, "id")
+	if err != nil {
+		log.Errorf("count node(%d).files failed:%v", t.Id, err)
+		return 0
+	}
+	total2, err := envinit.Dbs[dbname].Where("nodeId2=? and status=?", t.Id, 1).Count(&FileIndex{}, "id")
+	if err != nil {
+		log.Errorf("count node(%d).files failed:%v", t.Id, err)
+		return 0
+	}
+	total3, err := envinit.Dbs[dbname].Where("nodeId3=? and status=?", t.Id, 1).Count(&FileIndex{}, "id")
+	if err != nil {
+		log.Errorf("count node(%d).files failed:%v", t.Id, err)
+		return 0
+	}
+	t.FileCount = total1 + total2 + total3
+	err = t.UpdateById([]string{"fileCount"})
+	if err != nil {
+		log.Errorf("count node(%d).files failed:%v", t.Id, err)
+		return 0
+	}
+
+	return t.FileCount
 }

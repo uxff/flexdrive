@@ -5,7 +5,9 @@ import (
 	"encoding/hex"
 	"time"
 
+	"github.com/uxff/flexdrive/pkg/common"
 	"github.com/uxff/flexdrive/pkg/dao/base"
+	"github.com/uxff/flexdrive/pkg/envinit"
 	"github.com/uxff/flexdrive/pkg/log"
 )
 
@@ -89,4 +91,40 @@ func GetUserByEmail(email string) (*User, error) {
 		return nil, nil
 	}
 	return e, err
+}
+
+// 统计用户的使用空间
+func (t *User) SumSpace() int64 {
+	dbname := common.DBMysqlDrive // t.DbNamespace()
+	// total, err := engine.Where("id >?", 1).SumInt(ss, "money")
+	total, err := envinit.Dbs[dbname].Where("userId=? and status=?", t.Id, t.Status).SumInt(&UserFile{}, "space")
+	if err != nil {
+		log.Errorf("sum user(%d).usedSpace failed:%v", t.Id, err)
+		return 0
+	}
+	t.UsedSpace = total
+	err = t.UpdateById([]string{"usedSpace"})
+	if err != nil {
+		log.Errorf("sum user(%d).usedSpace failed:%v", t.Id, err)
+		return 0
+	}
+	return total
+}
+
+// 统计用户的文件数
+func (t *User) CountFiles() int64 {
+	dbname := common.DBMysqlDrive // t.DbNamespace()
+	// total, err := engine.Where("id >?", 1).SumInt(ss, "money")
+	total, err := envinit.Dbs[dbname].Where("userId=? and status=?", t.Id, t.Status).Count(&UserFile{}, "id")
+	if err != nil {
+		log.Errorf("count user(%d).files failed:%v", t.Id, err)
+		return 0
+	}
+	t.FileCount = total
+	err = t.UpdateById([]string{"fileCount"})
+	if err != nil {
+		log.Errorf("count user(%d).files failed:%v", t.Id, err)
+		return 0
+	}
+	return total
 }
