@@ -10,7 +10,7 @@ import (
 
 	//worker "github.com/uxff/flexdrive/pkg/app/nodestorage/httpworker"
 	worker "github.com/uxff/flexdrive/pkg/app/nodestorage/clusterworker"
-	"github.com/uxff/flexdrive/pkg/app/nodestorage/grpcpingable"
+	"github.com/uxff/flexdrive/pkg/app/nodestorage/httppingable"
 	"github.com/uxff/flexdrive/pkg/log"
 	"github.com/uxff/flexdrive/pkg/utils/filehash"
 
@@ -66,9 +66,9 @@ func StartNode(storageDir string, httpAddr string, clusterId string, clusterMemb
 		}
 	}
 
-	node.Worker = worker.NewWorker(node.WorkerAddr, node.ClusterId) //httpworker
-	//node.Worker.SetPingableWorker(httppingable.NewHttpPingableWorker()) //httppingable
-	node.Worker.SetPingableWorker(grpcpingable.NewGrpcWorker()) //httppingable
+	node.Worker = worker.NewWorker(node.WorkerAddr, node.ClusterId)     //httpworker
+	node.Worker.SetPingableWorker(httppingable.NewHttpPingableWorker()) //httppingable
+	// node.Worker.SetPingableWorker(grpcpingable.NewGrpcWorker()) //httppingable
 
 	// addMates is instead by auto find mates
 	//node.Worker.AddMates(strings.Split(node.ClusterMembers, ","))
@@ -170,7 +170,7 @@ func (n *NodeStorage) SaveFileFromFileIndex(fileIndexId int, asNodeLevel string)
 	}
 
 	if fileIndexEnt == nil {
-		return nil, nil
+		return nil, fmt.Errorf("when SaveFileFromFileIndex fileIndex:%d not exist", fileIndexId)
 	}
 
 	// 如果本地已经备份 则不用备份
@@ -308,7 +308,7 @@ func (n *NodeStorage) collectFileInStorageToFileIndex(filePathInStorage string, 
 	for i := 0; i < 2; i++ {
 		mateId := condidateNodes[i].NodeName
 		// 通知同伴节点备份文件
-		n.DemandMateSaveFile(mateId, fileIndex.Id, strconv.Itoa(i+1))
+		n.DemandMateSaveFile(mateId, fileIndex.Id, strconv.Itoa(i+2))
 	}
 
 	return fileIndex, nil
@@ -448,6 +448,7 @@ func (n *NodeStorage) GetLowestRankedNodes() []*dao.Node {
 	nodeList := make([]*dao.Node, 0)
 	nodeCondition := map[string]interface{}{
 		"status=?": base.StatusNormal,
+		"id!=?":    n.NodeEnt.Id,
 	}
 
 	err := base.ListByCondition(&dao.Node{}, nodeCondition, 1, 1000, "unusedSpace desc", &nodeList)

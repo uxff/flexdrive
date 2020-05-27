@@ -269,5 +269,6 @@ func (w *HttpPingableWorker) Serve(serviceAddr string) error {
 }
 
 func (w *HttpPingableWorker) RegisterMsgHandler(action string, handler pingableif.MsgHandler) {
+	log.Debugf("a action registered: action:%s", action)
 	w.msgHandlerMap[action] = handler
 }

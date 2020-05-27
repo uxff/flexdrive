@@ -22,6 +22,7 @@ func (n *NodeStorage) AttachService() {
 
 	// 保存文件 依赖注入
 	n.Worker.GetPingableWorker().RegisterMsgHandler("savefile", func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error) {
+		log.Debugf("i(%s) am demanded to savefile: fromId:%s msgId:%s urlVals:%+v", n.Worker.Id, fromId, msgId, reqParam)
 
 		fileIndexId, _ := strconv.Atoi(reqParam.Get("fileIndexId"))
 		if fileIndexId == 0 {
@@ -32,18 +33,20 @@ func (n *NodeStorage) AttachService() {
 		fromNode := n.Worker.ClusterMembers[fromId]
 		if fromNode == nil {
 			//w.JsonError(c, "fromId has no real node")
+			log.Errorf("when savefile fromId:%s has no real node", fromId)
 			return nil, errors.New("fromId has no real node")
 		}
 
 		fileIndexEnt, err := dao.GetFileIndexById(fileIndexId)
 		if err != nil {
 			//w.JsonError(c, "getFileIndex "+fileIndexIdStr+" error")
-			log.Errorf("get fileIndexId(%d) error:%v", fileIndexId, err)
+			log.Errorf("when savefile get fileIndexId(%d) error:%v", fileIndexId, err)
 			return nil, err
 		}
 
 		if fileIndexEnt == nil {
 			//w.JsonError(c, "cannot find fileIndexEnt")
+			log.Errorf("when savefile cannot find fileIndexEnt:%d", fileIndexId)
 			return nil, errors.New("cannot find fileIndexEnt")
 		}
 
@@ -52,9 +55,10 @@ func (n *NodeStorage) AttachService() {
 		_, err = n.SaveFileFromFileIndex(fileIndexId, asNodeLevel)
 
 		if err != nil {
-			log.Errorf("handle msg error:%v", err)
+			log.Errorf("when savefile %d error:%v", fileIndexId, err)
 			return nil, err
 		}
+		log.Infof("savefile %d on demand ok", fileIndexId)
 		return nil, nil
 	})
 }
@@ -82,6 +86,7 @@ func (n *NodeStorage) DemandMateSaveFile(mateId string, fileIndexId int, asNodeL
 	urlVal.Add("fileIndexId", strconv.Itoa(fileIndexId))
 	urlVal.Add("asNodeLevel", asNodeLevel)
 	//val, _ := json.Marshal(msg)
+	log.Debugf("will demand savefile: %+v", urlVal)
 	_, err := n.Worker.GetPingableWorker().MsgTo(n.Worker.ClusterMembers[mateId].ServiceAddr, "savefile", "", urlVal)
 	if err != nil {
 		log.Errorf("demandMateSaveFile(%s, %d) failed:%v", mateId, fileIndexId, err)
