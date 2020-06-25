@@ -1,13 +1,15 @@
 package grpcpingable
 
 import (
-	"context"
+	//"context"
 	"errors"
 	"fmt"
 	"net"
 	"sync"
 
 	"net/url"
+
+	"golang.org/x/net/context"
 
 	"github.com/uxff/flexdrive/pkg/app/nodestorage/grpcpingable/pb/pingablepb"
 	"github.com/uxff/flexdrive/pkg/app/nodestorage/pingableif"
