@@ -85,7 +85,7 @@ func (g *GrpcWorker) Ping(ctx context.Context, req *pingablepb.PingRequest) (*pi
 	return nil, errors.New("no pong handler registered in GrpcWorker")
 }
 
-// on msg, implement grpc
+// on msg, implement grpc Msg(context.Context, *MsgRequest) (*MsgResponse, error)
 func (g *GrpcWorker) Msg(ctx context.Context, req *pingablepb.MsgRequest) (*pingablepb.MsgResponse, error) {
 	res := &pingablepb.MsgResponse{
 		MsgId:  req.MsgId,
