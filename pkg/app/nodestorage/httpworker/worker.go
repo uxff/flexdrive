@@ -20,6 +20,8 @@ import (
 const RegisterTimeoutSec = 300  // 已注册的超时检测
 const RegisterIntervalSec = 100 // 作为worker或master注册间隔
 
+var workerMgrLock = sync.Mutex{}
+
 type Worker struct {
 	Id             string // from redis incr? // uniq in cluster, different from other nodes
 	ClusterId      string
@@ -139,9 +141,8 @@ func (w *Worker) Start() error {
 
 // redis hashkey: /nota/clusterId.clusterSalt = [md5(addr:port/clusterId+salt):{workerInfo}]
 func (w *Worker) RegisterToMates() {
-	m := sync.Mutex{}
-	m.Lock()
-	defer m.Unlock()
+	workerMgrLock.Lock()
+	defer workerMgrLock.Unlock()
 
 	// 从redis注册id
 	w.LastRegistered = time.Now().Unix() // 没用
@@ -407,9 +408,8 @@ func (w *Worker) DemandFollow(mateId string, masterId string) error {
 //}
 
 func (w *Worker) Quit() {
-	m := sync.Mutex{}
-	m.Lock()
-	defer m.Unlock()
+	workerMgrLock.Lock()
+	defer workerMgrLock.Unlock()
 
 	if w.quitChan != nil {
 		close(w.quitChan)
