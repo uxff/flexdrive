@@ -3,7 +3,6 @@ module github.com/uxff/flexdrive
 go 1.13
 
 require (
-	github.com/buger/jsonparser v0.0.0-20191204142016-1a29609e0929
 	github.com/dchest/captcha v0.0.0-20170622155422-6a29415a8364
 	github.com/denisenkom/go-mssqldb v0.0.0-20200206145737-bbfc9a55622e // indirect
 	github.com/garyburd/redigo v1.0.1-0.20170216214944-0d253a66e6e1
@@ -20,7 +19,7 @@ require (
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/ugorji/go v1.1.8-0.20190812104308-42bc974514ff // indirect
 	go.uber.org/zap v1.14.1
-	golang.org/x/net v0.0.0-20190620200207-3b0461eec859
+	golang.org/x/net v0.7.0
 	google.golang.org/appengine v1.6.5 // indirect
 	google.golang.org/grpc v1.28.0
 	gopkg.in/yaml.v2 v2.2.8 // indirect
