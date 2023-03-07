@@ -7,7 +7,7 @@ require (
 	github.com/denisenkom/go-mssqldb v0.0.0-20200206145737-bbfc9a55622e // indirect
 	github.com/garyburd/redigo v1.0.1-0.20170216214944-0d253a66e6e1
 	github.com/gin-contrib/sse v0.1.1-0.20190905051334-43f0f29dbd2b // indirect
-	github.com/gin-gonic/gin v1.5.1-0.20200206065021-731c827892f5
+	github.com/gin-gonic/gin v1.7.7
 	github.com/go-sql-driver/mysql v1.3.1-0.20180125054745-bc14601d1bd5
 	github.com/go-xorm/builder v0.0.0-20170519032130-c8871c857d25 // indirect
 	github.com/go-xorm/core v0.5.7-0.20170614060517-e9b7412d750d
@@ -17,10 +17,8 @@ require (
 	github.com/mattn/go-isatty v0.0.13-0.20200128103942-cb30d6282491 // indirect
 	github.com/mattn/go-runewidth v0.0.3
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
-	github.com/ugorji/go v1.1.8-0.20190812104308-42bc974514ff // indirect
 	go.uber.org/zap v1.14.1
 	golang.org/x/net v0.7.0
 	google.golang.org/appengine v1.6.5 // indirect
 	google.golang.org/grpc v1.28.0
-	gopkg.in/yaml.v2 v2.2.8 // indirect
 )
