@@ -3,7 +3,6 @@ module github.com/uxff/flexdrive
 go 1.13
 
 require (
-	github.com/buger/jsonparser v0.0.0-20191204142016-1a29609e0929
 	github.com/dchest/captcha v0.0.0-20170622155422-6a29415a8364
 	github.com/denisenkom/go-mssqldb v0.0.0-20200206145737-bbfc9a55622e // indirect
 	github.com/garyburd/redigo v1.0.1-0.20170216214944-0d253a66e6e1
