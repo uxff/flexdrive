@@ -3,12 +3,11 @@ module github.com/uxff/flexdrive
 go 1.13
 
 require (
-	github.com/buger/jsonparser v0.0.0-20191204142016-1a29609e0929
 	github.com/dchest/captcha v0.0.0-20170622155422-6a29415a8364
 	github.com/denisenkom/go-mssqldb v0.0.0-20200206145737-bbfc9a55622e // indirect
 	github.com/garyburd/redigo v1.0.1-0.20170216214944-0d253a66e6e1
 	github.com/gin-contrib/sse v0.1.1-0.20190905051334-43f0f29dbd2b // indirect
-	github.com/gin-gonic/gin v1.5.1-0.20200206065021-731c827892f5
+	github.com/gin-gonic/gin v1.7.7
 	github.com/go-sql-driver/mysql v1.3.1-0.20180125054745-bc14601d1bd5
 	github.com/go-xorm/builder v0.0.0-20170519032130-c8871c857d25 // indirect
 	github.com/go-xorm/core v0.5.7-0.20170614060517-e9b7412d750d
@@ -23,5 +22,4 @@ require (
 	golang.org/x/net v0.0.0-20190620200207-3b0461eec859
 	google.golang.org/appengine v1.6.5 // indirect
 	google.golang.org/grpc v1.28.0
-	gopkg.in/yaml.v2 v2.2.8 // indirect
 )
