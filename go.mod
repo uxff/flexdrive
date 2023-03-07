@@ -18,7 +18,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.3
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	go.uber.org/zap v1.14.1
-	golang.org/x/net v0.0.0-20190620200207-3b0461eec859
+	golang.org/x/net v0.7.0
 	google.golang.org/appengine v1.6.5 // indirect
 	google.golang.org/grpc v1.28.0
 )
