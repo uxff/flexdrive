@@ -128,16 +128,16 @@ func AcceptLogin(c *gin.Context, mgrEnt *dao.Manager) {
 		return
 	}
 	// 设置cookie
-	c.SetCookie(CookieKeyGpa, tokenStr, 3600*24*7, "", "", http.SameSiteDefaultMode, false, false)
-	c.SetCookie(CookieKeySign, sign, 3600*24*7, "", "", http.SameSiteDefaultMode, false, false)
+	c.SetCookie(CookieKeyGpa, tokenStr, 3600*24*7, "", "", false, false)
+	c.SetCookie(CookieKeySign, sign, 3600*24*7, "", "", false, false)
 
 	// record login
 	//go managermodel.RecordLoginStatus(mgrEnt)
 }
 
 func ClearLogin(c *gin.Context) {
-	c.SetCookie(CookieKeyGpa, "", -1, "", "", http.SameSiteDefaultMode, false, false)
-	c.SetCookie(CookieKeySign, "", -1, "", "", http.SameSiteDefaultMode, false, false)
+	c.SetCookie(CookieKeyGpa, "", -1, "", "", false, false)
+	c.SetCookie(CookieKeySign, "", -1, "", "", false, false)
 }
 
 func ChangePwd(c *gin.Context) {

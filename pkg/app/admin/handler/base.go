@@ -115,7 +115,7 @@ func AuthMiddleWare(c *gin.Context) {
 	gpaToken, err := verifyFromCookie(c)
 	if err != nil {
 		log.Trace(c.GetString(CtxKeyRequestId)).Warnf("illegal gpaToken , reject request, error:%v gpatoken:%+v", err, gpaToken)
-		c.SetCookie(CookieKeyGpa, "", -1, "", "", http.SameSiteDefaultMode, true, false)
+		c.SetCookie(CookieKeyGpa, "", -1, "", "", true, false)
 		StdErrResponse(c, ErrNotLogin)
 		c.Abort()
 		return
