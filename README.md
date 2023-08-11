@@ -1,4 +1,4 @@
-# flexdrive
+# Flexdrive
 一个分布式云盘系统。
 
 后端采用golang的gin框架，前端使用Bootstrap，集群通信使用gRPC协议。
