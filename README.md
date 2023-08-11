@@ -24,6 +24,7 @@ It supports mysql for database, you can use sqlite instead.
 
 ## Get Started
 Prepare your environment variables
+
 |--:|--:|--:|
 | Env Variables	|Example	|Description|
 |--:|--:|--:|
