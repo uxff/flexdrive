@@ -25,7 +25,7 @@ It supports mysql for database, you can use sqlite instead.
 ## Get Started
 Prepare your environment variables
 
-|--:|--:|--:|
+
 | Env Variables	|Example	|Description|
 |--:|--:|--:|
 |SERVEADMIN	|127.0.0.1:10011	|address  and port for administrators|
