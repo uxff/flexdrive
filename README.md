@@ -1,4 +1,7 @@
 # Flexdrive
+
+English | [中文](README.zhCN.md)
+
 A distributed cloud disk system.
 
 golang gin framework is used in the back end, Bootstrap is used in the front end, and gRPC protocol is used for cluster communication.
