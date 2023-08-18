@@ -1,51 +1,59 @@
-# flexdrive
-一个分布式云盘系统。
+# Flexdrive
 
-后端采用golang的gin框架，前端使用Bootstrap，集群通信使用gRPC协议。
+English | [中文](README.zhCN.md)
 
-具有以下特性：
-- a. 一个节点同时提供web和gRPC存储服务；
-- b. 可无限水平扩展，通过在分布式集群增加存储节点的方式实现扩展，理论上空间无限制；
-- c. 一个文件被随机分布在至少三个节点上，避免单点故障导致文件丢失，增加服务可靠性；
-- d. 集群采用分布式负载均衡，将文件上传和备份到负载最小的节点上；
-- e. 集群使用Golang作为主要开发语言，编译后无依赖，可容器化部署运行；
-- f. 集群间使用gRPC通信协议，用于心跳，同步集群节点信息等；
-- g. 提供后台管理界面，满足内容可控需求。
+A distributed cloud disk system.
+
+golang gin framework is used in the back end, Bootstrap is used in the front end, and gRPC protocol is used for cluster communication.
+
+Has the following characteristics:
+
+- a. One node provides both web and gRPC storage services.
+- b. It can be expanded horizontally indefinitely by adding storage nodes in a distributed cluster. Theoretically, the space is unlimited.
+- c. A file is randomly distributed on at least three nodes to prevent file loss caused by single point of failure and improve service reliability.
+- d. The cluster uses distributed load balancing to upload and back up files to nodes with the least load.
+- e. The cluster uses Golang as the main development language, which is independent after compilation and can be deployed and run in container;
+- f. The gRPC communication protocol is used between clusters for heartbeat and node synchronization.
+- g. Provide a background management interface to meet content controllable requirements.
 
 
-集群运行结构图:
+Cluster operation structure diagram:
 <img src="https://github.com/uxff/flexdrive/raw/master/static/images/clusters-architecture.png">
 <img src="https://github.com/uxff/flexdrive/raw/master/static/images/clusters-architecture2.png">
-节点内部结构图；
+Node internal structure diagram:
 <img src="https://github.com/uxff/flexdrive/raw/master/static/images/clusters-architecture3.png">
 
-数据库支持mysql，可使用sqlite替代。
+It supports mysql for database, you can use sqlite instead.
 
-## 开始
-准备好环境变量
-|--:|--:|--:|
-| 环境变量	|示例值	|含义说明|
-|--:|--:|--:|
-|SERVEADMIN	|127.0.0.1:10011	|管理端监听端口|
-|SERVECUSTOMER	|127.0.0.1:10012	|会员端监听端口|
-|SERVECLUSTER	|127.0.0.1:10013	|节点通信监听端口|
-|DATADSN	|mysql://user:pass@tcp(127.0.0.1:3306)/flexdrive?charset=utf8mb4	|关系数据库的DSN|
-|STORAGEDIR	|./data/	|物理文件存储目录|
+## Get Started
+Prepare your environment variables
 
-编译：
+
+| Env Variables	|Example	|Description|
+|--:|--:|--:|
+|SERVEADMIN	|127.0.0.1:10011	|address  and port for administrators|
+|SERVECUSTOMER	|127.0.0.1:10012	|address and port for guests|
+|SERVECLUSTER	|127.0.0.1:10013	|address and port for cluster communication|
+|DATADSN	|mysql://user:pass@tcp(127.0.0.1:3306)/flexdrive?charset=utf8mb4	|DNS of database|
+|STORAGEDIR	|./data/	|physical file storage|
+
+Compiling:
 ```
 $ go run cmd/node/main.go
 ```
 
-单节点运行：
+Run by single node:
 ```
 $ SERVEADMIN=127.0.0.1:10011 SERVECUSTOMER=127.0.0.1:10012 SERVECLUSTER=127.0.0.1:10013 CLUSTERMEMBERS=127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033 DATADSN='sqlite3://./flexdrive.db'  STORAGEDIR=./data/ ./main
 ```
 
 
-多节点运行；
+Run by multing nodes:
 ```
 sh runcluster.sh
 ```
-启动后访问管理端 http://127.0.0.1:10011 访问会员端 http://127.0.0.1:10012
+
+Visit admin web via: http://127.0.0.1:10011 
+
+Visit guest web via: http://127.0.0.1:10012
 
