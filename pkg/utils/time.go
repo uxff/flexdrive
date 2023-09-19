@@ -7,7 +7,7 @@ import (
 const (
 	DefaultTimeFmt = "2006-01-02 15:04:05"
 	StdZeroTimeStr = "0001-01-01 00:00:00" // 标准库里time.Time{} jsonMashal以后的字符串
-	ZeroTimeStr    = "0000-00-00 00:00:00" // 我们自己期望使用的时间 "0" 值字符串
+	ZeroTimeStr    = "1999-12-31 00:00:00" // 我们自己期望使用的时间 "0" 值字符串
 )
 
 // time.Time 转字符串

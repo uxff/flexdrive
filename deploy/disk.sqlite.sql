@@ -11,9 +11,9 @@ CREATE TABLE `user` (
   `quotaSpace` integer NOT NULL DEFAULT '0' , 
   `usedSpace` integer NOT NULL DEFAULT '0' , 
   `fileCount` integer NOT NULL DEFAULT '0' , 
-  `lastLoginAt` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' , 
+  `lastLoginAt` timestamp NOT NULL DEFAULT '1999-12-31 00:00:00' , 
   `lastLoginIp` varchar(16) NOT NULL DEFAULT '' , 
-  `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' , 
+  `created` timestamp NOT NULL DEFAULT '1999-12-31 00:00:00' , 
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP , 
   `status` tinyint(4) NOT NULL DEFAULT '1' , 
   CONSTAINT `IDX_email` UNIQUE (`email`)
@@ -25,7 +25,7 @@ CREATE TABLE `user_level` (
   `quotaSpace` integer NOT NULL DEFAULT '0' , 
   `price` integer NOT NULL DEFAULT '0' , 
   "isDefault" integer NOT NULL DEFAULT '0',
-  `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' , 
+  `created` timestamp NOT NULL DEFAULT '1999-12-31 00:00:00' , 
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP , 
   `status` integer NOT NULL DEFAULT '1',
   "primeCost" integer NOT NULL DEFAULT 0 
@@ -39,12 +39,12 @@ CREATE TABLE `manager` (
   `phone` varchar(12) NOT NULL DEFAULT '' , 
   `email` varchar(32) NOT NULL DEFAULT '' , 
   `pwd` varchar(32) NOT NULL DEFAULT '' , 
-  `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' , 
+  `created` timestamp NOT NULL DEFAULT '1999-12-31 00:00:00' , 
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP , 
   `status` tinyint(4) NOT NULL DEFAULT '1' , 
   `roleId` integer NOT NULL DEFAULT '0' , 
   `isSuper` tinyint(4) NOT NULL DEFAULT '0' , 
-  `lastLoginAt` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' , 
+  `lastLoginAt` timestamp NOT NULL DEFAULT '1999-12-31 00:00:00' , 
   `lastLoginIp` varchar(16) NOT NULL DEFAULT '' ,
   CONSTRAINT `IDX_email` UNIQUE (email)
 ) ;
@@ -53,7 +53,7 @@ CREATE TABLE `role` (
   `id` integer PRIMARY KEY AUTOINCREMENT , 
   `name` varchar(32) NOT NULL DEFAULT '' , 
   `status` tinyint(4) NOT NULL DEFAULT '1' , 
-  `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' , 
+  `created` timestamp NOT NULL DEFAULT '1999-12-31 00:00:00' , 
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP , 
   `permit` text NOT NULL
 ) ;
@@ -64,7 +64,7 @@ CREATE TABLE `oper_log` (
   `managerName` varchar(32) NOT NULL DEFAULT '' , 
   `operBiz` varchar(64) NOT NULL , 
   `operParams` text NOT NULL , 
-  `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' , 
+  `created` timestamp NOT NULL DEFAULT '1999-12-31 00:00:00' , 
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP , 
   `status` tinyint(4) NOT NULL DEFAULT '1' 
 ) ;
@@ -80,7 +80,7 @@ CREATE TABLE `order` (
   `totalAmount` integer NOT NULL DEFAULT '0' , 
   `payAmount` integer NOT NULL DEFAULT '0' , 
   `remark` text NOT NULL , 
-  `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' , 
+  `created` timestamp NOT NULL DEFAULT '1999-12-31 00:00:00' , 
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `status` tinyint(4) NOT NULL DEFAULT '1' 
 ) ;
@@ -95,10 +95,10 @@ CREATE TABLE `node` (
   `unusedSpace` integer NOT NULL DEFAULT '0' , 
   `fileCount` integer NOT NULL DEFAULT '0' , 
   `remark` text NOT NULL , 
-  `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' , 
+  `created` timestamp NOT NULL DEFAULT '1999-12-31 00:00:00' , 
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP , 
   `status` tinyint(4) NOT NULL DEFAULT '1' , 
-  `lastRegistered` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' 
+  `lastRegistered` timestamp NOT NULL DEFAULT '1999-12-31 00:00:00' 
 ) ;
 
 --  todo 分库分表 by hash
@@ -111,7 +111,7 @@ CREATE TABLE `file_index` (
   `nodeId3` integer NOT NULL DEFAULT '0' , 
   `innerPath` varchar(256) NOT NULL DEFAULT '' , 
   `outerPath` varchar(256) NOT NULL DEFAULT '' , 
-  `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' , 
+  `created` timestamp NOT NULL DEFAULT '1999-12-31 00:00:00' , 
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP , 
   `status` tinyint(4) NOT NULL DEFAULT '1' , 
   `referCount` integer NOT NULL DEFAULT '0' , 
@@ -131,7 +131,7 @@ CREATE TABLE `user_file` (
   `fileHash` varchar(40) NOT NULL DEFAULT '' , 
   `nodeId` integer NOT NULL DEFAULT '0' , 
   `isDir` tinyint(4) NOT NULL DEFAULT '0' , 
-  `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' , 
+  `created` timestamp NOT NULL DEFAULT '1999-12-31 00:00:00' , 
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP , 
   `status` tinyint(4) NOT NULL DEFAULT '1' , 
   `size` integer NOT NULL DEFAULT '0' , 
@@ -147,10 +147,10 @@ CREATE TABLE `share` (
   `userFileId` integer NOT NULL DEFAULT '0' , 
   `nodeId` integer NOT NULL DEFAULT '0' , 
   `fileName` varchar(32) NOT NULL DEFAULT '' , 
-  `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' , 
+  `created` timestamp NOT NULL DEFAULT '1999-12-31 00:00:00' , 
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP , 
   `status` tinyint(4) NOT NULL DEFAULT '1' , 
-  `expired` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' 
+  `expired` timestamp NOT NULL DEFAULT '1999-12-31 00:00:00' 
 ) ;
 
 CREATE INDEX "IDX_shareHash"
@@ -163,7 +163,7 @@ CREATE TABLE "offline_task" (
   "userId" integer NOT NULL DEFAULT 0,
   "dataurl" text NOT NULL DEFAULT '',
   "fileName" TEXT NOT NULL DEFAULT '',
-  "created" timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  "created" timestamp NOT NULL DEFAULT '1999-12-31 00:00:00',
   "updated" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "status" integer NOT NULL DEFAULT 1,
   "parentUserFileId" INTEGER NOT NULL DEFAULT 0,

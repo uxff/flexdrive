@@ -21,7 +21,7 @@ type OfflineTask struct {
 	UserId           int       `xorm:"not null default 0 comment('用户id') INT(11)"`
 	Dataurl          string    `xorm:"not null default '' comment('资源地址') VARCHAR(256)"`
 	FileName         string    `xorm:"not null default '' comment('文件名') VARCHAR(64)"`
-	Created          time.Time `xorm:"created not null default '0000-00-00 00:00:00' comment('创建时间') TIMESTAMP"`
+	Created          time.Time `xorm:"created not null default '1999-12-31 00:00:00' comment('创建时间') TIMESTAMP"`
 	Updated          time.Time `xorm:"updated not null default 'CURRENT_TIMESTAMP' comment('更新时间') TIMESTAMP"`
 	Status           int       `xorm:"not null default 1 comment('状态 1=下载中 2=下载完成 3=下载失败 4=已保存') TINYINT(4)"`
 	ParentUserFileId int       `xorm:"not null default 0 comment('文件索引id') INT(11)"`
@@ -61,7 +61,6 @@ func GetOfflineTaskById(id int) (*OfflineTask, error) {
 	return e, err
 }
 
-//
 func (t *OfflineTask) AfterSelect() {
 	var err error
 	t.User, err = GetUserById(t.UserId)

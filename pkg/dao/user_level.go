@@ -12,7 +12,7 @@ type UserLevel struct {
 	QuotaSpace int64     `xorm:"not null default 0 comment('会员级别的用户空间 单位KB') BIGINT(20)"`
 	Price      int       `xorm:"not null default 0 comment('会员级别的价格 单位分') INT(11)"`
 	IsDefault  int       `xorm:"not null default 0 comment('是否是新用户的默认等级 1=是') TINYINT(4)"`
-	Created    time.Time `xorm:"created not null default '0000-00-00 00:00:00' comment('创建时间') TIMESTAMP"`
+	Created    time.Time `xorm:"created not null default '1999-12-31 00:00:00' comment('创建时间') TIMESTAMP"`
 	Updated    time.Time `xorm:"updated not null default 'CURRENT_TIMESTAMP' comment('更新时间') TIMESTAMP"`
 	Status     int       `xorm:"not null default 1 comment('状态 1=启用 99=删除') TINYINT(4)"`
 	PrimeCost  int       `xorm:"not null default 0 comment('原价 仅用于展示 单位分') INT(11)"`

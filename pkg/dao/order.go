@@ -35,7 +35,7 @@ type Order struct {
 	PayAmount     int       `xorm:"not null default 0 comment('实付款金额 单位分') INT(11)"`
 	OutOrderNo    string    `xorm:"not null comment('第三方支付通道订单号') VARCHAR(40)"`
 	Remark        string    `xorm:"not null comment('订单备注') TEXT"`
-	Created       time.Time `xorm:"created not null default '0000-00-00 00:00:00' comment('创建时间') TIMESTAMP"`
+	Created       time.Time `xorm:"created not null default '1999-12-31 00:00:00' comment('创建时间') TIMESTAMP"`
 	Updated       time.Time `xorm:"updated not null default 'CURRENT_TIMESTAMP' TIMESTAMP"`
 	Status        int       `xorm:"not null default 1 comment('状态 1=待付款 2=未付款关闭 3=已付款 4=退款中 5=已退款') TINYINT(4)"`
 

@@ -81,7 +81,8 @@ func StartNode(storageDir string, httpAddr string, clusterId string, clusterMemb
 
 	if node.NodeEnt == nil {
 		node.NodeEnt = &dao.Node{
-			NodeName: node.Worker.Id,
+			NodeName:       node.Worker.Id,
+			LastRegistered: time.Now(), // must give a value
 		}
 		_, err = base.Insert(node.NodeEnt)
 		if err != nil {
@@ -470,7 +471,7 @@ func (n *NodeStorage) GetLowestRankedNodes() []*dao.Node {
 	return nodeList
 }
 
-/// 用于排序
+// / 用于排序
 type NodeList []*dao.Node
 
 func (nl NodeList) Len() int {
