@@ -87,7 +87,7 @@ func SignupForm(c *gin.Context) {
 	userEnt.SetPwd(req.Pwd)
 
 	initialLevelEnt, err := dao.GetDefaultUserLevel()
-	if err != nil {
+	if err != nil || initialLevelEnt == nil || initialLevelEnt.Id <= 0 {
 		log.Errorf("get default userlevel failed:%v", err)
 		StdErrMsgResponse(c, ErrInternal, "没有默认等级，请联系管理员创建会员等级")
 		return
