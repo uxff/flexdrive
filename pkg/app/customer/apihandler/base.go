@@ -90,18 +90,18 @@ func (t *CuaToken) MakeSign() string {
 // 	return g, nil
 // }
 
-func genCuaFromUserEnt(userEnt *dao.User) (g *CuaToken, cuaTokenStr, sign string, err error) {
-	g = &CuaToken{
-		UserId:  userEnt.Id,
-		LoginAt: int(userEnt.LastLoginAt.Unix()),
-		UserEnt: userEnt,
-	}
+// func genCuaFromUserEnt(userEnt *dao.User) (g *CuaToken, cuaTokenStr, sign string, err error) {
+// 	g = &CuaToken{
+// 		UserId:  userEnt.Id,
+// 		LoginAt: int(userEnt.LastLoginAt.Unix()),
+// 		UserEnt: userEnt,
+// 	}
 
-	// toString 之前必须把签名赋值给g.Sign
-	g.Sign = g.MakeSign()
+// 	// toString 之前必须把签名赋值给g.Sign
+// 	g.Sign = g.MakeSign()
 
-	return g, g.ToString(), g.Sign, nil
-}
+// 	return g, g.ToString(), g.Sign, nil
+// }
 
 func decodeGpaFromJwtClaim(claim jwt.MapClaims) (g *CuaToken, err error) {
 

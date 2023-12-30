@@ -172,16 +172,16 @@ func ServeWeb() error {
 	adminApiRouter := router.Group("/admapi")
 
 	// customer
-	customerRouter := router.Group("/")
+	customerRouter := router //:= router.Group("/")
 	customerApiRouter := router.Group("/api")
 
 	adminhandler.LoadRouter(adminRouter)
 	adminapihandler.LoadRouter(adminApiRouter)
-	customerhandler.LoadRouter(customerRouter)
+	customerhandler.LoadRouter(&customerRouter.RouterGroup)
 	customerapihandler.LoadRouter(customerApiRouter)
 
-	hostName, _ := os.Hostname()
 	router.GET("/health", func(c *gin.Context) {
+		hostName, _ := os.Hostname()
 		c.JSON(http.StatusOK, gin.H{
 			"status":   "ok",
 			"hostname": hostName,
