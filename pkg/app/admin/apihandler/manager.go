@@ -43,7 +43,7 @@ func (r *ManagerListRequest) ToCondition() (condition map[string]interface{}) {
 		condition["email = ?"] = r.Email
 	}
 
-	log.Debugf("r=%+v tocondition:%+v", r, condition)
+	log.Debugf("req=%+v tocondition:%+v", r, condition)
 	return condition
 }
 

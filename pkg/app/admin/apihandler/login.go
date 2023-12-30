@@ -142,7 +142,7 @@ func AcceptLogin(c *gin.Context, mgrEnt *dao.Manager) error {
 	}
 
 	// 设置cookie
-	c.SetCookie(CookieKeyGpa, tokenStr, 3600*24*365, "", "", false, false)
+	c.SetCookie(CookieKeyGpa, tokenStr, LoginCookieExpire, "", "", false, false)
 	// c.SetCookie(CookieKeySign, sign, 3600*24*7, "", "", false, false)
 
 	// record login

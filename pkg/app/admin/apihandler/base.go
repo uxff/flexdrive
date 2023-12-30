@@ -35,6 +35,10 @@ const (
 	CookieKeyCaptchaId = "_captchaId"
 )
 
+const (
+	LoginCookieExpire = 3600 * 24 * 365 // 365天
+)
+
 // 后台登录关键信息
 type GpaToken struct {
 	Mid int
@@ -120,7 +124,7 @@ func AuthMiddleWare(c *gin.Context) {
 		return
 	}
 
-	if gpaToken.LoginAt < int(time.Now().Add(-time.Hour*24).Unix()) {
+	if gpaToken.LoginAt < int(time.Now().Add(-time.Second*LoginCookieExpire).Unix()) {
 		ClearLogin(c)
 		JsonErr(c, ErrLoginExpired)
 		c.Abort()
