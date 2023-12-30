@@ -167,17 +167,18 @@ func ServeWeb() error {
 	// js 静态资源 在nginx下应该由nginx来服务比较专业
 	router.StaticFS("/static", http.Dir("static"))
 
+	// customer
+	// customerRouter := router //:= router.Group("/")
+	customerRouter := router.Group("/")
+	customerApiRouter := router.Group("/api")
+
 	// admin
 	adminRouter := router.Group("/adm")
 	adminApiRouter := router.Group("/admapi")
 
-	// customer
-	customerRouter := router //:= router.Group("/")
-	customerApiRouter := router.Group("/api")
-
 	adminhandler.LoadRouter(adminRouter)
 	adminapihandler.LoadRouter(adminApiRouter)
-	customerhandler.LoadRouter(&customerRouter.RouterGroup)
+	customerhandler.LoadRouter(customerRouter)
 	customerapihandler.LoadRouter(customerApiRouter)
 
 	router.GET("/health", func(c *gin.Context) {
