@@ -4,10 +4,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func LoadRouter(rootRouter *gin.Engine, assignedGroupPrefix string) {
+func LoadRouter(router *gin.RouterGroup) {
 	//gin.SetMode(gin.DebugMode)
 
-	var router = rootRouter.Group(assignedGroupPrefix)
+	// var router = rootRouter.Group(assignedGroupPrefix)
 
 	// 公共路由
 	// 登录

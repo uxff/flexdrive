@@ -3,27 +3,32 @@
 
 		分布式(distributed)
 	    运行方式：
-	 	SERVEADMIN=127.0.0.1:10011 SERVECUSTOMER=127.0.0.1:10012 SERVECLUSTER=127.0.0.1:10013 CLUSTERMEMBERS=127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033 DATADSN='mysql://user:pwd@tcp(127.0.0.1:3306)/flexdrive?charset=utf8mb4&parseTime=True&loc=Local'  STORAGEDIR=./data/ ./main
-		SERVEADMIN=127.0.0.1:10011 SERVECUSTOMER=127.0.0.1:10012 SERVECLUSTER=127.0.0.1:10013 DATADSN='sqlite3://./flexdrive.db'  STORAGEDIR=./data/ ./main
+	 	SERVEWEB=0.0.0.0:10011 SERVECLUSTER=0.0.0.0:10013 CLUSTERMEMBERS=127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033 DATADSN='mysql://user:pwd@tcp(127.0.0.1:3306)/flexdrive?charset=utf8mb4&parseTime=True&loc=Local'  STORAGEDIR=./data/ ./main
+		SERVEWEB=0.0.0.0:10011 SERVECLUSTER=0.0.0.0:10013 DATADSN='sqlite3://./flexdrive.db'  STORAGEDIR=./data/ ./main
 
 		for cluster:
-		SERVEADMIN=127.0.0.1:10011 SERVECUSTOMER=127.0.0.1:10012 SERVECLUSTER=127.0.0.1:10013 CLUSTERMEMBERS=127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033 DATADSN='sqlite3://./flexdrive.db'  STORAGEDIR=./data/ ./main
-		SERVEADMIN=127.0.0.1:10021 SERVECUSTOMER=127.0.0.1:10022 SERVECLUSTER=127.0.0.1:10023 CLUSTERMEMBERS=127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033 DATADSN='sqlite3://./flexdrive.db'  STORAGEDIR=./data/ ./main
-		SERVEADMIN=127.0.0.1:10031 SERVECUSTOMER=127.0.0.1:10032 SERVECLUSTER=127.0.0.1:10033 CLUSTERMEMBERS=127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033 DATADSN='sqlite3://./flexdrive.db'  STORAGEDIR=./data/ ./main
+		SERVEWEB=0.0.0.0:10011 SERVECLUSTER=0.0.0.0:10013 CLUSTERMEMBERS=127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033 DATADSN='sqlite3://./flexdrive.db'  STORAGEDIR=./data/ ./main
+		SERVEWEB=0.0.0.0:10021 SERVECLUSTER=0.0.0.0:10023 CLUSTERMEMBERS=127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033 DATADSN='sqlite3://./flexdrive.db'  STORAGEDIR=./data/ ./main
+		SERVEWEB=0.0.0.0:10031 SERVECLUSTER=0.0.0.0:10033 CLUSTERMEMBERS=127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033 DATADSN='sqlite3://./flexdrive.db'  STORAGEDIR=./data/ ./main
 */
 package main
 
 import (
 	"flag"
 	slog "log"
+	"net/http"
 	"os"
 	"sync"
 
+	"github.com/gin-gonic/gin"
 	"github.com/uxff/flexdrive/pkg/app/nodestorage/model/storagemodel"
+	"github.com/uxff/flexdrive/pkg/utils/tplfuncs"
 
 	"github.com/uxff/flexdrive/pkg/common"
 
-	adminhandler "github.com/uxff/flexdrive/pkg/app/admin/router"
+	adminapihandler "github.com/uxff/flexdrive/pkg/app/admin/apihandler"
+	adminhandler "github.com/uxff/flexdrive/pkg/app/admin/handler"
+	customerapihandler "github.com/uxff/flexdrive/pkg/app/customer/apihandler"
 	customerhandler "github.com/uxff/flexdrive/pkg/app/customer/handler"
 	"github.com/uxff/flexdrive/pkg/envinit"
 	"github.com/uxff/flexdrive/pkg/log"
@@ -36,12 +41,13 @@ var (
 	showVersion bool
 	logLevel    = -1
 	// default values, you can set these with env
-	serveAdmin     = "127.0.0.1:10011"
-	serveCustomer  = "127.0.0.1:10012"
-	serveCluster   = "" //"127.0.0.1:10013"
-	clusterMembers = "" //"127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033"
+	serveWeb = "0.0.0.0:10011"
+	// serveAdmin     = "0.0.0.0:10011"
+	// serveCustomer  = "0.0.0.0:10012"
+	serveCluster   = "0.0.0.0:10013"
+	clusterMembers = "" //"0.0.0.0:10013,0.0.0.0:10023,0.0.0.0:10033"
 	clusterId      = "flexdrive"
-	dataDsn        = "mysql://user:pass@tcp(127.0.0.1:3306)/flexdrive?charset=utf8mb4&parseTime=True&loc=Local"
+	dataDsn        = "mysql://user:pass@tcp(0.0.0.0:3306)/flexdrive?charset=utf8mb4&parseTime=True&loc=Local"
 	cacheDsn       = ""
 	storageDir     = "/tmp/flexdrive/"
 )
@@ -73,15 +79,15 @@ func main() {
 		dataDsn = s
 	}
 
-	if s := os.Getenv("SERVEADMIN"); s != "" {
+	if s := os.Getenv("SERVEWEB"); s != "" {
 		log.Debugf("the serveradmin from env: %s", s)
-		serveAdmin = s
+		serveWeb = s
 	}
 
-	if s := os.Getenv("SERVECUSTOMER"); s != "" {
-		log.Debugf("the servercustomer from env: %s", s)
-		serveCustomer = s
-	}
+	// if s := os.Getenv("SERVECUSTOMER"); s != "" {
+	// 	log.Debugf("the servercustomer from env: %s", s)
+	// 	serveCustomer = s
+	// }
 
 	if s := os.Getenv("STORAGEDIR"); s != "" {
 		log.Debugf("the STORAGEDIR from env: %s", s)
@@ -124,13 +130,14 @@ func Serve(envMap map[string]string) error {
 	go func() {
 		wg.Add(1)
 		defer wg.Done()
-		errCh <- adminhandler.StartHttpServer(serveAdmin)
+		// errCh <- adminhandler.StartHttpServer(serveAdmin)
+		errCh <- ServeWeb()
 	}()
-	go func() {
-		wg.Add(1)
-		defer wg.Done()
-		errCh <- customerhandler.StartHttpServer(serveCustomer)
-	}()
+	// go func() {
+	// 	wg.Add(1)
+	// 	defer wg.Done()
+	// 	errCh <- customerhandler.StartHttpServer(serveCustomer)
+	// }()
 
 	// todo non cluster
 	go func() {
@@ -146,4 +153,45 @@ func Serve(envMap map[string]string) error {
 
 	wg.Wait()
 	return nil
+}
+
+// ServeWeb - serve admin and customer
+func ServeWeb() error {
+	router := gin.New()
+
+	// gin的debug 模式下每次访问请求都会读取模板 release模式下不会
+	router.SetFuncMap(tplfuncs.GetFuncMap())
+	router.LoadHTMLGlob("pkg/app/customer/view/**/*")
+	router.LoadHTMLGlob("pkg/app/admin/view/**/*")
+
+	// js 静态资源 在nginx下应该由nginx来服务比较专业
+	router.StaticFS("/static", http.Dir("static"))
+
+	// admin
+	adminRouter := router.Group("/adm")
+	adminApiRouter := router.Group("/admapi")
+
+	// customer
+	customerRouter := router.Group("/")
+	customerApiRouter := router.Group("/api")
+
+	adminhandler.LoadRouter(adminRouter)
+	adminapihandler.LoadRouter(adminApiRouter)
+	customerhandler.LoadRouter(customerRouter)
+	customerapihandler.LoadRouter(customerApiRouter)
+
+	hostName, _ := os.Hostname()
+	router.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"status":   "ok",
+			"hostname": hostName,
+		})
+	})
+
+	webServer := &http.Server{
+		Addr:    serveWeb,
+		Handler: router,
+	}
+
+	return webServer.ListenAndServe()
 }

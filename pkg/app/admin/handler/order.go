@@ -12,9 +12,9 @@ import (
 )
 
 func init() {
-	tplFuncMap["orderStatus"] = func(status int) string {
-		return dao.OrderStatusMap[status]
-	}
+	// tplFuncMap["orderStatus"] = func(status int) string {
+	// 	return dao.OrderStatusMap[status]
+	// }
 }
 
 type OrderListRequest struct {
