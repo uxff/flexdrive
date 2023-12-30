@@ -1,13 +1,15 @@
-/**
-	分布式(distributed)
-    运行方式：
- 	SERVEADMIN=127.0.0.1:10011 SERVECUSTOMER=127.0.0.1:10012 SERVECLUSTER=127.0.0.1:10013 CLUSTERMEMBERS=127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033 DATADSN='mysql://user:pwd@tcp(127.0.0.1:3306)/flexdrive?charset=utf8mb4&parseTime=True&loc=Local'  STORAGEDIR=./data/ ./main
-	SERVEADMIN=127.0.0.1:10011 SERVECUSTOMER=127.0.0.1:10012 SERVECLUSTER=127.0.0.1:10013 DATADSN='sqlite3://./flexdrive.db'  STORAGEDIR=./data/ ./main
+/*
+*
 
-	for cluster:
-	SERVEADMIN=127.0.0.1:10011 SERVECUSTOMER=127.0.0.1:10012 SERVECLUSTER=127.0.0.1:10013 CLUSTERMEMBERS=127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033 DATADSN='sqlite3://./flexdrive.db'  STORAGEDIR=./data/ ./main
-	SERVEADMIN=127.0.0.1:10021 SERVECUSTOMER=127.0.0.1:10022 SERVECLUSTER=127.0.0.1:10023 CLUSTERMEMBERS=127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033 DATADSN='sqlite3://./flexdrive.db'  STORAGEDIR=./data/ ./main
-	SERVEADMIN=127.0.0.1:10031 SERVECUSTOMER=127.0.0.1:10032 SERVECLUSTER=127.0.0.1:10033 CLUSTERMEMBERS=127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033 DATADSN='sqlite3://./flexdrive.db'  STORAGEDIR=./data/ ./main
+		分布式(distributed)
+	    运行方式：
+	 	SERVEADMIN=127.0.0.1:10011 SERVECUSTOMER=127.0.0.1:10012 SERVECLUSTER=127.0.0.1:10013 CLUSTERMEMBERS=127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033 DATADSN='mysql://user:pwd@tcp(127.0.0.1:3306)/flexdrive?charset=utf8mb4&parseTime=True&loc=Local'  STORAGEDIR=./data/ ./main
+		SERVEADMIN=127.0.0.1:10011 SERVECUSTOMER=127.0.0.1:10012 SERVECLUSTER=127.0.0.1:10013 DATADSN='sqlite3://./flexdrive.db'  STORAGEDIR=./data/ ./main
+
+		for cluster:
+		SERVEADMIN=127.0.0.1:10011 SERVECUSTOMER=127.0.0.1:10012 SERVECLUSTER=127.0.0.1:10013 CLUSTERMEMBERS=127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033 DATADSN='sqlite3://./flexdrive.db'  STORAGEDIR=./data/ ./main
+		SERVEADMIN=127.0.0.1:10021 SERVECUSTOMER=127.0.0.1:10022 SERVECLUSTER=127.0.0.1:10023 CLUSTERMEMBERS=127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033 DATADSN='sqlite3://./flexdrive.db'  STORAGEDIR=./data/ ./main
+		SERVEADMIN=127.0.0.1:10031 SERVECUSTOMER=127.0.0.1:10032 SERVECLUSTER=127.0.0.1:10033 CLUSTERMEMBERS=127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033 DATADSN='sqlite3://./flexdrive.db'  STORAGEDIR=./data/ ./main
 */
 package main
 
@@ -21,7 +23,7 @@ import (
 
 	"github.com/uxff/flexdrive/pkg/common"
 
-	adminhandler "github.com/uxff/flexdrive/pkg/app/admin/handler"
+	adminhandler "github.com/uxff/flexdrive/pkg/app/admin/router"
 	customerhandler "github.com/uxff/flexdrive/pkg/app/customer/handler"
 	"github.com/uxff/flexdrive/pkg/envinit"
 	"github.com/uxff/flexdrive/pkg/log"

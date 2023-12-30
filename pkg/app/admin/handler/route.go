@@ -35,15 +35,22 @@ const (
 )
 
 var adminServer *http.Server
-var router = gin.New() // *gin.Engine // 在本包init函数之前运行
+
 var tplFuncMap = make(template.FuncMap, 0)
 
 func init() {
 	loadFuncMap()
 }
 
-func StartHttpServer(addr string) error {
+func LoadRouter(rootRouter *gin.Engine, assignedGroupPrefix string) {
+	// router = gin.New() // *gin.Engine // 在本包init函数之前运行
+	var router = rootRouter.Group(assignedGroupPrefix)
 	//gin.SetMode(gin.DebugMode)
+
+	rootRouter.SetFuncMap(tplFuncMap)
+
+	// gin的debug 模式下每次访问请求都会读取模板 release模式下不会
+	rootRouter.LoadHTMLGlob("pkg/app/admin/view/**/*")
 
 	hostName, _ := os.Hostname()
 	router.GET("/health", func(c *gin.Context) {
@@ -117,20 +124,16 @@ func StartHttpServer(addr string) error {
 	rbacRouter.GET("/fileindex/list", FileIndexList)
 	rbacRouter.GET("/fileindex/enable/:id/:enable", FileIndexEnable)
 
-	adminServer = &http.Server{
-		Addr:    addr,
-		Handler: router,
-	}
-
-	router.SetFuncMap(tplFuncMap)
-
-	// gin的debug 模式下每次访问请求都会读取模板 release模式下不会
-	router.LoadHTMLGlob("pkg/app/admin/view/**/*")
+	// adminServer = &http.Server{
+	// 	Addr:    addr,
+	// 	Handler: router,
+	// }
 
 	// js 静态资源 在nginx下应该由nginx来服务比较专业
 	router.StaticFS("/static", http.Dir("static"))
 
-	return adminServer.ListenAndServe()
+	// return adminServer.ListenAndServe()
+	return
 }
 
 func ShutdownHttpServer() {
