@@ -4,22 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const (
-	RouteHome          = "/"
-	RouteLogin         = "/login"
-	RouteLogout        = "/logout"
-	RouteManagerList   = "/manager/list"
-	RouteRoleList      = "/role/list"
-	RouteUserList      = "/user/list"
-	RouteUserFileList  = "/user/file/list"
-	RouteFileIndexList = "/file/list"
-	RouteNodeList      = "/node/list"
-	RouteShareList     = "/share/list"
-	RouteUserLevelList = "/userlevel/list"
-	RouteOrderList     = "/order/list"
-	RouteChangePwd     = "/changepwd"
-)
-
 func LoadRouter(rootRouter *gin.Engine, assignedGroupPrefix string) {
 	//gin.SetMode(gin.DebugMode)
 

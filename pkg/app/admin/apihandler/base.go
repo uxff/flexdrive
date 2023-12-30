@@ -307,7 +307,7 @@ func verifyFromCookie(c *gin.Context) (*GpaToken, error) {
 
 	log.Debugf("jwtToken:%+v", jwtToken)
 
-	gpaToken, err := decodeGpaFromJwtClaim(jwtToken.Header)
+	gpaToken, err := decodeGpaFromJwtClaim(jwtToken.Claims.(jwt.MapClaims))
 	if err != nil {
 		log.Warnf("get gpaToken from jwt failed, error:%v", err)
 		return nil, err
