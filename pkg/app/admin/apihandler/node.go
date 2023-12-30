@@ -93,7 +93,7 @@ func NodeList(c *gin.Context) {
 	})
 }
 
-func NodeSetspace(c *gin.Context) {
+func NodeSetCapacity(c *gin.Context) {
 	requestId := c.GetString(CtxKeyRequestId)
 	nodeIdStr := c.PostForm("nodeId")
 	totalSpaceStr := c.PostForm("totalSpace")

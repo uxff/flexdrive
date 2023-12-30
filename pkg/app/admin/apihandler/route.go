@@ -20,25 +20,16 @@ const (
 	RouteChangePwd     = "/changepwd"
 )
 
-// var adminServer *http.Server
-
-// var router = gin.New() // *gin.Engine // 在本包init函数之前运行
-// var tplFuncMap = make(template.FuncMap, 0)
-
-func init() {
-	// loadFuncMap()
-}
-
-func LoadRouter(rootRouter *gin.Engine, assignedGroupPrefix string) error {
+func LoadRouter(rootRouter *gin.Engine, assignedGroupPrefix string) {
 	//gin.SetMode(gin.DebugMode)
 
 	var router = rootRouter.Group(assignedGroupPrefix)
 
 	// 公共路由
 	// 登录
-	router.GET("/login", TraceMiddleWare, Login)
+	// router.GET("/login", TraceMiddleWare, Login)
 	router.POST("/login", TraceMiddleWare, LoginForm)
-	router.GET("/logout", TraceMiddleWare, Logout)
+	router.POST("/logout", TraceMiddleWare, Logout)
 	//router.GET("/app/config", TraceMiddleWare, GetAppConfig)
 
 	// 验证码
@@ -72,31 +63,31 @@ func LoadRouter(rootRouter *gin.Engine, assignedGroupPrefix string) error {
 	// rbacRouter.GET("/manager/edit/:mid", ManagerEdit)
 	rbacRouter.POST("/manager/edit/:mid", ManagerAddForm)
 	//authRouter.POST("/manager/modifyPwd", ManagerChangePwd)
-	rbacRouter.GET("/manager/enable/:mid/:enable", ManagerEnable)
+	rbacRouter.POST("/manager/enable/:mid/:enable", ManagerEnable)
 
 	rbacRouter.GET("/user/list", UserList)
-	rbacRouter.GET("/user/enable/:id/:enable", UserEnable)
+	rbacRouter.POST("/user/enable/:id/:enable", UserEnable)
 	rbacRouter.GET("/user/file/list", UserFileList)
-	rbacRouter.GET("/user/file/enable/:id/:enable", UserFileEnable)
+	rbacRouter.POST("/user/file/enable/:id/:enable", UserFileEnable)
 
 	// rbacRouter.GET("/userlevel/add", UserLevelAdd)
 	rbacRouter.POST("/userlevel/add", UserLevelAddForm)
 	// rbacRouter.GET("/userlevel/edit/:id", UserLevelEdit)
 	rbacRouter.POST("/userlevel/edit/:id", UserLevelAddForm)
-	rbacRouter.GET("/userlevel/enable/:id/:enable", UserLevelEnable)
+	rbacRouter.POST("/userlevel/enable/:id/:enable", UserLevelEnable)
 	rbacRouter.GET("/userlevel/list", UserLevelList)
 
 	rbacRouter.GET("/share/list", ShareList)
-	rbacRouter.GET("/share/enable/:id/:enable", ShareEnable)
+	rbacRouter.POST("/share/enable/:id/:enable", ShareEnable)
 
 	rbacRouter.GET("/order/list", OrderList)
-	rbacRouter.GET("/order/refund/:id", OrderRefund)
+	rbacRouter.POST("/order/refund/:id", OrderRefund)
 
 	rbacRouter.GET("/node/list", NodeList)
-	rbacRouter.POST("/node/setspace", NodeSetspace)
+	rbacRouter.POST("/node/setcapacity", NodeSetCapacity)
 
 	rbacRouter.GET("/fileindex/list", FileIndexList)
-	rbacRouter.GET("/fileindex/enable/:id/:enable", FileIndexEnable)
+	rbacRouter.POST("/fileindex/enable/:id/:enable", FileIndexEnable)
 
 	// adminServer = &http.Server{
 	// 	Addr:    addr,
@@ -112,5 +103,5 @@ func LoadRouter(rootRouter *gin.Engine, assignedGroupPrefix string) error {
 	// router.StaticFS("/static", http.Dir("static"))
 
 	// return adminServer.ListenAndServe()
-	return nil
+	return
 }

@@ -1,7 +1,6 @@
 package apihandler
 
 import (
-	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -11,12 +10,12 @@ import (
 	"github.com/uxff/flexdrive/pkg/log"
 )
 
-func Login(c *gin.Context) {
-	c.HTML(http.StatusOK, "login/login.tpl", gin.H{
-		"LoginInfo": getLoginInfo(c),
-		"IsLogin":   isLoginIn(c),
-	})
-}
+// func Login(c *gin.Context) {
+// 	c.HTML(http.StatusOK, "login/login.tpl", gin.H{
+// 		"LoginInfo": getLoginInfo(c),
+// 		"IsLogin":   isLoginIn(c),
+// 	})
+// }
 
 type LoginRequest struct {
 	Email   string `form:"email"`
@@ -136,14 +135,14 @@ func AcceptLogin(c *gin.Context, mgrEnt *dao.Manager) error {
 
 	jwtClaim := jwt.MapClaims(genJwtClaimFromMgrEnt(mgrEnt))
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtClaim)
-	tokenStr, err := jwtToken.SignedString(CookieKeySalt)
+	tokenStr, err := jwtToken.SignedString([]byte(CookieKeySalt))
 	if err != nil {
 		log.Errorf("gen jwt token failed:%v", err)
 		return err
 	}
 
 	// 设置cookie
-	c.SetCookie(CookieKeyGpa, tokenStr, 3600*24*7, "", "", false, false)
+	c.SetCookie(CookieKeyGpa, tokenStr, 3600*24*365, "", "", false, false)
 	// c.SetCookie(CookieKeySign, sign, 3600*24*7, "", "", false, false)
 
 	// record login
