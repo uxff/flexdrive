@@ -1,9 +1,6 @@
 package apihandler
 
 import (
-	"net/http"
-	"os"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -36,14 +33,6 @@ func LoadRouter(rootRouter *gin.Engine, assignedGroupPrefix string) error {
 	//gin.SetMode(gin.DebugMode)
 
 	var router = rootRouter.Group(assignedGroupPrefix)
-
-	hostName, _ := os.Hostname()
-	router.GET("/api/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"status":   "ok",
-			"hostname": hostName,
-		})
-	})
 
 	// 公共路由
 	// 登录

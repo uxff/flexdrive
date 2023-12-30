@@ -6,7 +6,6 @@ import (
 	"html/template"
 	"net/http"
 	"net/url"
-	"os"
 	"reflect"
 	"strings"
 	"time"
@@ -51,14 +50,6 @@ func LoadRouter(rootRouter *gin.Engine, assignedGroupPrefix string) {
 
 	// gin的debug 模式下每次访问请求都会读取模板 release模式下不会
 	rootRouter.LoadHTMLGlob("pkg/app/admin/view/**/*")
-
-	hostName, _ := os.Hostname()
-	router.GET("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"status":   "ok",
-			"hostname": hostName,
-		})
-	})
 
 	// 公共路由
 	// 登录
