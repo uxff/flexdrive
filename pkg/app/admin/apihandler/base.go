@@ -69,22 +69,6 @@ func (t *GpaToken) MakeSign() string {
 	return hex.EncodeToString(enc.Sum(nil))
 }
 
-func decodeGpaFromToken(gpaTokenStr string, sign string) (g *GpaToken, err error) {
-
-	g = &GpaToken{}
-	g.FromString(gpaTokenStr)
-
-	if g.Mid <= 0 {
-		return nil, errors.New("gpatoken has no mid")
-	}
-
-	if g.MakeSign() != sign {
-		return nil, errors.New("gpatoken sign not expected")
-	}
-
-	return g, nil
-}
-
 func decodeGpaFromJwtClaim(claim jwt.MapClaims) (g *GpaToken, err error) {
 
 	g = &GpaToken{}
@@ -95,18 +79,6 @@ func decodeGpaFromJwtClaim(claim jwt.MapClaims) (g *GpaToken, err error) {
 	}
 
 	return g, nil
-}
-
-func genGpaFromMgrEnt(mgrEnt *dao.Manager) (g *GpaToken, gpaTokenStr, sign string, err error) {
-	g = &GpaToken{
-		Mid: mgrEnt.Id,
-		//Name:   mgrEnt.Name,
-		RoleId: mgrEnt.RoleId,
-		//RoleName: 	 mgrEnt.RoleName,
-		LoginAt: int(mgrEnt.LastLoginAt.Unix()),
-	}
-
-	return g, g.ToString(), g.MakeSign(), nil
 }
 
 func genJwtClaimFromMgrEnt(mgrEnt *dao.Manager) map[string]interface{} {
@@ -221,7 +193,7 @@ func RbacAuthMiddleWare(c *gin.Context) {
 		c.Abort()
 		return
 	}
-	log.Trace(requestId).Debugf("access allowed")
+	// log.Trace(requestId).Debugf("access allowed")
 
 	c.Next()
 }
@@ -305,7 +277,7 @@ func verifyFromCookie(c *gin.Context) (*GpaToken, error) {
 		return nil, err
 	}
 
-	log.Debugf("jwtToken:%+v", jwtToken)
+	// log.Debugf("jwtToken:%+v", jwtToken)
 
 	gpaToken, err := decodeGpaFromJwtClaim(jwtToken.Claims.(jwt.MapClaims))
 	if err != nil {
