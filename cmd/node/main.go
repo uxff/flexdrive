@@ -176,10 +176,10 @@ func ServeWeb() error {
 	adminRouter := router.Group("/adm")
 	adminApiRouter := router.Group("/admapi")
 
-	adminhandler.LoadRouter(adminRouter)
-	adminapihandler.LoadRouter(adminApiRouter)
 	customerhandler.LoadRouter(customerRouter)
 	customerapihandler.LoadRouter(customerApiRouter)
+	adminhandler.LoadRouter(adminRouter)
+	adminapihandler.LoadRouter(adminApiRouter)
 
 	router.GET("/health", func(c *gin.Context) {
 		hostName, _ := os.Hostname()
