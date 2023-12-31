@@ -68,7 +68,7 @@ func main() {
 	lcf.Level.SetLevel(zapcore.Level(logLevel))
 	lcf.Development = true
 	lcf.DisableStacktrace = true
-	lcf.EncoderConfig.EncodeCaller = zapcore.ShortCallerEncoder
+	lcf.EncoderConfig.EncodeCaller = zapcore.FullCallerEncoder
 	logger, err := lcf.Build(zap.AddCallerSkip(1), zap.AddCaller())
 	// logger, err := lcf.Build(zap.AddCaller())
 	if err != nil {
