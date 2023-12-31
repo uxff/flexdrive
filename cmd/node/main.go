@@ -193,6 +193,20 @@ func Serve(envMap map[string]string) error {
 // ServeApi - serve api for admin and customer, will be used by react.js or vue.js
 func ServeApi(addr string) error {
 	router := gin.New()
+	router.Use(func(c *gin.Context) {
+		// for cors
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
+	})
 
 	// customer
 	customerApiRouter := router.Group("/api")
