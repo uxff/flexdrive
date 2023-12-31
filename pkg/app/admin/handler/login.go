@@ -11,7 +11,7 @@ import (
 )
 
 func Login(c *gin.Context) {
-	c.HTML(http.StatusOK, "login/login.tpl", gin.H{
+	c.HTML(http.StatusOK, "admin/view/login/login.tpl", gin.H{
 		"LoginInfo": getLoginInfo(c),
 		"IsLogin":   isLoginIn(c),
 	})
