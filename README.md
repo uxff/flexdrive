@@ -39,7 +39,7 @@ Prepare your environment variables
 
 Compiling:
 ```
-$ go run cmd/node/main.go
+$ go build -o flexdrive cmd/node/main.go
 ```
 
 Run by single node:
