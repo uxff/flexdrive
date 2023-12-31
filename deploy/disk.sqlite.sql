@@ -28,8 +28,8 @@ CREATE TABLE `user_level` (
   `created` timestamp NOT NULL DEFAULT '1999-12-31 00:00:00' , 
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP , 
   `status` integer NOT NULL DEFAULT '1',
-  "primeCost" integer NOT NULL DEFAULT 0 
-  "desc" varchar(256) NOT NULL DEFAULT '',
+  "primeCost" integer NOT NULL DEFAULT 0 ,
+  "desc" varchar(256) NOT NULL DEFAULT ''
 );
  
 
@@ -79,6 +79,7 @@ CREATE TABLE `order` (
   `levelName` varchar(12) NOT NULL DEFAULT '' , 
   `totalAmount` integer NOT NULL DEFAULT '0' , 
   `payAmount` integer NOT NULL DEFAULT '0' , 
+  `outOrderNo` varchar(40) NOT NULL DEFAULT '',
   `remark` text NOT NULL , 
   `created` timestamp NOT NULL DEFAULT '1999-12-31 00:00:00' , 
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,

@@ -1,14 +1,12 @@
-package handler
+package apihandler
 
 import (
-	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/uxff/flexdrive/pkg/dao"
 	"github.com/uxff/flexdrive/pkg/dao/base"
 	"github.com/uxff/flexdrive/pkg/log"
-	"github.com/uxff/flexdrive/pkg/utils/paginator"
 )
 
 func init() {
@@ -73,7 +71,7 @@ func OrderList(c *gin.Context) {
 	req := &OrderListRequest{}
 	err := c.ShouldBindQuery(req)
 	if err != nil {
-		StdErrResponse(c, ErrInvalidParam)
+		JsonErr(c, ErrInvalidParam)
 		return
 	}
 
@@ -82,7 +80,7 @@ func OrderList(c *gin.Context) {
 	total, err := base.ListAndCountByCondition(&dao.Order{}, req.ToCondition(), req.Page, req.PageSize, "", &list)
 	if err != nil {
 		log.Trace(requestId).Errorf("list failed:%v", err)
-		StdErrResponse(c, ErrInternal)
+		JsonErr(c, ErrInternal)
 		return
 	}
 
@@ -92,40 +90,38 @@ func OrderList(c *gin.Context) {
 		resItems = append(resItems, NewOrderItemFromEnt(v))
 	}
 
-	c.HTML(http.StatusOK, "order/list.tpl", gin.H{
-		"LoginInfo":      getLoginInfo(c),
-		"IsLogin":        isLoginIn(c),
+	JsonOk(c, gin.H{
 		"total":          total,
 		"page":           req.Page,
 		"pagesize":       req.PageSize,
 		"list":           resItems,
 		"reqParam":       req,
 		"orderStatusMap": dao.OrderStatusMap,
-		"paginator":      paginator.NewPaginator(c.Request, 10, int64(total)),
+		// "paginator":      paginator.NewPaginator(c.Request, 10, int64(total)),
 	})
 }
 
 func OrderRefund(c *gin.Context) {
 	orderId, _ := strconv.ParseInt(c.Param("id"), 10, 64)
 	if orderId <= 0 {
-		StdErrResponse(c, ErrInvalidParam)
+		JsonErr(c, ErrInvalidParam)
 		return
 	}
 
 	orderEnt, err := dao.GetOrderById(int(orderId))
 	if err != nil {
 		log.Errorf("db error:%v", err)
-		StdErrResponse(c, ErrInternal)
+		JsonErr(c, ErrInternal)
 		return
 	}
 
 	if orderEnt == nil {
-		StdErrResponse(c, ErrItemNotExist)
+		JsonErr(c, ErrItemNotExist)
 		return
 	}
 
 	if orderEnt.Status != dao.OrderStatusPaid {
-		StdErrMsgResponse(c, ErrInternal, "该订单不允许退款")
+		JsonErrMsg(c, ErrInternal, "该订单不允许退款")
 		return
 	}
 
@@ -138,10 +134,12 @@ func OrderRefund(c *gin.Context) {
 	_, err = base.UpdateByCol("id", orderId, orderEnt, []string{"status"})
 	if err != nil {
 		log.Errorf("db error:%v", err)
-		StdErrResponse(c, ErrInternal)
+		JsonErr(c, ErrInternal)
 		return
 	}
 
-	//StdResponse(c, ErrSuccess, nil)
-	c.Redirect(http.StatusMovedPermanently, RouteOrderList)
+	JsonOk(c, gin.H{
+		"id": orderEnt.Id,
+	})
+	// c.Redirect(http.StatusMovedPermanently, RouteOrderList)
 }

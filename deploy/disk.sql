@@ -182,3 +182,4 @@ CREATE TABLE `offline_task` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='离线任务表';
 
+insert into manager (email,pwd,status,isSuper) values("admin@admin.com","e10adc3949ba59abbe56e057f20f883e",1,1);

@@ -98,5 +98,7 @@ func ConnectByEngine(en string, dsnPath string) (*xorm.Engine, error) {
 	engine.SetColumnMapper(&core.SameMapper{})
 
 	engine.ShowSQL(true)
+	engine.ShowExecTime(true)
+	// engine.Logger().SetLevel(core.LOG_DEBUG)
 	return engine, nil
 }

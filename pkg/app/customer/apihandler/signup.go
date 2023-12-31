@@ -42,43 +42,43 @@ func SignupForm(c *gin.Context) {
 	req := &SignupRequest{}
 	err := c.ShouldBind(req)
 	if err != nil {
-		StdErrResponse(c, ErrInvalidParam)
+		JsonErr(c, ErrInvalidParam)
 		return
 	}
 
 	// 验证码是否正确
 	if !VerifyCaptcha(c, req.Captcha) {
-		StdErrResponse(c, ErrInvalidCaptcha)
+		JsonErr(c, ErrInvalidCaptcha)
 		return
 	}
 
 	log.Debugf("signup request:%+v", req)
 
 	if req.Email == "" {
-		StdErrMsgResponse(c, ErrInvalidParam, "邮箱不能为空")
+		JsonErrMsg(c, ErrInvalidParam, "邮箱不能为空")
 		return
 	}
 
 	existEnt, err := dao.GetUserByEmail(req.Email)
 	if err != nil {
 		log.Errorf("query by email:%s failed:%v", req.Email, err)
-		StdErrResponse(c, ErrInternal)
+		JsonErr(c, ErrInternal)
 		return
 	}
 
 	if existEnt != nil && existEnt.Id > 0 {
 		log.Warnf("email:%s already exist, cannot register again", req.Email)
-		StdErrResponse(c, ErrEmailDuplicate)
+		JsonErr(c, ErrEmailDuplicate)
 		return
 	}
 
 	if len(req.Pwd) < 6 {
-		StdErrMsgResponse(c, ErrInvalidPass, "密码太短")
+		JsonErrMsg(c, ErrInvalidPass, "密码太短")
 		return
 	}
 
 	if req.Pwd != req.RePwd {
-		StdErrMsgResponse(c, ErrInvalidPass, "2次密码不一致")
+		JsonErrMsg(c, ErrInvalidPass, "2次密码不一致")
 		return
 	}
 
@@ -89,7 +89,7 @@ func SignupForm(c *gin.Context) {
 	initialLevelEnt, err := dao.GetDefaultUserLevel()
 	if err != nil || initialLevelEnt == nil || initialLevelEnt.Id <= 0 {
 		log.Errorf("get default userlevel failed:%v", err)
-		StdErrMsgResponse(c, ErrInternal, "没有默认等级，请联系管理员创建会员等级")
+		JsonErrMsg(c, ErrInternal, "没有默认等级，请联系管理员创建会员等级")
 		return
 	}
 
@@ -103,13 +103,14 @@ func SignupForm(c *gin.Context) {
 	_, err = base.Insert(userEnt)
 	if err != nil {
 		log.Errorf("create user failed:%v", err)
-		StdErrResponse(c, ErrInternal)
+		JsonErr(c, ErrInternal)
 		return
 	}
 
 	// 注册成功 种下cookie
 	AcceptLogin(c, userEnt)
 
-	c.Redirect(http.StatusMovedPermanently, RouteHome)
+	// c.Redirect(http.StatusMovedPermanently, RouteHome)
 	//StdResponse(c, ErrSuccess, "/")
+	JsonOk(c, nil)
 }
