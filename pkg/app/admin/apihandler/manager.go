@@ -5,8 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/uxff/flexdrive/pkg/utils/paginator"
-
 	"github.com/gin-gonic/gin"
 	"github.com/uxff/flexdrive/pkg/dao"
 	"github.com/uxff/flexdrive/pkg/dao/base"
@@ -103,12 +101,12 @@ func ManagerList(c *gin.Context) {
 	}
 
 	JsonOk(c, map[string]interface{}{
-		"total":     total,
-		"page":      req.Page,
-		"pagesize":  req.PageSize,
-		"list":      resItems,
-		"reqParam":  req,
-		"paginator": paginator.NewPaginator(c.Request, 10, int64(total)),
+		"total":    total,
+		"page":     req.Page,
+		"pagesize": req.PageSize,
+		"list":     resItems,
+		"reqParam": req,
+		// "paginator": paginator.NewPaginator(c.Request, 10, int64(total)),
 	})
 }
 

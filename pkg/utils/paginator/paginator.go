@@ -12,9 +12,9 @@ const (
 )
 
 type Paginator struct {
-	Request     *http.Request
-	PerPageNums int
-	MaxPages    int
+	Request     *http.Request `json:"-"`           // request
+	PerPageNums int           `json:"perPageNums"` // per page nums
+	MaxPages    int           `json:"maxPages"`    // max pages
 
 	nums      int64
 	pageRange []int
