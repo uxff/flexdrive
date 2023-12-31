@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/http/httputil"
 	"strconv"
 	"strings"
 	"time"
@@ -73,10 +74,19 @@ func (t *GpaToken) MakeSign() string {
 	return hex.EncodeToString(enc.Sum(nil))
 }
 
-func decodeGpaFromJwtClaim(claim jwt.MapClaims) (g *GpaToken, err error) {
+func decodeGpaFromJwtClaim(signedJwtToken string) (g *GpaToken, err error) {
+
+	jwtToken, err := jwt.Parse(signedJwtToken, func(token *jwt.Token) (interface{}, error) {
+		return []byte(CookieKeySalt), nil
+	})
+
+	if err != nil || jwtToken == nil {
+		log.Warnf("get jwtToken failed, error:%v", err)
+		return nil, err
+	}
 
 	g = &GpaToken{}
-	g.FromString(claim["gpa"].(string))
+	g.FromString(jwtToken.Claims.(jwt.MapClaims)["gpa"].(string))
 
 	if g.Mid <= 0 {
 		return nil, errors.New("gpatoken has no mid")
@@ -105,8 +115,8 @@ func TraceMiddleWare(c *gin.Context) {
 	c.Set(CtxKeyRequestId, requestId)
 	c.Set(CtxKeyURI, uri)
 
-	//rawBody, _ := httputil.DumpRequest(c.Request, true)
-	//log.Trace(requestId).Debugf("原始请求体：%s", rawBody)
+	rawBody, _ := httputil.DumpRequest(c.Request, true)
+	log.Trace(requestId).Debugf("原始请求体：%s", rawBody)
 
 	c.Next()
 }
@@ -115,7 +125,17 @@ func TraceMiddleWare(c *gin.Context) {
 // 所有交易相关接口调用前的认证中间件
 func AuthMiddleWare(c *gin.Context) {
 	// 验证cookie签名是否合法
-	gpaToken, err := verifyFromCookie(c)
+	gpaTokenStr, err := c.Cookie(CookieKeyGpa)
+	if err != nil || gpaTokenStr == "" {
+		log.Trace(c.GetString(CtxKeyRequestId)).Warnf("no gpaToken found in cookie, reject request, error:%v", err)
+		ClearLogin(c)
+		JsonErr(c, ErrNotLogin)
+		c.Abort()
+		return
+	}
+
+	gpaToken, err := decodeGpaFromJwtClaim(gpaTokenStr)
+	// gpaToken, err := verifyFromCookie(c)
 	if err != nil {
 		log.Trace(c.GetString(CtxKeyRequestId)).Warnf("illegal gpaToken , reject request, error:%v gpatoken:%+v", err, gpaToken)
 		c.SetCookie(CookieKeyGpa, "", -1, "", "", true, false)
@@ -259,35 +279,35 @@ func isLoginIn(c *gin.Context) bool {
 }
 
 // 验证cookie合法性 并返回有效的登录信息
-func verifyFromCookie(c *gin.Context) (*GpaToken, error) {
-	// gopay admin token
-	gpaTokenStr, err := c.Cookie(CookieKeyGpa)
-	if gpaTokenStr == "" {
-		return nil, err
-	}
+// func verifyFromCookie(c *gin.Context) (*GpaToken, error) {
+// 	// gopay admin token
+// 	gpaTokenStr, err := c.Cookie(CookieKeyGpa)
+// 	if gpaTokenStr == "" {
+// 		return nil, err
+// 	}
 
-	// // gopay admin sign
-	// gpaSignStr, err := c.Cookie(CookieKeySign)
-	// if err != nil {
-	// 	return nil, err
-	// }
+// 	// // gopay admin sign
+// 	// gpaSignStr, err := c.Cookie(CookieKeySign)
+// 	// if err != nil {
+// 	// 	return nil, err
+// 	// }
 
-	jwtToken, err := jwt.Parse(gpaTokenStr, func(token *jwt.Token) (interface{}, error) {
-		return []byte(CookieKeySalt), nil
-	})
+// 	// jwtToken, err := jwt.Parse(gpaTokenStr, func(token *jwt.Token) (interface{}, error) {
+// 	// 	return []byte(CookieKeySalt), nil
+// 	// })
 
-	if err != nil || jwtToken == nil {
-		log.Warnf("get jwtToken failed, error:%v", err)
-		return nil, err
-	}
+// 	// if err != nil || jwtToken == nil {
+// 	// 	log.Warnf("get jwtToken failed, error:%v", err)
+// 	// 	return nil, err
+// 	// }
 
-	// log.Debugf("jwtToken:%+v", jwtToken)
+// 	// log.Debugf("jwtToken:%+v", jwtToken)
 
-	gpaToken, err := decodeGpaFromJwtClaim(jwtToken.Claims.(jwt.MapClaims))
-	if err != nil {
-		log.Warnf("get gpaToken from jwt failed, error:%v", err)
-		return nil, err
-	}
+// 	gpaToken, err := decodeGpaFromJwtClaim(jwtToken.Claims.(jwt.MapClaims))
+// 	if err != nil {
+// 		log.Warnf("get gpaToken from jwt failed, error:%v", err)
+// 		return nil, err
+// 	}
 
-	return gpaToken, nil
-}
+// 	return gpaToken, nil
+// }
