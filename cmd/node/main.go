@@ -78,7 +78,7 @@ func main() {
 		if n > 0 {
 			filepath = filepath[n+len("flexdrive/"):]
 		}
-		filepath += strconv.Itoa(ec.Line)
+		filepath += ":" + strconv.Itoa(ec.Line)
 
 		// pae.AppendString(ec.TrimmedPath())
 		pae.AppendString(filepath)
