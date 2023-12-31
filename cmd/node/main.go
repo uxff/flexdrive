@@ -140,7 +140,6 @@ func Serve(envMap map[string]string) error {
 		go func() {
 			defer wg.Done()
 			errCh <- adminhandler.StartHttpServer(serveAdmin)
-			// errCh <- ServeWeb()
 		}()
 	}
 
@@ -156,7 +155,7 @@ func Serve(envMap map[string]string) error {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			errCh <- customerhandler.StartHttpServer(serveCustomer)
+			errCh <- ServeApi(serveApi)
 		}()
 	}
 
@@ -177,7 +176,7 @@ func Serve(envMap map[string]string) error {
 }
 
 // ServeApi - serve api for admin and customer, will be used by react.js or vue.js
-func ServeApi() error {
+func ServeApi(addr string) error {
 	router := gin.New()
 
 	// customer
@@ -199,7 +198,7 @@ func ServeApi() error {
 	})
 
 	webServer := &http.Server{
-		Addr:    serveApi,
+		Addr:    addr,
 		Handler: router,
 	}
 
