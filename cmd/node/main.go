@@ -161,8 +161,8 @@ func ServeWeb() error {
 
 	// gin的debug 模式下每次访问请求都会读取模板 release模式下不会
 	router.SetFuncMap(tplfuncs.GetFuncMap())
-	router.LoadHTMLGlob("pkg/app/customer/view/**/*")
-	router.LoadHTMLGlob("pkg/app/admin/view/**/*")
+	router.LoadHTMLGlob("pkg/app/***/view/**/*")
+	// router.LoadHTMLGlob("pkg/app/customer/view/**/*")
 
 	// js 静态资源 在nginx下应该由nginx来服务比较专业
 	router.StaticFS("/static", http.Dir("static"))
