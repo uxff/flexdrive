@@ -223,12 +223,12 @@ func JsonResponse(c *gin.Context, code, msg string, data interface{}) {
 		codeMsg += "(" + msg + ")"
 	}
 
-	resp := gin.H{
-		"errcode":  code,
-		"errmsg":   codeMsg,
-		"errlevel": "alert",
-		// "LoginInfo": getLoginInfo(c),
-		// "IsLogin":   isLoginIn(c),
+	resp := map[string]interface{}{
+		"errcode":   code,
+		"errmsg":    codeMsg,
+		"errlevel":  "alert",
+		"LoginInfo": getLoginInfo(c),
+		"IsLogin":   isLoginIn(c),
 		"result":    data,
 		"requestId": requestId,
 	}
