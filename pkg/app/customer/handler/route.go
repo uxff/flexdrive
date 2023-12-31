@@ -1,7 +1,11 @@
 package handler
 
 import (
+	"net/http"
+	"os"
+
 	"github.com/gin-gonic/gin"
+	"github.com/uxff/flexdrive/pkg/utils/tplfuncs"
 )
 
 const (
@@ -14,7 +18,7 @@ const (
 	RouteChangePwd    = "/changePwd"
 )
 
-// var customerServer *http.Server
+var customerServer *http.Server
 
 // var router = gin.New() // *gin.Engine // 在本包init函数之前运行
 // var tplFuncMap = make(template.FuncMap, 0)
@@ -23,24 +27,27 @@ const (
 // 	loadFuncMap()
 // }
 
-func LoadRouter(router *gin.RouterGroup) {
+func StartHttpServer(addr string) error {
 	//gin.SetMode(gin.DebugMode)
+	var router = gin.New()
+	router.SetFuncMap(tplfuncs.GetFuncMap())
 
 	// gin的debug 模式下每次访问请求都会读取模板 release模式下不会
-	// rootRouter.LoadHTMLGlob("pkg/app/customer/view/**/*")
+	router.LoadHTMLGlob("pkg/app/customer/view/**/*")
 
 	// js 静态资源 在nginx下应该由nginx来服务比较专业
-	// rootRouter.StaticFS("/static", http.Dir("static"))
+	router.StaticFS("/static", http.Dir("static"))
 
 	// var router = rootRouter.Group(assignedGroupPrefix)
 
-	// hostName, _ := os.Hostname()
-	// router.GET("/health", func(c *gin.Context) {
-	// 	c.JSON(http.StatusOK, gin.H{
-	// 		"status":   "ok",
-	// 		"hostname": hostName,
-	// 	})
-	// })
+	hostName, _ := os.Hostname()
+	router.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"status":   "ok",
+			"hostname": hostName,
+			"info":     "this is flexdrive customer web server",
+		})
+	})
 
 	// 公共路由
 	// 登录
@@ -90,14 +97,12 @@ func LoadRouter(router *gin.RouterGroup) {
 	authRouter.POST("/my/file/upload", UploadForm)
 	authRouter.GET("/my/file/enable/:id/:enable", UserFileEnable)
 
-	// customerServer = &http.Server{
-	// 	Addr:    addr,
-	// 	Handler: router,
-	// }
+	customerServer = &http.Server{
+		Addr:    addr,
+		Handler: router,
+	}
 
-	// router.SetFuncMap(tplFuncMap)
-
-	// return customerServer.ListenAndServe()
+	return customerServer.ListenAndServe()
 }
 
 // func ShutdownHttpServer() {

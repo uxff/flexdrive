@@ -2,9 +2,11 @@
 *
 
 		分布式(distributed)
-	    运行方式：
-	 	SERVEWEB=0.0.0.0:10011 SERVECLUSTER=0.0.0.0:10013 CLUSTERMEMBERS=127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033 DATADSN='mysql://user:pwd@tcp(127.0.0.1:3306)/flexdrive?charset=utf8mb4&parseTime=True&loc=Local'  STORAGEDIR=./data/ ./main
-		SERVEWEB=0.0.0.0:10011 SERVECLUSTER=0.0.0.0:10013 DATADSN='sqlite3://./flexdrive.db'  STORAGEDIR=./data/ ./main
+	    运行方式gin web:
+		SERVEADMIN=0.0.0.0:10011 SERVECUSTOMER=0.0.0.0:10012 SERVECLUSTER=0.0.0.0:10013 CLUSTERMEMBERS=127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033 DATADSN='mysql://user:pwd@tcp(127.0.0.1:3306)/flexdrive?charset=utf8mb4&parseTime=True&loc=Local'  STORAGEDIR=./data/ ./main
+		SERVEADMIN=0.0.0.0:10011 SERVECUSTOMER=0.0.0.0:10012 SERVECLUSTER=0.0.0.0:10013 DATADSN='sqlite3://./flexdrive.db'  STORAGEDIR=./data/ ./main
+	    运行方式gin api(no web, web should be served by react.js/vue.js):
+		SERVEAPI=0.0.0.0:10011 SERVECLUSTER=0.0.0.0:10013 CLUSTERMEMBERS=127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033 DATADSN='mysql://user:pwd@tcp(127.0.0.1:3306)/flexdrive?charset=utf8mb4&parseTime=True&loc=Local'  STORAGEDIR=./data/ ./main
 
 		for cluster:
 		SERVEWEB=0.0.0.0:10011 SERVECLUSTER=0.0.0.0:10013 CLUSTERMEMBERS=127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033 DATADSN='sqlite3://./flexdrive.db'  STORAGEDIR=./data/ ./main
@@ -22,7 +24,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/uxff/flexdrive/pkg/app/nodestorage/model/storagemodel"
-	"github.com/uxff/flexdrive/pkg/utils/tplfuncs"
 
 	"github.com/uxff/flexdrive/pkg/common"
 
@@ -41,11 +42,11 @@ var (
 	showVersion bool
 	logLevel    = -1
 	// default values, you can set these with env
-	serveWeb = "0.0.0.0:10011"
-	// serveAdmin     = "0.0.0.0:10011"
-	// serveCustomer  = "0.0.0.0:10012"
-	serveCluster   = "0.0.0.0:10013"
-	clusterMembers = "" //"0.0.0.0:10013,0.0.0.0:10023,0.0.0.0:10033"
+	serveApi       = "0.0.0.0:10011" // should be set
+	serveAdmin     = ""              //"0.0.0.0:10011"
+	serveCustomer  = ""              //"0.0.0.0:10012"
+	serveCluster   = "0.0.0.0:10013" // must be set
+	clusterMembers = ""              //"0.0.0.0:10013,0.0.0.0:10023,0.0.0.0:10033"
 	clusterId      = "flexdrive"
 	dataDsn        = "mysql://user:pass@tcp(0.0.0.0:3306)/flexdrive?charset=utf8mb4&parseTime=True&loc=Local"
 	cacheDsn       = ""
@@ -80,15 +81,20 @@ func main() {
 		dataDsn = s
 	}
 
-	if s := os.Getenv("SERVEWEB"); s != "" {
-		log.Debugf("the serveradmin from env: %s", s)
-		serveWeb = s
+	if s := os.Getenv("SERVEAPI"); s != "" {
+		log.Debugf("the serverapi from env: %s", s)
+		serveApi = s
 	}
 
-	// if s := os.Getenv("SERVECUSTOMER"); s != "" {
-	// 	log.Debugf("the servercustomer from env: %s", s)
-	// 	serveCustomer = s
-	// }
+	if s := os.Getenv("SERVEADMIN"); s != "" {
+		log.Debugf("the serveradmin from env: %s", s)
+		serveAdmin = s
+	}
+
+	if s := os.Getenv("SERVECUSTOMER"); s != "" {
+		log.Debugf("the servercustomer from env: %s", s)
+		serveCustomer = s
+	}
 
 	if s := os.Getenv("STORAGEDIR"); s != "" {
 		log.Debugf("the STORAGEDIR from env: %s", s)
@@ -128,21 +134,35 @@ func Serve(envMap map[string]string) error {
 	errCh := make(chan error, 1)
 
 	wg := &sync.WaitGroup{}
-	go func() {
-		wg.Add(1)
-		defer wg.Done()
-		// errCh <- adminhandler.StartHttpServer(serveAdmin)
-		errCh <- ServeWeb()
-	}()
-	// go func() {
-	// 	wg.Add(1)
-	// 	defer wg.Done()
-	// 	errCh <- customerhandler.StartHttpServer(serveCustomer)
-	// }()
 
-	// todo non cluster
-	go func() {
+	if serveAdmin != "" {
 		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			errCh <- adminhandler.StartHttpServer(serveAdmin)
+			// errCh <- ServeWeb()
+		}()
+	}
+
+	if serveCustomer != "" {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			errCh <- customerhandler.StartHttpServer(serveCustomer)
+		}()
+	}
+
+	if serveApi != "" {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			errCh <- customerhandler.StartHttpServer(serveCustomer)
+		}()
+	}
+
+	// todo handle when non cluster
+	wg.Add(1)
+	go func() {
 		defer wg.Done()
 		errCh <- storagemodel.StartNode(storageDir, serveCluster, clusterId, clusterMembers)
 	}()
@@ -156,30 +176,17 @@ func Serve(envMap map[string]string) error {
 	return nil
 }
 
-// ServeWeb - serve admin and customer
-func ServeWeb() error {
+// ServeApi - serve api for admin and customer, will be used by react.js or vue.js
+func ServeApi() error {
 	router := gin.New()
 
-	// gin的debug 模式下每次访问请求都会读取模板 release模式下不会
-	router.SetFuncMap(tplfuncs.GetFuncMap())
-	router.LoadHTMLGlob("pkg/app/***/view/**/*")
-	// router.LoadHTMLGlob("pkg/app/customer/view/**/*")
-
-	// js 静态资源 在nginx下应该由nginx来服务比较专业
-	router.StaticFS("/static", http.Dir("static"))
-
 	// customer
-	// customerRouter := router //:= router.Group("/")
-	customerRouter := router.Group("/")
 	customerApiRouter := router.Group("/api")
 
 	// admin
-	adminRouter := router.Group("/adm")
 	adminApiRouter := router.Group("/admapi")
 
-	customerhandler.LoadRouter(customerRouter)
 	customerapihandler.LoadRouter(customerApiRouter)
-	adminhandler.LoadRouter(adminRouter)
 	adminapihandler.LoadRouter(adminApiRouter)
 
 	router.GET("/health", func(c *gin.Context) {
@@ -187,11 +194,12 @@ func ServeWeb() error {
 		c.JSON(http.StatusOK, gin.H{
 			"status":   "ok",
 			"hostname": hostName,
+			"info":     "this is flexdrive api server",
 		})
 	})
 
 	webServer := &http.Server{
-		Addr:    serveWeb,
+		Addr:    serveApi,
 		Handler: router,
 	}
 

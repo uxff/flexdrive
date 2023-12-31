@@ -3,9 +3,11 @@ package handler
 import (
 	"context"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/uxff/flexdrive/pkg/log"
+	"github.com/uxff/flexdrive/pkg/utils/tplfuncs"
 )
 
 const (
@@ -26,20 +28,25 @@ const (
 
 var adminServer *http.Server
 
-// var tplFuncMap = make(template.FuncMap, 0)
-
-// func init() {
-// 	loadFuncMap()
-// }
-
-func LoadRouter(router *gin.RouterGroup) {
-	// router = gin.New() // *gin.Engine // 在本包init函数之前运行
+func StartHttpServer(addr string) error {
+	var router = gin.New() // *gin.Engine
 	//gin.SetMode(gin.DebugMode)
+	router.SetFuncMap(tplfuncs.GetFuncMap())
 
-	// rootRouter.SetFuncMap(tplFuncMap)
+	// js 静态资源 在nginx下应该由nginx来服务比较专业
+	router.StaticFS("/static", http.Dir("static"))
 
 	// gin的debug 模式下每次访问请求都会读取模板 release模式下不会
-	// rootRouter.LoadHTMLGlob("pkg/app/admin/view/**/*")
+	router.LoadHTMLGlob("pkg/app/admin/view/**/*")
+
+	hostName, _ := os.Hostname()
+	router.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"status":   "ok",
+			"hostname": hostName,
+			"info":     "this is flexdrive admin web server",
+		})
+	})
 
 	// 公共路由
 	// 登录
@@ -105,16 +112,12 @@ func LoadRouter(router *gin.RouterGroup) {
 	rbacRouter.GET("/fileindex/list", FileIndexList)
 	rbacRouter.GET("/fileindex/enable/:id/:enable", FileIndexEnable)
 
-	// adminServer = &http.Server{
-	// 	Addr:    addr,
-	// 	Handler: router,
-	// }
+	adminServer = &http.Server{
+		Addr:    addr,
+		Handler: router,
+	}
 
-	// js 静态资源 在nginx下应该由nginx来服务比较专业
-	router.StaticFS("/static", http.Dir("static"))
-
-	// return adminServer.ListenAndServe()
-	return
+	return adminServer.ListenAndServe()
 }
 
 func ShutdownHttpServer() {
