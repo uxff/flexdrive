@@ -10,5 +10,6 @@ func Index(c *gin.Context) {
 	c.HTML(http.StatusOK, "index/index.tpl", gin.H{
 		"LoginInfo": getLoginInfo(c),
 		"IsLogin":   isLoginIn(c),
+		"info":      "this is flexdrive customer web server",
 	})
 }

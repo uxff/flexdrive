@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/uxff/flexdrive/pkg/common"
 	"github.com/uxff/flexdrive/pkg/envinit"
@@ -40,7 +41,14 @@ func Insert(entityPtr interface{}) (int64, error) {
 		dbname = entityOfDb.DbNamespace()
 	}
 
-	n, err := envinit.Dbs[dbname].Insert(entityPtr)
+	tsStart := time.Now()
+
+	session := envinit.Dbs[dbname].NewSession()
+	n, err := session.Insert(entityPtr)
+
+	sql, params := session.LastSQL() // not work
+	log.Debugf("sql:%s params:%v timeused:%dms affected:%v", sql, params, time.Since(tsStart).Nanoseconds()/1000/1000, n)
+
 	if err != nil {
 		log.Errorf("insert error:%v", err)
 	}
@@ -48,9 +56,11 @@ func Insert(entityPtr interface{}) (int64, error) {
 	return n, err
 }
 
-/**
-    查找 colName=colVal 的记录 写入到entityPtr中
-	colName 一般为表的唯一索引 比如mchconfigs.MchConfig.GetKeyName返回MchId
+/*
+*
+
+	    查找 colName=colVal 的记录 写入到entityPtr中
+		colName 一般为表的唯一索引 比如mchconfigs.MchConfig.GetKeyName返回MchId
 */
 func GetByCol(colName string, colVal interface{}, entityPtr interface{}) (found bool, err error) {
 	// auto load cache
@@ -59,17 +69,26 @@ func GetByCol(colName string, colVal interface{}, entityPtr interface{}) (found 
 		dbname = entityOfDb.DbNamespace()
 	}
 
-	found, err = envinit.Dbs[dbname].Where(colName+" = ?", colVal).Get(entityPtr)
+	tsStart := time.Now()
+
+	session := envinit.Dbs[dbname].Where(colName+" = ?", colVal)
+	found, err = session.Get(entityPtr)
+
+	sql, params := session.LastSQL() // not work
+	log.Debugf("sql:%s params:%v timeused:%dms found:%v", sql, params, time.Since(tsStart).Nanoseconds()/1000/1000, found)
+
 	if v, ok := entityPtr.(AfterSelect); ok {
 		v.AfterSelect()
 	}
 	return
 }
 
-/**
-    查找 where colName=colVal 的记录 写入到entityPtr中
-	colName 一般为表的唯一索引 比如mchconfigs.MchConfig.GetKeyName返回MchId
-	要保证传入的entityPtr不为空指针
+/*
+*
+
+	    查找 where colName=colVal 的记录 写入到entityPtr中
+		colName 一般为表的唯一索引 比如mchconfigs.MchConfig.GetKeyName返回MchId
+		要保证传入的entityPtr不为空指针
 */
 func GetByColWithCache(colName string, colVal interface{}, entityPtr interface{}) (found bool, err error) {
 	// auto load cache
@@ -143,8 +162,10 @@ func CacheDel(cacheKey string) error {
 	return err
 }
 
-/**
-  更新： 查找 where colName=colVal 的记录 更新按照entityPtr中取cols指定的字段更新到数据库
+/*
+*
+
+	更新： 查找 where colName=colVal 的记录 更新按照entityPtr中取cols指定的字段更新到数据库
 */
 func UpdateByCol(colName string, colVal interface{}, entityPtrWithValue interface{}, cols []string) (n int64, err error) {
 
@@ -153,7 +174,14 @@ func UpdateByCol(colName string, colVal interface{}, entityPtrWithValue interfac
 		dbname = entityOfDb.DbNamespace()
 	}
 
-	n, err = envinit.Dbs[dbname].Cols(cols...).Where(colName+" = ?", colVal).Update(entityPtrWithValue)
+	tsStart := time.Now()
+
+	session := envinit.Dbs[dbname].Cols(cols...).Where(colName+" = ?", colVal)
+	n, err = session.Update(entityPtrWithValue)
+
+	sql, params := session.LastSQL() // not work
+	log.Debugf("sql:%s params:%v timeused:%dms affected:%d", sql, params, time.Since(tsStart).Nanoseconds()/1000/1000, n)
+
 	return
 }
 
@@ -167,8 +195,10 @@ func UpdateByColWithCache(colName string, colVal interface{}, entityPtrWithValue
 	return
 }
 
-/**
-  软删除 主键字段值=key 的记录 字段值从entityPtr中取
+/*
+*
+
+	软删除 主键字段值=key 的记录 字段值从entityPtr中取
 */
 func DeleteByCol(colName string, colVal interface{}, statusColName string, entityEmptyPtr TableName) (err error) {
 	// auto update cache
@@ -179,9 +209,15 @@ func DeleteByCol(colName string, colVal interface{}, statusColName string, entit
 		dbname = entityOfDb.DbNamespace()
 	}
 
-	_, err = envinit.Dbs[dbname].Table(entityEmptyPtr).Cols(statusColName).Where(colName+" = ?", colVal).Update(map[string]interface{}{
+	tsStart := time.Now()
+
+	session := envinit.Dbs[dbname].Table(entityEmptyPtr).Cols(statusColName).Where(colName+" = ?", colVal)
+	n, err := session.Update(map[string]interface{}{
 		statusColName: StatusDeleted, // 此处转小写，否则pg不兼容
 	})
+
+	sql, params := session.LastSQL() // not work
+	log.Debugf("sql:%s params:%v timeused:%dms affected:%d", sql, params, time.Since(tsStart).Nanoseconds()/1000/1000, n)
 
 	// 删除对应的缓存
 	go CacheDelByEntity(colName, colVal, entityEmptyPtr)
@@ -204,7 +240,8 @@ func CacheDelByEntity(colName string, colVal interface{}, entityPtr TableName) e
 	return nil
 }
 
-/**
+/*
+*
 更新： 查找 where conditions 的记录 更新按照entityPtrWithValue中取cols指定的字段更新到数据库
 conditions = ["a = ?"=>1,"b like '%?%'"=>"bb"]
 // 允许conditions里key的value为空
@@ -221,15 +258,23 @@ func UpdateByCondition(entityPtrWithValue interface{}, conditions map[string]int
 		whereVal = append(whereVal, cv)
 	}
 
+	tsStart := time.Now()
 	dbname := common.DBMysqlDrive
 	if entityOfDb, ok := entityPtrWithValue.(DbNamespace); ok {
 		dbname = entityOfDb.DbNamespace()
 	}
 
-	return envinit.Dbs[dbname].Cols(cols...).Where(whereStr, whereVal...).Update(entityPtrWithValue)
+	session := envinit.Dbs[dbname].Cols(cols...).Where(whereStr, whereVal...)
+	n, err = session.Update(entityPtrWithValue)
+
+	sql, params := session.LastSQL() // not work
+	log.Debugf("sql:%s params:%v timeused:%dms affected:%d", sql, params, time.Since(tsStart).Nanoseconds()/1000/1000, n)
+
+	return
 }
 
-/**
+/*
+*
 conditions = ["a = ?"=>1,"b like '%?%'"=>"bb"]
 // 如果conditions map的key里不包含“?”，则默认认为value是slice,即使用where in
 // 允许conditions里key的value为空
@@ -279,6 +324,8 @@ func ListAndCountByCondition(entityPtr interface{}, conditions map[string]interf
 
 	total = nCount
 
+	tsStart := time.Now()
+
 	// 此处必须重新建一个session,不能继续用上次的session
 	session = envinit.Dbs[dbname].Where(whereStr, whereVal...)
 	for k, v := range whererInMap {
@@ -286,12 +333,15 @@ func ListAndCountByCondition(entityPtr interface{}, conditions map[string]interf
 	}
 	err = session.OrderBy(orderBy).Limit(pageSize, (pageNo-1)*pageSize).Find(listSlicePtr)
 
+	sql, params := session.LastSQL() // not work
+	log.Debugf("sql:%s params:%v timeused:%dms count:%d", sql, params, time.Since(tsStart).Nanoseconds()/1000/1000, reflect.ValueOf(listSlicePtr).Elem().Len())
+
+	listOfPage := reflect.ValueOf(listSlicePtr).Elem()
+	log.Debugf("reflect listOfPage len:%d", listOfPage.Len())
+
 	if _, ok := entityPtr.(AfterSelect); ok {
 
 		//listSlice := reflect.New(reflect.SliceOf(reflect.TypeOf(entityPtr))).Elem().Addr().Interface()
-
-		listOfPage := reflect.ValueOf(listSlicePtr).Elem()
-		log.Debugf("reflect listOfPage len:%d", listOfPage.Len())
 
 		// 处理页中的每行
 		for i := 0; i < listOfPage.Len(); i++ {
@@ -305,7 +355,8 @@ func ListAndCountByCondition(entityPtr interface{}, conditions map[string]interf
 	return
 }
 
-/**
+/*
+*
 conditions = ["a = ?"=>1,"b like '%?%'"=>"bb"]
 // 允许conditions里key的value为空
 // listSlicePtr for output slice
@@ -335,18 +386,24 @@ func ListByCondition(entityPtr interface{}, conditions map[string]interface{}, p
 		dbname = entityOfDb.DbNamespace()
 	}
 
+	tsStart := time.Now()
+
 	session := envinit.Dbs[dbname].Where(whereStr, whereVal...).Limit(pageSize, (pageNo-1)*pageSize)
 	if orderBy != "" {
 		session = session.OrderBy(orderBy)
 	}
 
 	err = session.Find(listSlicePtr)
+
+	sql, params := session.LastSQL() // not work
+	log.Debugf("sql:%s params:%v timeused:%dms count:%d", sql, params, time.Since(tsStart).Nanoseconds()/1000/1000, reflect.ValueOf(listSlicePtr).Elem().Len())
+
+	listOfPage := reflect.ValueOf(listSlicePtr).Elem()
+	log.Debugf("reflect listOfPage len:%d", listOfPage.Len())
+
 	if _, ok := entityPtr.(AfterSelect); ok {
 
 		//listSlice := reflect.New(reflect.SliceOf(reflect.TypeOf(entityPtr))).Elem().Addr().Interface()
-
-		listOfPage := reflect.ValueOf(listSlicePtr).Elem()
-		log.Debugf("reflect listOfPage len:%d", listOfPage.Len())
 
 		// 处理页中的每行
 		for i := 0; i < listOfPage.Len(); i++ {
@@ -395,6 +452,8 @@ func RangeTableByConditions(tableEntity interface{}, conditions map[string]inter
 
 	// 每页读取
 	for {
+		tsStart := time.Now()
+
 		session := envinit.Dbs[dbname].Where(whereStr, whereVal...).Limit(pageSize, (startPageNo-1)*pageSize)
 		if orderBy != "" {
 			session = session.OrderBy(orderBy)
@@ -404,6 +463,10 @@ func RangeTableByConditions(tableEntity interface{}, conditions map[string]inter
 		listSlice := reflect.New(reflect.SliceOf(reflect.TypeOf(tableEntity))).Elem().Addr().Interface()
 
 		err = session.Find(listSlice)
+
+		sql, params := session.LastSQL() // not work
+		log.Debugf("sql:%s params:%v timeused:%dms count:%d", sql, params, time.Since(tsStart).Nanoseconds()/1000/1000, reflect.ValueOf(listSlice).Elem().Len())
+
 		if err != nil {
 			log.Errorf("RangeTableByConditions error:%v", err)
 			return nCount, err
@@ -434,7 +497,8 @@ func RangeTableByConditions(tableEntity interface{}, conditions map[string]inter
 	return nCount, nil
 }
 
-/**
+/*
+*
 conditions = ["a = ?"=>1,"b like '%?%'"=>"bb"]
 // 允许conditions里key的value为空
 */
@@ -454,7 +518,14 @@ func CountByCondition(entityPtr interface{}, conditions map[string]interface{}) 
 		dbname = entityOfDb.DbNamespace()
 	}
 
-	total, err = envinit.Dbs[dbname].Where(whereStr, whereVal...).Count(entityPtr)
+	tsStart := time.Now()
+
+	session := envinit.Dbs[dbname].Where(whereStr, whereVal...)
+	total, err = session.Count(entityPtr)
+
+	sql, params := session.LastSQL() // not work
+	log.Debugf("sql:%s params:%v timeused:%dms count:%d", sql, params, time.Since(tsStart).Nanoseconds()/1000/1000, total)
+
 	// log.Debugf("nCount of listByCondition =%d", nCount)
 	if err != nil {
 		log.Errorf("countByCondition error:%v", err)
