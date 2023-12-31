@@ -42,7 +42,7 @@ var (
 	showVersion bool
 	logLevel    = -1
 	// default values, you can set these with env
-	serveApi       = "0.0.0.0:10011" // should be set
+	serveApi       = "0.0.0.0:10010" // should be set
 	serveAdmin     = ""              //"0.0.0.0:10011"
 	serveCustomer  = ""              //"0.0.0.0:10012"
 	serveCluster   = "0.0.0.0:10013" // must be set
