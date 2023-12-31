@@ -72,11 +72,11 @@ func main() {
 	lcf.DisableStacktrace = true
 	// lcf.EncoderConfig.EncodeCaller = zapcore.FullCallerEncoder
 	lcf.EncoderConfig.EncodeCaller = func(ec zapcore.EntryCaller, pae zapcore.PrimitiveArrayEncoder) {
-		filepath := ec.FullPath()
+		filepath := ec.File //ec.FullPath()
 
-		n := strings.LastIndex(filepath, "flexdrive")
+		n := strings.LastIndex(filepath, "flexdrive/")
 		if n > 0 {
-			filepath = filepath[n+len("flexdrive"):]
+			filepath = filepath[n+len("flexdrive/"):]
 		}
 		filepath += strconv.Itoa(ec.Line)
 
