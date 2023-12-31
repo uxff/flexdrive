@@ -133,7 +133,8 @@ func AcceptLogin(c *gin.Context, mgrEnt *dao.Manager) error {
 	// 	return err
 	// }
 
-	jwtClaim := jwt.MapClaims(genJwtClaimFromMgrEnt(mgrEnt))
+	gpaToken, claim := genJwtClaimFromMgrEnt(mgrEnt)
+	jwtClaim := jwt.MapClaims(claim)
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtClaim)
 	tokenStr, err := jwtToken.SignedString([]byte(CookieKeySalt))
 	if err != nil {
@@ -144,6 +145,10 @@ func AcceptLogin(c *gin.Context, mgrEnt *dao.Manager) error {
 	// 设置cookie
 	c.SetCookie(CookieKeyGpa, tokenStr, LoginCookieExpire, "", "", false, false)
 	// c.SetCookie(CookieKeySign, sign, 3600*24*7, "", "", false, false)
+
+	// 设置context
+	gpaToken.MgrEnt = mgrEnt
+	c.Set(CtxKeyGpa, gpaToken)
 
 	// record login
 	//go managermodel.RecordLoginStatus(mgrEnt)
