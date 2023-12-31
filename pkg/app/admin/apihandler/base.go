@@ -85,16 +85,16 @@ func decodeGpaFromJwtClaim(claim jwt.MapClaims) (g *GpaToken, err error) {
 	return g, nil
 }
 
-func genJwtClaimFromMgrEnt(mgrEnt *dao.Manager) map[string]interface{} {
-	g := &GpaToken{
+func genJwtClaimFromMgrEnt(mgrEnt *dao.Manager) (gpa *GpaToken, claim map[string]interface{}) {
+	gpa = &GpaToken{
 		Mid: mgrEnt.Id,
 		//Name:   mgrEnt.Name,
 		RoleId: mgrEnt.RoleId,
 		//RoleName: 	 mgrEnt.RoleName,
 		LoginAt: int(mgrEnt.LastLoginAt.Unix()),
 	}
-	return map[string]interface{}{
-		"gpa": g.ToString(),
+	return gpa, map[string]interface{}{
+		"gpa": gpa.ToString(),
 	}
 }
 
