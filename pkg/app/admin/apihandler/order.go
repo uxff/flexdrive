@@ -7,7 +7,6 @@ import (
 	"github.com/uxff/flexdrive/pkg/dao"
 	"github.com/uxff/flexdrive/pkg/dao/base"
 	"github.com/uxff/flexdrive/pkg/log"
-	"github.com/uxff/flexdrive/pkg/utils/paginator"
 )
 
 func init() {
@@ -98,7 +97,7 @@ func OrderList(c *gin.Context) {
 		"list":           resItems,
 		"reqParam":       req,
 		"orderStatusMap": dao.OrderStatusMap,
-		"paginator":      paginator.NewPaginator(c.Request, 10, int64(total)),
+		// "paginator":      paginator.NewPaginator(c.Request, 10, int64(total)),
 	})
 }
 

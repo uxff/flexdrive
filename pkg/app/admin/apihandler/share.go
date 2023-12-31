@@ -7,7 +7,6 @@ import (
 	"github.com/uxff/flexdrive/pkg/dao"
 	"github.com/uxff/flexdrive/pkg/dao/base"
 	"github.com/uxff/flexdrive/pkg/log"
-	"github.com/uxff/flexdrive/pkg/utils/paginator"
 )
 
 func init() {
@@ -84,12 +83,12 @@ func ShareList(c *gin.Context) {
 	}
 
 	JsonOk(c, gin.H{
-		"total":     total,
-		"page":      req.Page,
-		"pagesize":  req.PageSize,
-		"list":      resItems,
-		"reqParam":  req,
-		"paginator": paginator.NewPaginator(c.Request, 10, int64(total)),
+		"total":    total,
+		"page":     req.Page,
+		"pagesize": req.PageSize,
+		"list":     resItems,
+		"reqParam": req,
+		// "paginator": paginator.NewPaginator(c.Request, 10, int64(total)),
 	})
 }
 
