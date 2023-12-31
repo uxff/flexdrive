@@ -69,8 +69,8 @@ func main() {
 	lcf.Development = true
 	lcf.DisableStacktrace = true
 	lcf.EncoderConfig.EncodeCaller = zapcore.ShortCallerEncoder
-	// logger, err := lcf.Build(zap.AddCallerSkip(2), zap.AddCaller())
-	logger, err := lcf.Build(zap.AddCaller())
+	logger, err := lcf.Build(zap.AddCallerSkip(2), zap.AddCaller())
+	// logger, err := lcf.Build(zap.AddCaller())
 	if err != nil {
 		slog.Fatalln("new log err:", err.Error())
 	}
