@@ -67,7 +67,7 @@ func main() {
 	lcf.Level.SetLevel(zapcore.Level(logLevel))
 	lcf.Development = true
 	lcf.DisableStacktrace = true
-	logger, err := lcf.Build(zap.AddCallerSkip(1), zap.AddCaller())
+	logger, err := lcf.Build(zap.AddCallerSkip(2), zap.AddCaller())
 	if err != nil {
 		slog.Fatalln("new log err:", err.Error())
 	}
