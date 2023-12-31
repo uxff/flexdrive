@@ -80,12 +80,6 @@ func main() {
 		}
 		filepath += strconv.Itoa(ec.Line)
 
-		// buf := bufferpool.Get()
-		// buf.AppendString(ec.File)
-		// buf.AppendByte(':')
-		// buf.AppendInt(int64(ec.Line))
-		// caller := buf.String()
-		// buf.Free()
 		// pae.AppendString(ec.TrimmedPath())
 		pae.AppendString(filepath)
 	}
