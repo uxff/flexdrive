@@ -64,6 +64,7 @@ func StartHttpServer(addr string) error {
 	authRouter.POST("/changePwd", ChangePwdForm) // 修改自己的密码 不受角色限制
 	authRouter.GET("/", Index)
 	authRouter.GET("/file/:fileHash/:fileName", Fs)
+	authRouter.GET("/s/:shareHash", ShareDetail)
 
 	// 基础基于登录cookie并rabc授权的验证
 	// 如果增加接口，必须在现有的菜单下，否则会被权限控制拦住
