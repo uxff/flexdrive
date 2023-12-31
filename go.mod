@@ -12,12 +12,12 @@ require (
 	github.com/go-xorm/builder v0.0.0-20170519032130-c8871c857d25 // indirect
 	github.com/go-xorm/core v0.5.7-0.20170614060517-e9b7412d750d
 	github.com/go-xorm/xorm v0.6.3-0.20170625093504-32d688fd965e
+	github.com/golang/protobuf v1.5.3
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
-	github.com/golang/protobuf v1.5.2
 	github.com/lib/pq v1.3.0 // indirect
 	github.com/mattn/go-runewidth v0.0.3
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	go.uber.org/zap v1.14.1
 	golang.org/x/net v0.10.0
-	google.golang.org/grpc v1.53.0
+	google.golang.org/grpc v1.56.3
 )
