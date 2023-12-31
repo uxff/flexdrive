@@ -20,6 +20,8 @@ import (
 	slog "log"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -68,7 +70,25 @@ func main() {
 	lcf.Level.SetLevel(zapcore.Level(logLevel))
 	lcf.Development = true
 	lcf.DisableStacktrace = true
-	lcf.EncoderConfig.EncodeCaller = zapcore.FullCallerEncoder
+	// lcf.EncoderConfig.EncodeCaller = zapcore.FullCallerEncoder
+	lcf.EncoderConfig.EncodeCaller = func(ec zapcore.EntryCaller, pae zapcore.PrimitiveArrayEncoder) {
+		filepath := ec.FullPath()
+
+		n := strings.LastIndex(filepath, "flexdrive")
+		if n > 0 {
+			filepath = filepath[n+len("flexdrive"):]
+		}
+		filepath += strconv.Itoa(ec.Line)
+
+		// buf := bufferpool.Get()
+		// buf.AppendString(ec.File)
+		// buf.AppendByte(':')
+		// buf.AppendInt(int64(ec.Line))
+		// caller := buf.String()
+		// buf.Free()
+		// pae.AppendString(ec.TrimmedPath())
+		pae.AppendString(filepath)
+	}
 	logger, err := lcf.Build(zap.AddCallerSkip(1), zap.AddCaller())
 	// logger, err := lcf.Build(zap.AddCaller())
 	if err != nil {
