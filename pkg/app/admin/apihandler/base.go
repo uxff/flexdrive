@@ -152,9 +152,6 @@ func AuthMiddleWare(c *gin.Context) {
 	// gpaToken.IsSuper = mgrEnt.IsSuper()
 	// gpaToken.IsSuperRole = mgrEnt.IsSuperRole()
 
-	// set context
-	c.Set(CtxKeyGpa, gpaToken)
-
 	// 判断账号是否已被禁用
 	if mgrEnt.Status != base.StatusNormal {
 		log.Warnf("登陆账号(%d)已被禁用", gpaToken.Mid)
@@ -162,6 +159,9 @@ func AuthMiddleWare(c *gin.Context) {
 		c.Abort()
 		return
 	}
+
+	// set context
+	c.Set(CtxKeyGpa, gpaToken)
 
 	c.Next()
 }

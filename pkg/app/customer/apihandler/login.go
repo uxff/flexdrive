@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
 	"github.com/uxff/flexdrive/pkg/dao"
 	"github.com/uxff/flexdrive/pkg/dao/base"
 	"github.com/uxff/flexdrive/pkg/log"
@@ -132,9 +131,9 @@ func AcceptLogin(c *gin.Context, userEnt *dao.User) error {
 	// 	log.Errorf("gen CuaToken failed:%v", err)
 	// 	return
 	// }
-	jwtClaim := jwt.MapClaims(genJwtClaimFromUserEnt(userEnt))
-	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtClaim)
-	tokenStr, err := jwtToken.SignedString([]byte(CookieKeySalt))
+
+	// tokenStr, err := jwtToken.SignedString([]byte(CookieKeySalt))
+	tokenStr, err := genJwtSignedTokenFromUserEnt(userEnt)
 	if err != nil {
 		log.Errorf("gen jwt token failed:%v", err)
 		return err
