@@ -102,7 +102,7 @@ func ManagerList(c *gin.Context) {
 		resItems = append(resItems, NewManagerItemFromEnt(v))
 	}
 
-	JsonOk(c, gin.H{
+	JsonOk(c, map[string]interface{}{
 		"total":     total,
 		"page":      req.Page,
 		"pagesize":  req.PageSize,
