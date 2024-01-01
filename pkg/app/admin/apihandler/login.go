@@ -18,7 +18,7 @@ import (
 
 type LoginRequest struct {
 	Email   string `form:"email"`
-	Pwd     string `form:"password"`
+	Pwd     string `form:"password" json:"password"`
 	Captcha string `form:"captcha"`
 }
 
