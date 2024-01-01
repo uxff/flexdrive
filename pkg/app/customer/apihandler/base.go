@@ -134,7 +134,7 @@ func AuthMiddleWare(c *gin.Context) {
 	cuaTokenStr, err := c.Cookie(CookieKeyAuth)
 	if cuaTokenStr == "" {
 		log.Trace(c.GetString(CtxKeyRequestId)).Warnf("cuaToken not found, no login info detected, reject request to %s, error:%v", c.GetString(CtxKeyURI), err)
-		ClearLogin(c)
+		// ClearLogin(c)
 		JsonErr(c, ErrNotLogin)
 		c.Abort()
 		return
@@ -143,7 +143,7 @@ func AuthMiddleWare(c *gin.Context) {
 	cuaToken, err := decodeCuaTokenFromJwtSigned(cuaTokenStr)
 	if err != nil {
 		log.Trace(c.GetString(CtxKeyRequestId)).Warnf("decode cuaToken failed, reject request, error:%v cuatoken:%+v", err, cuaToken)
-		ClearLogin(c)
+		// ClearLogin(c)
 		JsonErr(c, ErrNotLogin)
 		c.Abort()
 		return
@@ -153,7 +153,7 @@ func AuthMiddleWare(c *gin.Context) {
 	// cuaToken := getLoginInfo(c)
 	if cuaToken == nil || cuaToken.UserId <= 0 {
 		log.Trace(c.GetString(CtxKeyRequestId)).Warnf("illegal cuaToken , reject request, error:%v gpatoken:%+v", err, cuaToken)
-		ClearLogin(c)
+		// ClearLogin(c)
 		JsonErr(c, ErrNotLogin)
 		c.Abort()
 		return
@@ -186,6 +186,7 @@ func AuthMiddleWare(c *gin.Context) {
 	// 判断账号是否已被禁用
 	if userEnt.Status != base.StatusNormal {
 		log.Warnf("登陆账号(%d)已被禁用", cuaToken.UserId)
+		ClearLogin(c)
 		JsonErr(c, ErrUserDisabled)
 		c.Abort()
 		return

@@ -132,7 +132,7 @@ func AuthMiddleWare(c *gin.Context) {
 	gpaTokenStr, err := c.Cookie(CookieKeyGpa)
 	if err != nil || gpaTokenStr == "" {
 		log.Trace(c.GetString(CtxKeyRequestId)).Warnf("no gpaToken found in cookie, reject request, error:%v", err)
-		ClearLogin(c)
+		// ClearLogin(c)
 		JsonErr(c, ErrNotLogin)
 		c.Abort()
 		return
@@ -142,7 +142,7 @@ func AuthMiddleWare(c *gin.Context) {
 	// gpaToken, err := verifyFromCookie(c)
 	if err != nil {
 		log.Trace(c.GetString(CtxKeyRequestId)).Warnf("illegal gpaToken , reject request, error:%v gpatoken:%+v", err, gpaToken)
-		c.SetCookie(CookieKeyGpa, "", -1, "", "", true, false)
+		// c.SetCookie(CookieKeyGpa, "", -1, "", "", true, false)
 		JsonErr(c, ErrNotLogin)
 		c.Abort()
 		return
@@ -179,6 +179,7 @@ func AuthMiddleWare(c *gin.Context) {
 	// 判断账号是否已被禁用
 	if mgrEnt.Status != base.StatusNormal {
 		log.Warnf("登陆账号(%d)已被禁用", gpaToken.Mid)
+		ClearLogin(c)
 		JsonErr(c, ErrMgrDisabled)
 		c.Abort()
 		return
