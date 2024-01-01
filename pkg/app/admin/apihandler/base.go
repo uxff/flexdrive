@@ -95,7 +95,7 @@ func decodeGpaFromJwtClaim(signedJwtToken string) (g *GpaToken, err error) {
 	return g, nil
 }
 
-func genJwtClaimFromMgrEnt(mgrEnt *dao.Manager) (gpa *GpaToken, claim map[string]interface{}) {
+func genJwtClaimFromMgrEnt(mgrEnt *dao.Manager) (gpa *GpaToken, signedJwtToken string, err error) {
 	gpa = &GpaToken{
 		Mid: mgrEnt.Id,
 		//Name:   mgrEnt.Name,
@@ -103,9 +103,13 @@ func genJwtClaimFromMgrEnt(mgrEnt *dao.Manager) (gpa *GpaToken, claim map[string
 		//RoleName: 	 mgrEnt.RoleName,
 		LoginAt: int(mgrEnt.LastLoginAt.Unix()),
 	}
-	return gpa, map[string]interface{}{
+	// return gpa,
+	claim := map[string]interface{}{
 		"gpa": gpa.ToString(),
 	}
+	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims(claim))
+	signedJwtToken, err = jwtToken.SignedString([]byte(CookieKeySalt))
+	return
 }
 
 func TraceMiddleWare(c *gin.Context) {

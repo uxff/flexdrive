@@ -133,13 +133,15 @@ func AcceptLogin(c *gin.Context, userEnt *dao.User) error {
 	// }
 
 	// tokenStr, err := jwtToken.SignedString([]byte(CookieKeySalt))
-	tokenStr, err := genJwtSignedTokenFromUserEnt(userEnt)
+	cuaToken, jwtTokenStr, err := genJwtSignedTokenFromUserEnt(userEnt)
 	if err != nil {
 		log.Errorf("gen jwt token failed:%v", err)
 		return err
 	}
 
-	c.SetCookie(CookieKeyAuth, tokenStr, LoginCookieExpire, "", "", false, false)
+	c.SetCookie(CookieKeyAuth, jwtTokenStr, LoginCookieExpire, "", "", false, false)
+	cuaToken.UserEnt = userEnt
+	c.Set(CtxKeyCua, cuaToken)
 
 	// record login
 	go userEnt.UpdateById([]string{"lastLoginAt", "lastLoginIp"})

@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
 	"github.com/uxff/flexdrive/pkg/dao"
 	"github.com/uxff/flexdrive/pkg/dao/base"
 	"github.com/uxff/flexdrive/pkg/log"
@@ -133,17 +132,17 @@ func AcceptLogin(c *gin.Context, mgrEnt *dao.Manager) error {
 	// 	return err
 	// }
 
-	gpaToken, claim := genJwtClaimFromMgrEnt(mgrEnt)
-	jwtClaim := jwt.MapClaims(claim)
-	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtClaim)
-	tokenStr, err := jwtToken.SignedString([]byte(CookieKeySalt))
+	gpaToken, jwtTokenStr, err := genJwtClaimFromMgrEnt(mgrEnt)
+	// jwtClaim :=
+	// jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims(claim))
+	// tokenStr, err := jwtToken.SignedString([]byte(CookieKeySalt))
 	if err != nil {
 		log.Errorf("gen jwt token failed:%v", err)
 		return err
 	}
 
 	// 设置cookie
-	c.SetCookie(CookieKeyGpa, tokenStr, LoginCookieExpire, "", "", false, false)
+	c.SetCookie(CookieKeyGpa, jwtTokenStr, LoginCookieExpire, "", "", false, false)
 	// c.SetCookie(CookieKeySign, sign, 3600*24*7, "", "", false, false)
 
 	// 设置context

@@ -97,8 +97,8 @@ func decodeCuaTokenFromJwtSigned(signedCuaTokenStr string) (g *CuaToken, err err
 	return g, nil
 }
 
-func genJwtSignedTokenFromUserEnt(userEnt *dao.User) (tokenStr string, err error) {
-	g := &CuaToken{
+func genJwtSignedTokenFromUserEnt(userEnt *dao.User) (g *CuaToken, tokenStr string, err error) {
+	g = &CuaToken{
 		UserId:  userEnt.Id,
 		LoginAt: int(userEnt.LastLoginAt.Unix()),
 		UserEnt: userEnt,
@@ -109,7 +109,8 @@ func genJwtSignedTokenFromUserEnt(userEnt *dao.User) (tokenStr string, err error
 	})
 
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtClaim)
-	return jwtToken.SignedString([]byte(CookieKeySalt))
+	tokenStr, err = jwtToken.SignedString([]byte(CookieKeySalt))
+	return
 }
 
 func TraceMiddleWare(c *gin.Context) {
