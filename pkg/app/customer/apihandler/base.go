@@ -132,8 +132,10 @@ func TraceMiddleWare(c *gin.Context) {
 func AuthMiddleWare(c *gin.Context) {
 
 	// detect cookie
-	// cuaTokenStr, err := c.Cookie(CookieKeyAuth)
 	cuaTokenStr := c.GetHeader(HeaderKeyAuth)
+	if cuaTokenStr == "" {
+		cuaTokenStr, _ = c.Cookie(CookieKeyAuth)
+	}
 	if cuaTokenStr == "" {
 		log.Trace(c.GetString(CtxKeyRequestId)).Warnf("cuaToken not found, no login info detected, reject request to %s", c.GetString(CtxKeyURI))
 		// ClearLogin(c)

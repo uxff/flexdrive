@@ -130,8 +130,10 @@ func TraceMiddleWare(c *gin.Context) {
 // 所有交易相关接口调用前的认证中间件
 func AuthMiddleWare(c *gin.Context) {
 	// 验证cookie签名是否合法
-	// gpaTokenStr, err := c.Cookie(CookieKeyGpa)
 	gpaTokenStr := c.GetHeader(HeaderKeyAuth)
+	if gpaTokenStr == "" {
+		gpaTokenStr, _ = c.Cookie(CookieKeyGpa)
+	}
 	if gpaTokenStr == "" {
 		log.Trace(c.GetString(CtxKeyRequestId)).Warnf("no gpaToken found in cookie, reject request to %s", c.Request.RequestURI)
 		// ClearLogin(c)
