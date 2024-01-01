@@ -24,6 +24,7 @@ import (
 // cookie中使用
 const (
 	CookieKeyGpa  = "gpa"
+	HeaderKeyAuth = "API-Token"
 	CookieKeySign = "s"
 	CookieKeySalt = "TmhMbU52YlM1amJp"
 )
@@ -129,9 +130,10 @@ func TraceMiddleWare(c *gin.Context) {
 // 所有交易相关接口调用前的认证中间件
 func AuthMiddleWare(c *gin.Context) {
 	// 验证cookie签名是否合法
-	gpaTokenStr, err := c.Cookie(CookieKeyGpa)
-	if err != nil || gpaTokenStr == "" {
-		log.Trace(c.GetString(CtxKeyRequestId)).Warnf("no gpaToken found in cookie, reject request, error:%v", err)
+	// gpaTokenStr, err := c.Cookie(CookieKeyGpa)
+	gpaTokenStr := c.GetHeader(HeaderKeyAuth)
+	if gpaTokenStr == "" {
+		log.Trace(c.GetString(CtxKeyRequestId)).Warnf("no gpaToken found in cookie, reject request to %s", c.Request.RequestURI)
 		// ClearLogin(c)
 		JsonErr(c, ErrNotLogin)
 		c.Abort()
@@ -149,7 +151,7 @@ func AuthMiddleWare(c *gin.Context) {
 	}
 
 	if gpaToken.LoginAt < int(time.Now().Add(-time.Second*LoginCookieExpire).Unix()) {
-		ClearLogin(c)
+		// ClearLogin(c)
 		JsonErr(c, ErrLoginExpired)
 		c.Abort()
 		return
@@ -179,7 +181,7 @@ func AuthMiddleWare(c *gin.Context) {
 	// 判断账号是否已被禁用
 	if mgrEnt.Status != base.StatusNormal {
 		log.Warnf("登陆账号(%d)已被禁用", gpaToken.Mid)
-		ClearLogin(c)
+		// ClearLogin(c)
 		JsonErr(c, ErrMgrDisabled)
 		c.Abort()
 		return
