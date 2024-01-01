@@ -72,10 +72,11 @@ func LoginForm(c *gin.Context) {
 	}
 
 	// 登录成功 种下cookie
-	AcceptLogin(c, mgrEnt)
+	token, _ := AcceptLogin(c, mgrEnt)
 
 	JsonOk(c, gin.H{
-		"date": time.Now(),
+		"date":      time.Now(),
+		"API-Token": token,
 	})
 	// c.Redirect(http.StatusMovedPermanently, RouteHome)
 }
@@ -121,7 +122,7 @@ func Logout(c *gin.Context) {
 }
 
 // 受理登录
-func AcceptLogin(c *gin.Context, mgrEnt *dao.Manager) error {
+func AcceptLogin(c *gin.Context, mgrEnt *dao.Manager) (token string, err error) {
 	mgrEnt.LastLoginIp = c.Request.Header.Get("X-Real-IP")
 	mgrEnt.LastLoginAt = time.Now() //util.JsonTime(time.Now()) // time.Now().Format("2006-01-02 15:04:05")
 
@@ -138,11 +139,12 @@ func AcceptLogin(c *gin.Context, mgrEnt *dao.Manager) error {
 	// tokenStr, err := jwtToken.SignedString([]byte(CookieKeySalt))
 	if err != nil {
 		log.Errorf("gen jwt token failed:%v", err)
-		return err
+		return "", err
 	}
 
 	// 设置cookie
-	c.SetCookie(CookieKeyGpa, jwtTokenStr, LoginCookieExpire, "", "", false, false)
+	// c.SetCookie(CookieKeyGpa, jwtTokenStr, LoginCookieExpire, "", "", false, false) // use API-Token instead
+	c.Header("API-Token", jwtTokenStr)
 	// c.SetCookie(CookieKeySign, sign, 3600*24*7, "", "", false, false)
 
 	// 设置context
@@ -151,10 +153,11 @@ func AcceptLogin(c *gin.Context, mgrEnt *dao.Manager) error {
 
 	// record login
 	//go managermodel.RecordLoginStatus(mgrEnt)
-	return nil
+	return jwtTokenStr, err
 }
 
 func ClearLogin(c *gin.Context) {
+	// will be useless when using API-Token header
 	c.SetCookie(CookieKeyGpa, "", -1, "", "", false, false)
 	// c.SetCookie(CookieKeySign, "", -1, "", "", false, false)
 }

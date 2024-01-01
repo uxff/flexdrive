@@ -23,6 +23,7 @@ import (
 // cookie中使用
 const (
 	CookieKeyAuth = "ua"
+	HeaderKeyAuth = "API-Token"
 	CookieKeySalt = "TmhMbU52YlM1amJp"
 )
 
@@ -131,9 +132,10 @@ func TraceMiddleWare(c *gin.Context) {
 func AuthMiddleWare(c *gin.Context) {
 
 	// detect cookie
-	cuaTokenStr, err := c.Cookie(CookieKeyAuth)
+	// cuaTokenStr, err := c.Cookie(CookieKeyAuth)
+	cuaTokenStr := c.GetHeader(HeaderKeyAuth)
 	if cuaTokenStr == "" {
-		log.Trace(c.GetString(CtxKeyRequestId)).Warnf("cuaToken not found, no login info detected, reject request to %s, error:%v", c.GetString(CtxKeyURI), err)
+		log.Trace(c.GetString(CtxKeyRequestId)).Warnf("cuaToken not found, no login info detected, reject request to %s", c.GetString(CtxKeyURI))
 		// ClearLogin(c)
 		JsonErr(c, ErrNotLogin)
 		c.Abort()
@@ -160,7 +162,7 @@ func AuthMiddleWare(c *gin.Context) {
 	}
 
 	if cuaToken.LoginAt < int(time.Now().Unix()-LoginCookieExpire) {
-		ClearLogin(c)
+		// ClearLogin(c)
 		JsonErr(c, ErrLoginExpired)
 		c.Abort()
 		return
