@@ -18,10 +18,10 @@ Has the following characteristics:
 
 
 Cluster operation structure diagram:
-<img src="https://github.com/uxff/flexdrive/raw/master/static/images/clusters-architecture.png">
-<img src="https://github.com/uxff/flexdrive/raw/master/static/images/clusters-architecture2.png">
+<img src="https://github.com/uxff/flexdrive/raw/master/static/images/clusters-arch1.png">
+<img src="https://github.com/uxff/flexdrive/raw/master/static/images/clusters-arch2.png">
 Node internal structure diagram:
-<img src="https://github.com/uxff/flexdrive/raw/master/static/images/clusters-architecture3.png">
+<img src="https://github.com/uxff/flexdrive/raw/master/static/images/clusters-arch3.png">
 
 It supports mysql for database, you can use sqlite instead.
 
