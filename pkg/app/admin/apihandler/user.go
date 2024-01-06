@@ -86,6 +86,7 @@ func UserList(c *gin.Context) {
 		"pagesize": req.PageSize,
 		"list":     resItems,
 		"reqParam": req,
+		"hasMore":  (req.Page+1)*req.PageSize < int(total),
 		// "paginator": paginator.NewPaginator(c.Request, 10, int64(total)),
 	})
 }
