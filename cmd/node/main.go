@@ -197,7 +197,7 @@ func ServeApi(addr string) error {
 		// for cors, todo: should be re-configured in production environment
 		allowOrigin := c.GetHeader("Origin")
 		if allowOrigin == "" {
-			allowOrigin = "http://localhost:5173"
+			allowOrigin = "*"
 		}
 		c.Writer.Header().Set("Access-Control-Allow-Origin", allowOrigin) //*
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
