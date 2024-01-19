@@ -128,8 +128,8 @@ func AcceptLogin(c *gin.Context, mgrEnt *dao.Manager) {
 		return
 	}
 	// 设置cookie
-	c.SetCookie(CookieKeyGpa, tokenStr, 3600*24*7, "", "", false, false)
-	c.SetCookie(CookieKeySign, sign, 3600*24*7, "", "", false, false)
+	c.SetCookie(CookieKeyGpa, tokenStr, LoginCookieExpire, "", "", false, false)
+	c.SetCookie(CookieKeySign, sign, LoginCookieExpire, "", "", false, false)
 
 	// record login
 	//go managermodel.RecordLoginStatus(mgrEnt)

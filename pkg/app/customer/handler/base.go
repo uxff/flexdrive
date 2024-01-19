@@ -33,6 +33,10 @@ const (
 )
 
 const (
+	LoginCookieExpire = 3600 * 24 * 365 // 365天
+)
+
+const (
 	cuaTimeDiv = 79
 )
 
@@ -141,8 +145,8 @@ func AuthMiddleWare(c *gin.Context) {
 		return
 	}
 
-	if cuaToken.LoginAt < int(time.Now().Add(-time.Hour*24*7).Unix()) {
-		ClearLogin(c)
+	if cuaToken.LoginAt+LoginCookieExpire < int(time.Now().Unix()) {
+		// ClearLogin(c)
 		StdErrResponse(c, ErrLoginExpired)
 		c.Abort()
 		return

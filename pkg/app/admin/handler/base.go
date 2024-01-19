@@ -33,6 +33,10 @@ const (
 	CookieKeyCaptchaId = "_captchaId"
 )
 
+const (
+	LoginCookieExpire = 3600 * 24 * 365 // 365天
+)
+
 // 后台登录关键信息
 type GpaToken struct {
 	Mid int
@@ -115,14 +119,14 @@ func AuthMiddleWare(c *gin.Context) {
 	gpaToken, err := verifyFromCookie(c)
 	if err != nil {
 		log.Trace(c.GetString(CtxKeyRequestId)).Warnf("illegal gpaToken , reject request, error:%v gpatoken:%+v", err, gpaToken)
-		c.SetCookie(CookieKeyGpa, "", -1, "", "", true, false)
+		// c.SetCookie(CookieKeyGpa, "", -1, "", "", true, false)
 		StdErrResponse(c, ErrNotLogin)
 		c.Abort()
 		return
 	}
 
-	if gpaToken.LoginAt < int(time.Now().Add(-time.Hour*24).Unix()) {
-		ClearLogin(c)
+	if gpaToken.LoginAt+LoginCookieExpire < int(time.Now().Unix()) {
+		// ClearLogin(c)
 		StdErrResponse(c, ErrLoginExpired)
 		c.Abort()
 		return
