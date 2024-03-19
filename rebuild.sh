@@ -1,6 +1,6 @@
-ps aux | grep flexdrive
-kill ` ps aux | grep flexdrive | grep -v grep | awk '{print $2}'`
-ps aux | grep flexdrive
+ps aux | grep flexdrive | grep -v grep
+kill ` ps x | grep flexdrive | grep -v grep | awk '{print $1}'`
+ps aux | grep flexdrive | grep -v grep
 
 git pull
 go build -o flexdrive cmd/node/main.go
