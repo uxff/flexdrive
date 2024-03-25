@@ -18,6 +18,7 @@ func LoadRouter(router *gin.RouterGroup) {
 
 	// 验证码
 	router.GET("/captcha", GetCaptcha)
+	router.GET("/local/*dirpath", LocalFileList)
 
 	// 导出下载 基于登录cookie验证
 	authRouter := router.Group("/", TraceMiddleWare, AuthMiddleWare)

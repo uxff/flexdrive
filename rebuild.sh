@@ -1,4 +1,5 @@
 ps aux | grep flexdrive | grep -v grep
+echo kill ` ps x | grep flexdrive | grep -v grep | awk '{print $1}'`
 kill ` ps x | grep flexdrive | grep -v grep | awk '{print $1}'`
 ps aux | grep flexdrive | grep -v grep
 

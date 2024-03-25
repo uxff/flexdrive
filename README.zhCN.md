@@ -49,3 +49,7 @@ sh runcluster.sh
 ```
 启动后访问管理端 http://127.0.0.1:10011 访问会员端 http://127.0.0.1:10012
 
+## Todo:
+
+- Dockerize
+
