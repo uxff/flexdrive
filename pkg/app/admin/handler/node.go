@@ -36,7 +36,7 @@ func (r *NodeListRequest) ToCondition() (condition map[string]interface{}) {
 	}
 
 	if r.Name != "" {
-		condition["name like ?"] = "%" + r.Name + "%"
+		condition["nodeName like ?"] = "%" + r.Name + "%"
 	}
 
 	if r.LastActive > 0 {

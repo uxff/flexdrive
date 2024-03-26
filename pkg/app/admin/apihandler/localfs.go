@@ -211,12 +211,14 @@ func LocalFileList(c *gin.Context) {
 		return
 	}
 
+	dirpath := c.Param("dirpath")
+
 	if req.PageSize <= 0 {
 		req.PageSize = pageSize
 	}
 
 	// 列表查询
-	list := GetFileListFromDir(req.Dirpath, "", FilePreRoute)
+	list := GetFileListFromDir(dirpath, "", FilePreRoute)
 
 	if list == nil {
 		log.Trace(requestId).Errorf("list failed, none")

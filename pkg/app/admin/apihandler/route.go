@@ -68,7 +68,7 @@ func LoadRouter(router *gin.RouterGroup) {
 	rbacRouter.GET("/order/list", OrderList)
 	rbacRouter.POST("/order/refund/:id", OrderRefund)
 
-	rbacRouter.GET("/node/list", NodeList)
+	rbacRouter.POST("/node/list", NodeList)
 	rbacRouter.POST("/node/setcapacity", NodeSetCapacity)
 
 	rbacRouter.GET("/fileindex/list", FileIndexList)

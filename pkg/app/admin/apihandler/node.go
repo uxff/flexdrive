@@ -14,27 +14,22 @@ func init() {
 }
 
 type NodeListRequest struct {
-	CreateStart string `form:"createStart"`
-	CreateEnd   string `form:"createEnd"`
-	Name        string `form:"name"`
-	LastActive  int    `form:"lastActive"`
-	Page        int    `form:"page"`
-	PageSize    int    `form:"pagesize"`
+	Status     int    `json:"status"`
+	Name       string `json:"name"`
+	LastActive int    `json:"lastActive"`
+	Page       int    `json:"page"`
+	PageSize   int    `json:"pagesize"`
 }
 
 func (r *NodeListRequest) ToCondition() (condition map[string]interface{}) {
 	condition = make(map[string]interface{})
 
-	if r.CreateStart != "" {
-		condition["created>=?"] = r.CreateStart
-	}
-
-	if r.CreateEnd != "" {
-		condition["created<=?"] = r.CreateEnd
+	if r.Status > 0 {
+		condition["status = ?"] = r.Status
 	}
 
 	if r.Name != "" {
-		condition["name like ?"] = "%" + r.Name + "%"
+		condition["nodeName like ?"] = "%" + r.Name + "%"
 	}
 
 	if r.LastActive > 0 {
@@ -61,7 +56,7 @@ func NodeList(c *gin.Context) {
 
 	// 请求参数校验
 	req := &NodeListRequest{}
-	err := c.ShouldBindQuery(req)
+	err := c.ShouldBindJSON(req)
 	if err != nil {
 		JsonErr(c, ErrInvalidParam)
 		return
