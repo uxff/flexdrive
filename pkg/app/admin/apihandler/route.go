@@ -18,7 +18,7 @@ func LoadRouter(router *gin.RouterGroup) {
 
 	// 验证码
 	router.GET("/captcha", GetCaptcha)
-	router.GET("/local/*dirpath", LocalFileList)
+	router.GET("/local/*dirpath", LocalFileList) // for test
 
 	// 导出下载 基于登录cookie验证
 	authRouter := router.Group("/", TraceMiddleWare, AuthMiddleWare)
@@ -37,12 +37,12 @@ func LoadRouter(router *gin.RouterGroup) {
 	// rbacRouter.GET("/role/edit/:id", RoleEdit)
 	rbacRouter.POST("/role/edit/:id", RoleAddForm)
 	rbacRouter.POST("/role/enable/:id/:enable", RoleEnable)
-	rbacRouter.GET("/role/list", RoleList)
+	rbacRouter.POST("/role/list", RoleList)
 
 	//rbacRouter.POST("/role/rbac/edit/:roleid", RoleRbacSet)
 	//rbacRouter.GET("/role/rbac/list/:roleid", RoleRbacGet)
 
-	rbacRouter.GET("/manager/list", ManagerList)
+	rbacRouter.POST("/manager/list", ManagerList)
 	// rbacRouter.GET("/manager/add", ManagerAdd)
 	rbacRouter.POST("/manager/add", ManagerAddForm)
 	// rbacRouter.GET("/manager/edit/:mid", ManagerEdit)
@@ -50,9 +50,9 @@ func LoadRouter(router *gin.RouterGroup) {
 	//authRouter.POST("/manager/modifyPwd", ManagerChangePwd)
 	rbacRouter.POST("/manager/enable/:mid/:enable", ManagerEnable)
 
-	rbacRouter.GET("/user/list", UserList)
+	rbacRouter.POST("/user/list", UserList)
 	rbacRouter.POST("/user/enable/:id/:enable", UserEnable)
-	rbacRouter.GET("/user/file/list", UserFileList)
+	rbacRouter.POST("/user/file/list", UserFileList)
 	rbacRouter.POST("/user/file/enable/:id/:enable", UserFileEnable)
 
 	// rbacRouter.GET("/userlevel/add", UserLevelAdd)
@@ -60,18 +60,18 @@ func LoadRouter(router *gin.RouterGroup) {
 	// rbacRouter.GET("/userlevel/edit/:id", UserLevelEdit)
 	rbacRouter.POST("/userlevel/edit/:id", UserLevelAddForm)
 	rbacRouter.POST("/userlevel/enable/:id/:enable", UserLevelEnable)
-	rbacRouter.GET("/userlevel/list", UserLevelList)
+	rbacRouter.POST("/userlevel/list", UserLevelList)
 
-	rbacRouter.GET("/share/list", ShareList)
+	rbacRouter.POST("/share/list", ShareList)
 	rbacRouter.POST("/share/enable/:id/:enable", ShareEnable)
 
-	rbacRouter.GET("/order/list", OrderList)
+	rbacRouter.POST("/order/list", OrderList)
 	rbacRouter.POST("/order/refund/:id", OrderRefund)
 
 	rbacRouter.POST("/node/list", NodeList)
 	rbacRouter.POST("/node/setcapacity", NodeSetCapacity)
 
-	rbacRouter.GET("/fileindex/list", FileIndexList)
+	rbacRouter.POST("/fileindex/list", FileIndexList)
 	rbacRouter.POST("/fileindex/enable/:id/:enable", FileIndexEnable)
 
 	// adminServer = &http.Server{

@@ -25,7 +25,7 @@ import (
 const (
 	CookieKeyGpa  = "gpa"
 	HeaderKeyAuth = "API-Token"
-	CookieKeySign = "s"
+	// CookieKeySign = "s"
 	CookieKeySalt = "TmhMbU52YlM1amJp"
 )
 
@@ -82,7 +82,7 @@ func decodeGpaFromJwtClaim(signedJwtToken string) (g *GpaToken, err error) {
 	})
 
 	if err != nil || jwtToken == nil {
-		log.Warnf("get jwtToken failed, error:%v", err)
+		// log.Warnf("get jwtToken failed, error:%v", err)
 		return nil, err
 	}
 

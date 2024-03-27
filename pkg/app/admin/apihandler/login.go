@@ -145,7 +145,7 @@ func AcceptLogin(c *gin.Context, mgrEnt *dao.Manager) (token string, err error) 
 	// 设置cookie
 	// c.SetCookie(CookieKeyGpa, jwtTokenStr, LoginCookieExpire, "", "", false, false) // use API-Token instead
 	c.Header("API-Token", jwtTokenStr)
-	// c.SetCookie(CookieKeySign, sign, 3600*24*7, "", "", false, false)
+	c.SetCookie(CookieKeyGpa, jwtTokenStr, 3600*24*7, "", "", false, false)
 
 	// 设置context
 	gpaToken.MgrEnt = mgrEnt

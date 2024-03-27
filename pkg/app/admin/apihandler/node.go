@@ -8,6 +8,7 @@ import (
 	"github.com/uxff/flexdrive/pkg/dao"
 	"github.com/uxff/flexdrive/pkg/dao/base"
 	"github.com/uxff/flexdrive/pkg/log"
+	"github.com/uxff/flexdrive/pkg/utils"
 )
 
 func init() {
@@ -43,11 +44,17 @@ func (r *NodeListRequest) ToCondition() (condition map[string]interface{}) {
 // 接口返回的元素
 type NodeItem struct {
 	dao.Node
+	TotalSpaceDesc  string
+	UsedSpaceDesc   string
+	UnusedSpaceDesc string
 }
 
 func NewNodeItemFromEnt(nodeEnt *dao.Node) *NodeItem {
 	return &NodeItem{
-		Node: *nodeEnt,
+		Node:            *nodeEnt,
+		TotalSpaceDesc:  utils.SizeToHuman(nodeEnt.TotalSpace),
+		UsedSpaceDesc:   utils.SizeToHuman(nodeEnt.UsedSpace),
+		UnusedSpaceDesc: utils.SizeToHuman(nodeEnt.UnusedSpace),
 	}
 }
 
