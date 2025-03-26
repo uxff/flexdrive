@@ -111,6 +111,8 @@ func (w *Worker) Start() error {
 	// 抢占式选举 最快选举好的直接广播给别人 让别人无条件服从
 	masterId := w.FindFollowedMaster()
 	if masterId != "" {
+		// 如果master也在follow自己，则比较hash字符串后在决定。字符串靠前的当master
+
 		log.Debugf("%s will follow %s from existing cluster", w.Id, masterId)
 		w.Follow(masterId)
 	} else {
@@ -295,7 +297,8 @@ func (w *Worker) FindFollowedMaster() string {
 
 	for masterId, followerNum := range masterMap {
 		// if followerNum >= len(w.ClusterMembers)/2 {
-		if followerNum >= memberCnt/2 {
+		if followerNum >= memberCnt/2 { // BUG HERE!
+			log.Debugf("find a master(%s) with a number of followers(%d) that over half the total:%d", masterId, followerNum, memberCnt/2)
 			return masterId
 		}
 	}
