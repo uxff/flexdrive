@@ -300,7 +300,7 @@ func (w *Worker) VoteAMaster() string {
 
 	expectedMasterId := allCondidateMateIds[0]
 
-	log.Debugf("w(%v) voted master:%v in %d mates", w.Id, expectedMasterId, len(allCondidateMateIds))
+	log.Debugf("w(%v) voted master:%v in %d mates:%s", w.Id, expectedMasterId, len(allCondidateMateIds), allCondidateMateIds[])
 
 	return expectedMasterId
 }
