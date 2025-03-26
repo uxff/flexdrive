@@ -79,6 +79,11 @@ func UserLevelList(c *gin.Context) {
 		return
 	}
 
+	// for debug
+	for _, item := range list {
+		log.Debugf("user_level item=%+v", *item)
+	}
+
 	// 从数据库结构转换成返回结构
 	//resItems := make([]*UserLevel, 0)
 	// for _, UserLevelItem := range list {
