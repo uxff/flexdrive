@@ -108,13 +108,22 @@ func (w *Worker) Start() error {
 		time.Sleep(time.Millisecond * 100)
 	}
 
+	needElect := true
+
 	// 抢占式选举 最快选举好的直接广播给别人 让别人无条件服从
 	masterId := w.FindFollowedMaster()
 	if masterId != "" {
 		// 如果master也在follow自己，则比较hash字符串后在决定。字符串靠前的当master
+		masterNode, exist := w.ClusterMembersMap.Load(masterId)
+		if !exist || masterNode == nil || masterNode.Active != true {
+			log.Warnf("find followed master(%s) but not exist in my list, or inactive:%+v", masterId, masterNode)
+			needElect = true
+		} else {
+			//
+			log.Debugf("%s will follow %s from existing cluster", w.Id, masterId)
+			w.Follow(masterId)
+		}
 
-		log.Debugf("%s will follow %s from existing cluster", w.Id, masterId)
-		w.Follow(masterId)
 	} else {
 		log.Debugf("cannot find out existing master, will elect new master.")
 		w.ElectMaster()
@@ -218,23 +227,27 @@ func (w *Worker) KeepRegistered() {
 	}
 }
 
-func (w *Worker) Follow(masterId string) {
+func (w *Worker) Follow(masterId string) error {
 	// target := w.ClusterMembers[masterId]
 	target, ok := w.ClusterMembersMap.Load(masterId)
 	if !ok {
 		log.Errorf("master(%s) not exist when to follow, this cannot be happen", masterId)
-		return
+		return fmt.Errorf("master(%s) not exist when to follow", masterId)
 	}
+
+	// check if master follows me
+
 	if target.MasterId != "" && target.MasterId != target.Id {
 		// 跟随主人的主人
 		//return w.Follow(target.MasterId)
-		log.Debugf("will follow master(%s)'s master(%s)?", target.Id, target.MasterId)
+		log.Warnf("master follows others. should follow master(%s)'s master(%s)?", target.Id, target.MasterId)
 	}
 
 	w.MasterId = masterId
 	w.RegisterToMates()
 
 	// as same as PerformFollower
+	return nil
 }
 
 // 选择出不超时的 至少选择出自己
@@ -282,22 +295,24 @@ func (w *Worker) ElectMaster() {
 	votedMasterId := w.VoteMaster()
 	w.BroadcastVoted(votedMasterId)
 
+	log.Debugf("%s voted %s as master and will follow", w.Id, votedMasterId)
 	w.Follow(votedMasterId)
 	//w.VotedMasterId = ""
 }
 
+// find existing master. Make sure this master has been follow by more than half of total members
 func (w *Worker) FindFollowedMaster() string {
 	masterMap := make(map[string]int, 0)
 	// for mateId := range w.ClusterMembers {
 	memberCnt := w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
-		if mate.Active {
-			masterMap[mateId]++
+		if mate.Active && mate.MasterId != "" {
+			masterMap[mate.MasterId]++
 		}
 	})
 
 	for masterId, followerNum := range masterMap {
 		// if followerNum >= len(w.ClusterMembers)/2 {
-		if followerNum >= memberCnt/2 { // BUG HERE!
+		if followerNum > memberCnt/2 { // BUG HERE!
 			log.Debugf("find a master(%s) with a number of followers(%d) that over half the total:%d", masterId, followerNum, memberCnt/2)
 			return masterId
 		}
