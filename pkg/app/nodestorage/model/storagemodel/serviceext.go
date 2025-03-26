@@ -30,8 +30,9 @@ func (n *NodeStorage) AttachService() {
 			return nil, errors.New("when handle saveFile, fileIndexId cannot be 0")
 		}
 
-		fromNode := n.Worker.ClusterMembers[fromId]
-		if fromNode == nil {
+		// fromNode := n.Worker.ClusterMembers[fromId]
+		fromNode, exist := n.Worker.ClusterMembersMap.Load(fromId)
+		if !exist || fromNode == nil {
 			//w.JsonError(c, "fromId has no real node")
 			log.Errorf("when savefile fromId:%s has no real node", fromId)
 			return nil, errors.New("fromId has no real node")
@@ -87,7 +88,12 @@ func (n *NodeStorage) DemandMateSaveFile(mateId string, fileIndexId int, asNodeL
 	urlVal.Add("asNodeLevel", asNodeLevel)
 	//val, _ := json.Marshal(msg)
 	log.Debugf("will demand savefile: %+v", urlVal)
-	_, err := n.Worker.GetPingableWorker().MsgTo(n.Worker.ClusterMembers[mateId].ServiceAddr, "savefile", "", urlVal)
+	mate, exist := n.Worker.ClusterMembersMap.Load(mateId)
+	if !exist {
+		log.Errorf("mate(%s) not exist while DemandMateSaveFile", mateId)
+	}
+	// _, err := n.Worker.GetPingableWorker().MsgTo(n.Worker.ClusterMembers[mateId].ServiceAddr, "savefile", "", urlVal)
+	_, err := n.Worker.GetPingableWorker().MsgTo(mate.ServiceAddr, "savefile", "", urlVal)
 	if err != nil {
 		log.Errorf("demandMateSaveFile(%s, %d) failed:%v", mateId, fileIndexId, err)
 	}

@@ -13,14 +13,14 @@ func init() {
 }
 
 type FileIndexListRequest struct {
-	CreateStart string `form:"createStart"`
-	CreateEnd   string `form:"createEnd"`
-	Name        string `form:"fileName"`
-	FileHash    string `form:"fileHash"`
-	NodeId      int    `form:"nodeId"`
-	Status      int    `form:"status"`
-	Page        int    `form:"page"`
-	PageSize    int    `form:"pagesize"`
+	CreateStart string `json:"createStart"`
+	CreateEnd   string `json:"createEnd"`
+	Name        string `json:"fileName"`
+	FileHash    string `json:"fileHash"`
+	NodeId      int    `json:"nodeId"`
+	Status      int    `json:"status"`
+	Page        int    `json:"page"`
+	PageSize    int    `json:"pagesize"`
 }
 
 func (r *FileIndexListRequest) ToCondition() (condition map[string]interface{}) {
@@ -67,7 +67,7 @@ func FileIndexList(c *gin.Context) {
 
 	// 请求参数校验
 	req := &FileIndexListRequest{}
-	err := c.ShouldBindQuery(req)
+	err := c.ShouldBindJSON(req)
 	if err != nil {
 		JsonErr(c, ErrInvalidParam)
 		return

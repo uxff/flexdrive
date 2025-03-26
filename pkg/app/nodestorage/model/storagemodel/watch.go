@@ -39,7 +39,8 @@ func (n *NodeStorage) WatchMates() error {
 				mate.UpdateById([]string{"status"})
 				log.Debugf("a mate is down: %s", mate.NodeAddr)
 				//n.Worker.KickMate(mate.Id)//todo locked
-				delete(n.Worker.ClusterMembers, mate.NodeName)
+				// delete(n.Worker.ClusterMembers, mate.NodeName)
+				n.Worker.ClusterMembersMap.Delete(mate.NodeName)
 			} else {
 				log.Debugf("detected a mate(%s):%s ", mate.NodeName, mate.NodeAddr)
 				n.Worker.AddMates([]string{mate.NodeAddr})

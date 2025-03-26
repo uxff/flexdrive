@@ -13,6 +13,7 @@ import (
 
 	"github.com/uxff/flexdrive/pkg/app/nodestorage/pingableif"
 	"github.com/uxff/flexdrive/pkg/log"
+	"github.com/uxff/flexdrive/pkg/utils"
 )
 
 const RegisterTimeoutSec = 100 // 已注册的超时检测
@@ -35,7 +36,8 @@ type Worker struct {
 	LastRegistered int64 // timestamp
 	Active         bool  // is active
 
-	ClusterMembers map[string]*Worker `json:"-"`
+	ClusterMembers    map[string]*Worker `json:"-"`
+	ClusterMembersMap *utils.Map[string, *Worker]
 
 	clusterAssist *clusterHelper
 
@@ -55,6 +57,7 @@ func NewWorker(serviceAddr string, clusterId string) *Worker {
 
 	w.clusterAssist = NewClusterHelper(w.ClusterId)
 	w.ClusterMembers = make(map[string]*Worker, 0)
+	w.ClusterMembersMap = &utils.Map[string, *Worker]{}
 
 	w.Id = w.clusterAssist.genMemberHash(w.ServiceAddr)
 
@@ -87,15 +90,17 @@ func (w *Worker) Start() error {
 	for {
 		// 检查节点是否就位
 		registeredCount := 0
-		for mateId := range w.ClusterMembers {
-			if w.ClusterMembers[mateId].Active {
+		// for mateId := range w.ClusterMembers {
+		memberCnt := w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
+			if mate.Active {
 				registeredCount++
 			}
-		}
+		})
 
 		// 有半数节点就位就可以继续了
-		if registeredCount > len(w.ClusterMembers)/2 {
-			log.Debugf("%d/%d mates has been registered", registeredCount, len(w.ClusterMembers))
+		// if registeredCount > len(w.ClusterMembers)/2 {
+		if registeredCount > memberCnt/2 {
+			log.Debugf("%d/%d mates has been registered", registeredCount, memberCnt)
 			break
 		}
 
@@ -122,9 +127,10 @@ func (w *Worker) Start() error {
 
 			// 清掉已经注册的master 需要重新注册
 			w.MasterId = ""
-			for mateId := range w.ClusterMembers {
-				w.ClusterMembers[mateId].MasterId = ""
-			}
+			// for mateId := range w.ClusterMembers {
+			w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
+				mate.MasterId = ""
+			})
 
 			w.ElectMaster()
 
@@ -157,34 +163,37 @@ func (w *Worker) RegisterToMates() {
 
 	wg := &sync.WaitGroup{}
 
-	for mateId := range w.ClusterMembers {
+	// for mateId := range w.ClusterMembers {
+	w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
 		wg.Add(1)
-		go func(mateId string) {
+		go func(mateId string, mate *Worker) {
 			defer wg.Done()
 			//w.PingNode(mateId)
 			if w.Id != mateId {
 				metaData := url.Values{
 					"masterId": []string{w.MasterId},
 				}
-				res, err := w.pingableWorker.PingTo(w.ClusterMembers[mateId].ServiceAddr, w.Id, metaData)
+				// res, err := w.pingableWorker.PingTo(w.ClusterMembers[mateId].ServiceAddr, w.Id, metaData)
+				res, err := w.pingableWorker.PingTo(mate.ServiceAddr, w.Id, metaData)
 				if err == nil && res != nil {
 					w.RegisterIn(mateId, res.Get("masterId"))
 				}
 			}
-		}(mateId)
-	}
+		}(mateId, mate)
+	})
 
 	wg.Wait()
 
 	// flush active status
-	for mateId := range w.ClusterMembers {
-		w.ClusterMembers[mateId].Active = !w.ClusterMembers[mateId].isTimeout()
-		if mateId == w.MasterId && !w.ClusterMembers[mateId].Active {
+	// for mateId := range w.ClusterMembers {
+	w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
+		mate.Active = !mate.isTimeout() // TODO 此处有并发读写问题 待测试
+		if mateId == w.MasterId && !mate.Active {
 			// master 超时 通知重新选举
 			w.MasterId = ""
 			w.masterGoneChan <- true
 		}
-	}
+	})
 
 }
 
@@ -207,7 +216,12 @@ func (w *Worker) KeepRegistered() {
 }
 
 func (w *Worker) Follow(masterId string) {
-	target := w.ClusterMembers[masterId]
+	// target := w.ClusterMembers[masterId]
+	target, ok := w.ClusterMembersMap.Load(masterId)
+	if !ok {
+		log.Errorf("master(%s) not exist when to follow, this cannot be happen", masterId)
+		return
+	}
 	if target.MasterId != "" && target.MasterId != target.Id {
 		// 跟随主人的主人
 		//return w.Follow(target.MasterId)
@@ -221,18 +235,27 @@ func (w *Worker) Follow(masterId string) {
 
 // 选择出不超时的 至少选择出自己
 func (w *Worker) VoteMaster() string {
-	if len(w.ClusterMembers) == 0 {
-		// must use self
-		return w.Id
-	}
+	// if len(w.ClusterMembers) == 0 {
+	// 	// must use self
+	// 	return w.Id
+	// }
 
 	allMateIds := make([]string, 0)
-	for mateId := range w.ClusterMembers {
-		if !w.Active {
-			// 超时的节点不能参与投票
-			continue
+	// for mateId := range w.ClusterMembers {
+	// 	if !w.Active {
+	// 		// 超时的节点不能参与投票
+	// 		continue
+	// 	}
+	// 	allMateIds = append(allMateIds, mateId)
+	// }
+	memberCnt := w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
+		if mate.Active {
+			allMateIds = append(allMateIds, mateId)
 		}
-		allMateIds = append(allMateIds, mateId)
+	})
+
+	if memberCnt == 0 {
+		return w.Id
 	}
 
 	if len(allMateIds) == 0 {
@@ -261,14 +284,16 @@ func (w *Worker) ElectMaster() {
 
 func (w *Worker) FindFollowedMaster() string {
 	masterMap := make(map[string]int, 0)
-	for mateId := range w.ClusterMembers {
-		if w.ClusterMembers[mateId].Active {
+	// for mateId := range w.ClusterMembers {
+	memberCnt := w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
+		if mate.Active {
 			masterMap[mateId]++
 		}
-	}
+	})
 
 	for masterId, followerNum := range masterMap {
-		if followerNum >= len(w.ClusterMembers)/2 {
+		// if followerNum >= len(w.ClusterMembers)/2 {
+		if followerNum >= memberCnt/2 {
 			return masterId
 		}
 	}
@@ -276,7 +301,6 @@ func (w *Worker) FindFollowedMaster() string {
 	return ""
 }
 
-//
 func (w *Worker) PerformMaster() {
 
 	log.Debugf("worker %s will perform master", w.Id)
@@ -287,13 +311,14 @@ func (w *Worker) PerformMaster() {
 		select {
 		case <-tick.C:
 			if w.MasterId == w.Id {
-				for mateId := range w.ClusterMembers {
-					if mateId != w.Id && w.ClusterMembers[mateId].MasterId != w.MasterId {
+				// for mateId := range w.ClusterMembers {
+				w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
+					if mateId != w.Id && mate.MasterId != w.MasterId {
 						// if timeout?
 						log.Debugf("demand %s to follow me %s", mateId, w.MasterId)
 						go w.DemandFollow(mateId, w.MasterId)
 					}
-				}
+				})
 			}
 		case <-w.quitChan:
 			log.Debugf("recv quit signal, than stop PerformMaster")
@@ -343,31 +368,40 @@ func (w *Worker) isTimeout() bool {
 }
 
 func (w *Worker) BroadcastVoted(masterId string) {
-	for mateId := range w.ClusterMembers {
+	// for mateId := range w.ClusterMembers {
+	w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
 		if mateId == w.Id {
 			// 跳过自己
-			continue
+			return
 		}
 		go w.DemandFollow(mateId, masterId)
-	}
+	})
 }
 
 func (w *Worker) AddMates(mateServiceAddrs []string) {
 	for _, node := range mateServiceAddrs {
 		mate := NewWorker(node, w.ClusterId)
-		w.ClusterMembers[mate.Id] = mate
+		// w.ClusterMembers[mate.Id] = mate
+		w.ClusterMembersMap.Store(mate.Id, mate)
 	}
 }
 
 func (w *Worker) RegisterIn(mateId string, masterIdOfMate string) {
-	if _, ok := w.ClusterMembers[mateId]; !ok {
-		log.Debugf("when %s register in, not exist, my members:%+v", mateId, w.ClusterMembers)
+	// if _, ok := w.ClusterMembers[mateId]; !ok {
+	mate, ok := w.ClusterMembersMap.Load(mateId)
+	if !ok {
+		mates := make([]string, 0)
+		w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) { mates = append(mates, mateId) })
+		log.Debugf("when mate %s register in, not exist in my member list:%+v", mateId, mates)
 		return
 	}
 
-	w.ClusterMembers[mateId].LastRegistered = time.Now().Unix()
-	w.ClusterMembers[mateId].MasterId = masterIdOfMate
-	w.ClusterMembers[mateId].Active = true
+	// w.ClusterMembers[mateId].LastRegistered = time.Now().Unix()
+	// w.ClusterMembers[mateId].MasterId = masterIdOfMate
+	// w.ClusterMembers[mateId].Active = true
+	mate.LastRegistered = time.Now().Unix()
+	mate.MasterId = masterIdOfMate
+	mate.Active = true
 }
 
 func (w *Worker) genServeUrl(method string, params url.Values) string {
@@ -406,7 +440,8 @@ func (w *Worker) ServePingable() error {
 
 	// @param string nodeId
 	w.pingableWorker.RegisterMsgHandler(MsgActionKickNode, func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error) {
-		delete(w.ClusterMembers, reqParam.Get("nodeId"))
+		// delete(w.ClusterMembers, reqParam.Get("nodeId"))
+		w.ClusterMembersMap.Delete(reqParam.Get("nodeId"))
 		return nil, nil
 	})
 
@@ -423,7 +458,8 @@ func (w *Worker) ServePingable() error {
 			log.Debugf("i(%s) have already follow %s while recv demand follow", w.Id, masterId)
 			return nil, nil
 		}
-		masterWorker, masterExist := w.ClusterMembers[masterId]
+		// masterWorker, masterExist := w.ClusterMembers[masterId]
+		masterWorker, masterExist := w.ClusterMembersMap.Load(masterId)
 		if !masterExist {
 			log.Debugf("will follow but masterId:" + masterId + " not exist")
 			return nil, nil

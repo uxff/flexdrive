@@ -14,6 +14,7 @@ type Node struct {
 	NodeName       string    `xorm:"not null comment('节点名') VARCHAR(16)"`
 	NodeAddr       string    `xorm:"not null comment('节点在集群中的通信地址') VARCHAR(32)"`
 	ClusterId      string    `xorm:"not null comment('集群id') VARCHAR(40)"`
+	Follow         string    `xorm:"not null comment('node who I follow') VARCHAR(40)"`
 	TotalSpace     int64     `xorm:"not null default 0 comment('全部空间 单位KB') BIGINT(20)"`
 	UsedSpace      int64     `xorm:"not null default 0 comment('使用的空间 单位KB') BIGINT(20)"`
 	UnusedSpace    int64     `xorm:"not null default 0 comment('未使用的空间 单位KB') BIGINT(20)"`
