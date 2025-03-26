@@ -36,7 +36,7 @@ type Worker struct {
 	LastRegistered int64 // timestamp
 	Active         bool  // is active
 
-	ClusterMembers    map[string]*Worker `json:"-"`
+	// ClusterMembers    map[string]*Worker `json:"-"`
 	ClusterMembersMap *utils.Map[string, *Worker]
 
 	clusterAssist *clusterHelper
@@ -56,7 +56,7 @@ func NewWorker(serviceAddr string, clusterId string) *Worker {
 	w.ClusterId = clusterId
 
 	w.clusterAssist = NewClusterHelper(w.ClusterId)
-	w.ClusterMembers = make(map[string]*Worker, 0)
+	// w.ClusterMembers = make(map[string]*Worker, 0)
 	w.ClusterMembersMap = &utils.Map[string, *Worker]{}
 
 	w.Id = w.clusterAssist.genMemberHash(w.ServiceAddr)
