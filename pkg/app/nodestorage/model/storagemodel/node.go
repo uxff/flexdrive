@@ -71,7 +71,11 @@ func StartNode(storageDir string, httpAddr string, clusterId string, clusterMemb
 	// node.Worker.SetPingableWorker(grpcpingable.NewGrpcWorker()) //grpcpingable
 
 	// update mates list
-	node.Worker.UpdateMates(strings.Split(clusterMembers, ","))
+	memberCnt := node.Worker.UpdateMates(strings.Split(clusterMembers, ","))
+	if memberCnt == 0 {
+		log.Errorf("no CLUSTERMEMBERS assigned in env!")
+		return fmt.Errorf("no CLUSTERMEMBERS assigned in env!")
+	}
 
 	var err error
 	node.NodeEnt, err = dao.GetNodeByWorkerId(node.Worker.Id) //&dao.Node{}

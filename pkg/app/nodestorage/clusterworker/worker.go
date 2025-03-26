@@ -418,7 +418,7 @@ func (w *Worker) BroadcastVoted(masterId string) {
 
 // Use should be checked strictly. mateServiceAddrs should be a complete list, including self.
 // Will not trigger election.
-func (w *Worker) UpdateMates(mateServiceAddrs []string) {
+func (w *Worker) UpdateMates(mateServiceAddrs []string) (memberCnt int) {
 	// re-use exist mate
 	// w.ClusterMembersMap.Range(func(mateId string, mate *Worker) bool {
 	// 	w.ClusterMembersMap.Delete(mateId)
@@ -439,7 +439,7 @@ func (w *Worker) UpdateMates(mateServiceAddrs []string) {
 	}
 
 	// check if ClusterMembers does not include node, then delete it
-	memberCnt := w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
+	memberCnt = w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
 		for _, inputMateAddr := range mateServiceAddrs {
 			if mate.ServiceAddr != inputMateAddr {
 				w.ClusterMembersMap.Delete(mateId)
@@ -450,6 +450,7 @@ func (w *Worker) UpdateMates(mateServiceAddrs []string) {
 	log.Debugf("mate list updated:%v cnt:%d", mateServiceAddrs, memberCnt)
 
 	// TODO: how about I was not in the list?
+	return
 }
 
 // Use should be checked strictly
