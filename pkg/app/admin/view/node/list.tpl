@@ -70,7 +70,7 @@
                 {{range .list}}
                 <tr>
                     <td>{{.Id}}</td>
-                    <td>{{.NodeName}}({{if eq .Follow .NodeName}}I'm Master.{{else}} follow: {{.Follow}}{{end}})</td>
+                    <td>{{.NodeName}}({{if eq .Follow .NodeName}}<b class="text-danger">I'm Master.</b>{{else}} follow: {{.Follow}}{{end}})</td>
                     <td>{{.NodeAddr}}</td>
                     <td>{{space4Human .UsedSpace }} / {{space4Human .TotalSpace }}</td>
                     <td>{{.FileCount }}</td>

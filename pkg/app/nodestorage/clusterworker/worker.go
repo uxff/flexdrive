@@ -16,8 +16,8 @@ import (
 	"github.com/uxff/flexdrive/pkg/utils"
 )
 
-const RegisterTimeoutSec = 100 // 已注册的超时检测
-const RegisterIntervalSec = 5  // 作为worker或master注册间隔
+const RegisterTimeoutSec = 12 // 已注册的超时检测
+const RegisterIntervalSec = 5 // 作为worker或master注册间隔
 
 const (
 	MsgActionFollow      = "cluster.follow"
@@ -207,7 +207,7 @@ func (w *Worker) RegisterToMates() {
 	// flush active status, if master is offline, then notice to elect new one
 	// for mateId := range w.ClusterMembers {
 	w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
-		if mate.isTimeout() {
+		if mate.Id != w.Id && mate.isTimeout() {
 			mate.Active = ActiveOffline
 		}
 		// mate.Active = !mate.isTimeout()
@@ -425,17 +425,17 @@ func (w *Worker) UpdateMates(mateServiceAddrs []string) (memberCnt int) {
 	// 	return true
 	// })
 
-	for _, node := range mateServiceAddrs {
-		nodeId := w.clusterAssist.genMemberHash(node)
-		_, exist := w.ClusterMembersMap.Load(nodeId)
+	for _, nodeAddr := range mateServiceAddrs {
+		nodeId := w.clusterAssist.genMemberHash(nodeAddr)
+		mate, exist := w.ClusterMembersMap.Load(nodeId)
 		if !exist {
-			mate := NewWorker(node, w.ClusterId)
-			if mate.Id == w.Id {
-				mate.Active = ActiveOnline // at least myself online
-			}
+			mate = NewWorker(nodeAddr, w.ClusterId)
 			// w.ClusterMembers[mate.Id] = mate
 			w.ClusterMembersMap.Store(mate.Id, mate)
 			log.Debugf("%s joined my(%s) cluster(%s)", mate.Id, w.Id, w.ClusterId)
+		}
+		if mate.Id == w.Id {
+			mate.MarkActive() // at least myself online
 		}
 	}
 
@@ -478,9 +478,9 @@ func (w *Worker) RegisterIn(mateId string, masterIdOfMate string) {
 	// w.ClusterMembers[mateId].LastRegistered = time.Now().Unix()
 	// w.ClusterMembers[mateId].MasterId = masterIdOfMate
 	// w.ClusterMembers[mateId].Active = true
-	mate.LastRegistered = time.Now().Unix()
+	// mate.LastRegistered = time.Now().Unix()
+	mate.MarkActive()
 	mate.MasterId = masterIdOfMate
-	mate.Active = ActiveOnline
 }
 
 func (w *Worker) genServeUrl(method string, params url.Values) string {
@@ -514,7 +514,7 @@ func (w *Worker) ServePingable() error {
 		if nodesStr := reqParam.Get("nodes"); nodesStr != "" {
 			nodesArr := strings.Split(nodesStr, ",")
 			w.UpdateMates(nodesArr)
-			w.MarkActive(fromId, ActiveOnline) // at least mark fromId active
+			w.MarkMateActive(fromId, ActiveOnline) // at least mark fromId active
 			// trigger election
 			go w.ElectMaster()
 		}
@@ -526,7 +526,7 @@ func (w *Worker) ServePingable() error {
 		// delete(w.ClusterMembers, reqParam.Get("nodeId"))
 		// w.ClusterMembersMap.Delete(reqParam.Get("nodeId")) // TODO: Not to kick, do mark inactive instead
 		targetId := reqParam.Get("nodeId")
-		w.MarkActive(targetId, ActiveOffline)
+		w.MarkMateActive(targetId, ActiveOffline)
 		return nil, nil
 	})
 
@@ -550,6 +550,15 @@ func (w *Worker) ServePingable() error {
 			return nil, nil
 		}
 
+		// if I am a master, only follow fromId if compared as I'm larger
+		if w.Id == w.MasterId {
+			if w.Id < masterId {
+				log.Warnf("I(%s) do not fucking follow you mate(%s)", w.Id, masterId)
+				return nil, nil
+			}
+			log.Warnf("I(%s) am a master, but I surrender to follow %s", w.Id, masterId)
+		}
+
 		// masterPingRes := w.PingNode(masterId)
 		metaData := url.Values{
 			"masterId": []string{w.MasterId},
@@ -557,14 +566,14 @@ func (w *Worker) ServePingable() error {
 		masterPingRes, err := w.pingableWorker.PingTo(masterWorker.ServiceAddr, w.Id, metaData)
 		if err != nil || masterPingRes == nil {
 			log.Debugf("will follow(%s) but ping error:%v", err)
-			return nil, err
+			return nil, nil
 		}
 		// if masterPingRes.Code != 0 {
 		// 	log.Debugf("will follow(%s) but ping error:" + masterPingRes.Get("masterId"))
 		// 	return nil, nil
 		// }
 
-		masterId = masterPingRes.Get("masterId") // follow master's master
+		// masterId = masterPingRes.Get("masterId") // follow master's master
 		w.Follow(masterId)
 
 		go w.RegisterToMates()
@@ -577,8 +586,7 @@ func (w *Worker) ServePingable() error {
 		log.Debugf("receive ping from:%s meta:%s", fromId, metaData)
 		mate, ok := w.ClusterMembersMap.Load(fromId)
 		if ok {
-			mate.Active = ActiveOnline
-			mate.LastRegistered = time.Now().Unix()
+			mate.MarkActive()
 
 			// parse mate.MasterId
 			reqVal, err := url.ParseQuery(metaData)
@@ -607,10 +615,25 @@ func (w *Worker) IsActive() bool {
 	return w.Active == ActiveOnline
 }
 
-func (w *Worker) MarkActive(mateId string, mark int) {
+func (w *Worker) MarkMateActive(mateId string, mark int) {
 	mate, ok := w.ClusterMembersMap.Load(mateId)
 	if ok {
 		mate.Active = mark
-		mate.LastRegistered = time.Now().Unix()
+		if mark == ActiveOnline {
+			mate.LastRegistered = time.Now().Unix()
+		}
 	}
+}
+
+func (w *Worker) MarkActive() {
+	w.Active = ActiveOnline
+	w.LastRegistered = time.Now().Unix()
+}
+
+func (w *Worker) MarkOffline() {
+	w.Active = ActiveOffline
+}
+
+func (w *Worker) MarkDeactive() {
+	w.Active = Deactivated
 }

@@ -52,7 +52,7 @@ func (n *NodeStorage) WatchMatesFronDB() error {
 				// delete(n.Worker.ClusterMembers, mate.NodeName)
 				// n.Worker.ClusterMembersMap.Delete(mate.NodeName)
 			} else {
-				log.Debugf("detected a mate(%s):%s ", mate.NodeName, mate.NodeAddr)
+				// log.Debugf("detected a mate(%s):%s ", mate.NodeName, mate.NodeAddr)
 				// n.Worker.AddMates([]string{mate.NodeAddr}) // 不能从mysql数据库来决定集群节点数量
 			}
 		}
