@@ -6,6 +6,7 @@ import (
 	"os"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	//worker "github.com/uxff/flexdrive/pkg/app/nodestorage/httpworker"
@@ -58,7 +59,6 @@ func StartNode(storageDir string, httpAddr string, clusterId string, clusterMemb
 	node.WorkerAddr = httpAddr
 
 	// 准备makedir
-
 	if !DirExist(node.StorageDir) {
 		err := os.MkdirAll(node.StorageDir, os.ModeDir|os.ModePerm)
 		if err != nil {
@@ -68,10 +68,10 @@ func StartNode(storageDir string, httpAddr string, clusterId string, clusterMemb
 
 	node.Worker = worker.NewWorker(node.WorkerAddr, node.ClusterId)     //httpworker
 	node.Worker.SetPingableWorker(httppingable.NewHttpPingableWorker()) //httppingable
-	// node.Worker.SetPingableWorker(grpcpingable.NewGrpcWorker()) //httppingable
+	// node.Worker.SetPingableWorker(grpcpingable.NewGrpcWorker()) //grpcpingable
 
-	// addMates is instead by auto find mates
-	//node.Worker.AddMates(strings.Split(node.ClusterMembers, ","))
+	// update mates list
+	node.Worker.UpdateMates(strings.Split(node.ClusterMembers, ","))
 
 	var err error
 	node.NodeEnt, err = dao.GetNodeByWorkerId(node.Worker.Id) //&dao.Node{}

@@ -2,8 +2,9 @@ package base
 
 // 行数据的状态
 const (
-	StatusNormal  = 1
-	StatusDeleted = 99
+	StatusNormal   = 1
+	StatusInactive = 2
+	StatusDeleted  = 99
 )
 
 const (
@@ -14,6 +15,7 @@ const (
 )
 
 var StatusMap = map[int]string{
-	StatusNormal:  "正常",
-	StatusDeleted: "已删除",
+	StatusNormal:   "正常",
+	StatusInactive: "不活跃",
+	StatusDeleted:  "已删除",
 }

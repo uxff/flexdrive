@@ -49,7 +49,7 @@ var (
 	serveCustomer  = ""              //"0.0.0.0:10012"
 	serveCluster   = "0.0.0.0:10013" // must be set
 	clusterMembers = ""              //"0.0.0.0:10013,0.0.0.0:10023,0.0.0.0:10033"
-	clusterId      = "flexdrive"
+	clusterId      = "mycluster1"
 	dataDsn        = "mysql://user:pass@tcp(0.0.0.0:3306)/flexdrive?charset=utf8mb4&parseTime=True&loc=Local"
 	cacheDsn       = ""
 	storageDir     = "/tmp/flexdrive/"

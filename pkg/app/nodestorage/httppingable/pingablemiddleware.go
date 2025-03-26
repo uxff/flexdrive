@@ -5,7 +5,7 @@ package httppingable
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 
@@ -75,7 +75,7 @@ func (w *HttpPingableWorker) PingTo(mateAddr string, fromId string, metaData url
 		return nil, err
 	}
 
-	resBuf, err := ioutil.ReadAll(resp.Body)
+	resBuf, err := io.ReadAll(resp.Body)
 	defer resp.Body.Close()
 	if err != nil {
 		return nil, err
@@ -127,7 +127,7 @@ func (w *HttpPingableWorker) MsgTo(mateAddr, action, msgId string, param url.Val
 		return nil, err
 	}
 
-	resBuf, err := ioutil.ReadAll(resp.Body)
+	resBuf, err := io.ReadAll(resp.Body)
 	defer resp.Body.Close()
 	if err != nil {
 		res.Code = 1
@@ -197,20 +197,6 @@ func (w *HttpPingableWorker) Serve(serviceAddr string) error {
 		res.Code, res.Msg = 1, "no pong handler registered in HttpPingaleWorker"
 
 		c.JSON(http.StatusOK, res)
-
-		// if _, ok := w.worker.ClusterMembers[req.GetFromId()]; !ok {
-		// 	//w.JsonError(c, "fromId:"+fromId+" not exist")
-		// 	res.Code, res.Msg = 1, "fromId not found: "+req.FromId
-		// 	c.JSON(http.StatusOK, res)
-		// 	return
-		// }
-
-		// //masterId := c.Query("masterId")
-
-		// w.worker.RegisterIn(req.FromId, req.MasterId)
-
-		// c.JSON(http.StatusOK, res)
-		//w.JsonOk(c)
 	})
 
 	// 收到消息

@@ -33,8 +33,8 @@ func (c *clusterHelper) genClusterKeyBase() string {
 //	return c.genClusterKeyBase() + membersKey
 //}
 
-func (c *clusterHelper) genMemberHash(memberId string) string {
-	s := c.genClusterKeyBase() + memberId
+func (c *clusterHelper) genMemberHash(memberAddr string) string {
+	s := c.genClusterKeyBase() + memberAddr
 	h := md5.New()
 	h.Write([]byte(s))
 	return hex.EncodeToString(h.Sum(nil))
