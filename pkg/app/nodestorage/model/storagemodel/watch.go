@@ -18,7 +18,7 @@ var presetNodeList []*clusterworker.Worker
 
 // watch and clear lost mates in db
 func (n *NodeStorage) WatchMates() error {
-	return nil
+	return n.WatchMatesFronDB()
 }
 func (n *NodeStorage) WatchMatesFromEnv() error {
 	return nil

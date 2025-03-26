@@ -341,7 +341,7 @@ func (w *Worker) FindFollowedMaster() string {
 
 func (w *Worker) PerformMaster() {
 
-	log.Debugf("worker %s will perform master", w.Id)
+	log.Debugf("worker %s will perform master, real-time master:%s", w.Id, w.MasterId)
 
 	tick := time.NewTicker(time.Second * RegisterIntervalSec)
 	defer tick.Stop()
@@ -566,7 +566,7 @@ func (w *Worker) ServePingable() error {
 
 	w.pingableWorker.RegisterPong(func(fromId, toId, metaData string) (url.Values, error) {
 		// w.MarkActive(fromId, ActiveOnline) // at least mark fromId active
-		log.Debugf("receive pong from:%s meta:%s", fromId, metaData)
+		log.Debugf("receive ping from:%s meta:%s", fromId, metaData)
 		mate, ok := w.ClusterMembersMap.Load(fromId)
 		if ok {
 			mate.Active = ActiveOnline
@@ -581,7 +581,7 @@ func (w *Worker) ServePingable() error {
 			mateMasterId := reqVal.Get("masterId")
 
 			if mateMasterId != w.MasterId {
-				log.Warnf("pong from %s master %s diff from my master:%s", fromId, mateMasterId, w.MasterId)
+				log.Warnf("receive ping from %s master %s diff from my master:%s", fromId, mateMasterId, w.MasterId)
 				// TODO: how to do?
 			}
 		}
