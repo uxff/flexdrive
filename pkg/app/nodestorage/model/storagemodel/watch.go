@@ -19,7 +19,8 @@ func (n *NodeStorage) WatchMates() error {
 		// register self
 		n.NodeEnt.LastRegistered = time.Now()
 		n.NodeEnt.Status = base.StatusNormal
-		n.NodeEnt.UpdateById([]string{"lastRegistered", "status"})
+		n.NodeEnt.Follow = n.Worker.MasterId
+		n.NodeEnt.UpdateById([]string{"lastRegistered", "status", "follow"})
 
 		// check mates are registered
 		nodeList := make([]dao.Node, 0)

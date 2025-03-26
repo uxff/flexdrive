@@ -114,6 +114,7 @@ func (w *Worker) Start() error {
 		log.Debugf("%s will follow %s from existing cluster", w.Id, masterId)
 		w.Follow(masterId)
 	} else {
+		log.Debugf("cannot find out existing master, will elect new master.")
 		w.ElectMaster()
 	}
 
@@ -230,6 +231,7 @@ func (w *Worker) Follow(masterId string) {
 
 	w.MasterId = masterId
 	w.RegisterToMates()
+
 	// as same as PerformFollower
 }
 
