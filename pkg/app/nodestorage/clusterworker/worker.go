@@ -108,8 +108,8 @@ func (w *Worker) Start() error {
 
 		// 有半数节点就位就可以继续了
 		// if registeredCount > len(w.ClusterMembers)/2 {
-		if registeredCount > memberCnt/2 {
-			log.Debugf("%d/%d mates has been registered", registeredCount, memberCnt)
+		if registeredCount*2 >= memberCnt {
+			log.Debugf("%d/%d mates has been registered as active, will start electing", registeredCount, memberCnt)
 			break
 		}
 
@@ -272,7 +272,7 @@ func (w *Worker) VoteAMaster() string {
 	// 	return w.Id
 	// }
 
-	allMateIds := make([]string, 0)
+	allCondidateMateIds := make([]string, 0)
 	// for mateId := range w.ClusterMembers {
 	// 	if !w.Active {
 	// 		// 超时的节点不能参与投票
@@ -282,7 +282,7 @@ func (w *Worker) VoteAMaster() string {
 	// }
 	memberCnt := w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
 		if mate.IsActive() {
-			allMateIds = append(allMateIds, mateId)
+			allCondidateMateIds = append(allCondidateMateIds, mateId)
 		}
 	})
 
@@ -290,17 +290,17 @@ func (w *Worker) VoteAMaster() string {
 		return w.Id
 	}
 
-	if len(allMateIds) == 0 {
+	if len(allCondidateMateIds) == 0 {
 		// must use self
 		log.Debugf("vote to self:%s", w.Id)
 		return w.Id
 	}
 
-	sort.Strings(allMateIds)
+	sort.Strings(allCondidateMateIds)
 
-	expectedMasterId := allMateIds[0]
+	expectedMasterId := allCondidateMateIds[0]
 
-	log.Debugf("w(%v) voted master:%v", w.Id, expectedMasterId)
+	log.Debugf("w(%v) voted master:%v in %d mates", w.Id, expectedMasterId, len(allCondidateMateIds))
 
 	return expectedMasterId
 }
@@ -354,7 +354,7 @@ func (w *Worker) PerformMaster() {
 					if mateId != w.Id && mate.MasterId != w.MasterId {
 						// if timeout?
 						log.Debugf("demand %s to follow me %s", mateId, w.MasterId)
-						go w.DemandFollow(mateId, w.MasterId)
+						go w.DemandFollow(mate, w.MasterId)
 					}
 				})
 			}
@@ -371,13 +371,13 @@ func (w *Worker) ToString() string {
 	return string(buf)
 }
 
-func (w *Worker) DemandFollow(mateId string, masterId string) error {
+func (w *Worker) DemandFollow(mate *Worker, masterId string) error {
 
-	_, err := w.pingableWorker.MsgTo(mateId, MsgActionFollow, "", url.Values{"masterId": {masterId}})
+	_, err := w.pingableWorker.MsgTo(mate.ServiceAddr, MsgActionFollow, "", url.Values{"masterId": {masterId}})
 	//res := w.MessageTo("follow", mateId, nil) // instead by pingableWorker.MsgTo
 
 	if err != nil {
-		log.Debugf("i:%s demand:%s follow:%s error:%v", w.Id, mateId, masterId, err)
+		log.Debugf("i:%s demand:%s follow:%s error:%v", w.Id, mate.Id, masterId, err)
 		return err
 	}
 
@@ -412,7 +412,7 @@ func (w *Worker) BroadcastVoted(masterId string) {
 			// 跳过自己
 			return
 		}
-		go w.DemandFollow(mateId, masterId)
+		go w.DemandFollow(mate, masterId)
 	})
 }
 
