@@ -435,15 +435,22 @@ func (w *Worker) UpdateMates(mateServiceAddrs []string) (memberCnt int) {
 			}
 			// w.ClusterMembers[mate.Id] = mate
 			w.ClusterMembersMap.Store(mate.Id, mate)
+			log.Debugf("%s joined my(%s) cluster(%s)", mate.Id, w.Id, w.ClusterId)
 		}
 	}
 
 	// check if ClusterMembers does not include node, then delete it
 	memberCnt = w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
+		exist := false
 		for _, inputMateAddr := range mateServiceAddrs {
-			if mate.ServiceAddr != inputMateAddr {
-				w.ClusterMembersMap.Delete(mateId)
+			if mate.ServiceAddr == inputMateAddr {
+				exist = true
+				break
 			}
+		}
+		if !exist {
+			w.ClusterMembersMap.Delete(mateId)
+			log.Debugf("%s be kicked out my(%s) cluster(%s)", mate.Id, w.Id, w.ClusterId)
 		}
 	})
 
