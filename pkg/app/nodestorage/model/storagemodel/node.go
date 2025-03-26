@@ -55,7 +55,7 @@ func StartNode(storageDir string, httpAddr string, clusterId string, clusterMemb
 
 	node.StorageDir = storageDir
 	node.ClusterId = clusterId
-	//node.ClusterMembers = clusterMembers
+	node.ClusterMembers = clusterMembers
 	node.WorkerAddr = httpAddr
 
 	// 准备makedir
@@ -71,7 +71,7 @@ func StartNode(storageDir string, httpAddr string, clusterId string, clusterMemb
 	// node.Worker.SetPingableWorker(grpcpingable.NewGrpcWorker()) //grpcpingable
 
 	// update mates list
-	node.Worker.UpdateMates(strings.Split(node.ClusterMembers, ","))
+	node.Worker.UpdateMates(strings.Split(clusterMembers, ","))
 
 	var err error
 	node.NodeEnt, err = dao.GetNodeByWorkerId(node.Worker.Id) //&dao.Node{}
