@@ -46,8 +46,8 @@ func Insert(entityPtr interface{}) (int64, error) {
 	session := envinit.Dbs[dbname].NewSession()
 	n, err := session.Insert(entityPtr)
 
-	sql, params := session.LastSQL() // not work
-	log.Debugf("sql:%s params:%v timeused:%dms affected:%v", sql, params, time.Since(tsStart).Nanoseconds()/1000/1000, n)
+	// sql, params := session.LastSQL() // not work
+	log.Debugf("params:%+v timeused:%dms affected:%v", entityPtr, time.Since(tsStart).Nanoseconds()/1000/1000, n)
 
 	if err != nil {
 		log.Errorf("insert error:%v", err)
@@ -74,8 +74,8 @@ func GetByCol(colName string, colVal interface{}, entityPtr interface{}) (found 
 	session := envinit.Dbs[dbname].Where(colName+" = ?", colVal)
 	found, err = session.Get(entityPtr)
 
-	sql, params := session.LastSQL() // not work
-	log.Debugf("sql:%s params:%v timeused:%dms found:%v", sql, params, time.Since(tsStart).Nanoseconds()/1000/1000, found)
+	// sql, params := session.LastSQL() // not work
+	log.Debugf("params:%+v timeused:%dms found:%v", colVal, time.Since(tsStart).Nanoseconds()/1000/1000, found)
 
 	if v, ok := entityPtr.(AfterSelect); ok {
 		v.AfterSelect()
@@ -179,8 +179,8 @@ func UpdateByCol(colName string, colVal interface{}, entityPtrWithValue interfac
 	session := envinit.Dbs[dbname].Cols(cols...).Where(colName+" = ?", colVal)
 	n, err = session.Update(entityPtrWithValue)
 
-	sql, params := session.LastSQL() // not work
-	log.Debugf("sql:%s params:%v timeused:%dms affected:%d", sql, params, time.Since(tsStart).Nanoseconds()/1000/1000, n)
+	// sql, params := session.LastSQL() // not work
+	log.Debugf("params:%+v timeused:%dms affected:%d", colVal, time.Since(tsStart).Nanoseconds()/1000/1000, n)
 
 	return
 }
@@ -216,8 +216,8 @@ func DeleteByCol(colName string, colVal interface{}, statusColName string, entit
 		statusColName: StatusDeleted, // 此处转小写，否则pg不兼容
 	})
 
-	sql, params := session.LastSQL() // not work
-	log.Debugf("sql:%s params:%v timeused:%dms affected:%d", sql, params, time.Since(tsStart).Nanoseconds()/1000/1000, n)
+	// sql, params := session.LastSQL() // not work
+	log.Debugf("params:%+v timeused:%dms affected:%d", colVal, time.Since(tsStart).Nanoseconds()/1000/1000, n)
 
 	// 删除对应的缓存
 	go CacheDelByEntity(colName, colVal, entityEmptyPtr)
@@ -267,8 +267,8 @@ func UpdateByCondition(entityPtrWithValue interface{}, conditions map[string]int
 	session := envinit.Dbs[dbname].Cols(cols...).Where(whereStr, whereVal...)
 	n, err = session.Update(entityPtrWithValue)
 
-	sql, params := session.LastSQL() // not work
-	log.Debugf("sql:%s params:%v timeused:%dms affected:%d", sql, params, time.Since(tsStart).Nanoseconds()/1000/1000, n)
+	// sql, params := session.LastSQL() // not work
+	log.Debugf("params:%+v timeused:%dms affected:%d", whereVal, time.Since(tsStart).Nanoseconds()/1000/1000, n)
 
 	return
 }
@@ -333,11 +333,9 @@ func ListAndCountByCondition(entityPtr interface{}, conditions map[string]interf
 	}
 	err = session.OrderBy(orderBy).Limit(pageSize, (pageNo-1)*pageSize).Find(listSlicePtr)
 
-	sql, params := session.LastSQL() // not work
-	log.Debugf("sql:%s params:%v timeused:%dms count:%d", sql, params, time.Since(tsStart).Nanoseconds()/1000/1000, reflect.ValueOf(listSlicePtr).Elem().Len())
-
 	listOfPage := reflect.ValueOf(listSlicePtr).Elem()
-	log.Debugf("reflect listOfPage len:%d", listOfPage.Len())
+	// sql, params := session.LastSQL() // not work
+	log.Debugf("params:%+v timeused:%dms count:%d", whereVal, time.Since(tsStart).Nanoseconds()/1000/1000, reflect.ValueOf(listSlicePtr).Elem().Len())
 
 	if _, ok := entityPtr.(AfterSelect); ok {
 
@@ -395,11 +393,9 @@ func ListByCondition(entityPtr interface{}, conditions map[string]interface{}, p
 
 	err = session.Find(listSlicePtr)
 
-	sql, params := session.LastSQL() // not work
-	log.Debugf("sql:%s params:%v timeused:%dms count:%d", sql, params, time.Since(tsStart).Nanoseconds()/1000/1000, reflect.ValueOf(listSlicePtr).Elem().Len())
-
+	// sql, params := session.LastSQL() // not work
 	listOfPage := reflect.ValueOf(listSlicePtr).Elem()
-	log.Debugf("reflect listOfPage len:%d", listOfPage.Len())
+	log.Debugf("params:%+v timeused:%dms count:%d", whereVal, time.Since(tsStart).Nanoseconds()/1000/1000, listOfPage.Len())
 
 	if _, ok := entityPtr.(AfterSelect); ok {
 
@@ -464,8 +460,8 @@ func RangeTableByConditions(tableEntity interface{}, conditions map[string]inter
 
 		err = session.Find(listSlice)
 
-		sql, params := session.LastSQL() // not work
-		log.Debugf("sql:%s params:%v timeused:%dms count:%d", sql, params, time.Since(tsStart).Nanoseconds()/1000/1000, reflect.ValueOf(listSlice).Elem().Len())
+		// sql, params := session.LastSQL() // not work
+		log.Debugf("params:%+v timeused:%dms count:%d", whereVal, time.Since(tsStart).Nanoseconds()/1000/1000, reflect.ValueOf(listSlice).Elem().Len())
 
 		if err != nil {
 			log.Errorf("RangeTableByConditions error:%v", err)
@@ -523,8 +519,8 @@ func CountByCondition(entityPtr interface{}, conditions map[string]interface{}) 
 	session := envinit.Dbs[dbname].Where(whereStr, whereVal...)
 	total, err = session.Count(entityPtr)
 
-	sql, params := session.LastSQL() // not work
-	log.Debugf("sql:%s params:%v timeused:%dms count:%d", sql, params, time.Since(tsStart).Nanoseconds()/1000/1000, total)
+	// sql, params := session.LastSQL() // not work
+	log.Debugf("params:%+v timeused:%dms count:%d", whereVal, time.Since(tsStart).Nanoseconds()/1000/1000, total)
 
 	// log.Debugf("nCount of listByCondition =%d", nCount)
 	if err != nil {

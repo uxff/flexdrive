@@ -179,7 +179,7 @@ func (w *Worker) RegisterToMates() {
 			// ping metaData: {"masterId":"xx","members":"127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033","clusterId":"mycluster","listVer":"xx"}
 			res, err := w.pingableWorker.PingTo(mate.ServiceAddr, w.Id, w.buildPingMetaData())
 			if err == nil && res != nil {
-				mate.listVer = res.Get("listVer")
+				// mate.listVer = res.Get("listVer")
 				if res.Get("listVer") == w.listVer {
 					// 发出ping成功跟新本地的mate状态；收到ping方更新对方自己的mate的active状态。
 					w.RegisterIn(mateId, res.Get("masterId"))
