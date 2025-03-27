@@ -85,12 +85,10 @@ func NodeList(c *gin.Context) {
 		resItems = append(resItems, NewNodeItemFromEnt(v))
 	}
 
-	log.Debugf("will render node/list.tpl")
-
 	c.HTML(http.StatusOK, "node/list.tpl", gin.H{
 		"LoginInfo": getLoginInfo(c),
 		"IsLogin":   isLoginIn(c),
-		"nowts":     time.Now().Unix(),
+		"nowts":     time.Now().Unix(), // cannot be used inside a range loop
 		"total":     total,
 		"page":      req.Page,
 		"pagesize":  req.PageSize,
@@ -98,7 +96,6 @@ func NodeList(c *gin.Context) {
 		"reqParam":  req,
 		"paginator": paginator.NewPaginator(c.Request, 10, int64(total)),
 	})
-	log.Debugf("render node/list.tpl done")
 }
 
 func NodeSetspace(c *gin.Context) {

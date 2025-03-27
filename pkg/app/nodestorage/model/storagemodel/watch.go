@@ -45,9 +45,9 @@ func (n *NodeStorage) WatchMatesFronDB() error {
 
 		for _, mate := range nodeList {
 			if time.Now().Unix()-mate.LastRegistered.Unix() > 300 {
-				mate.Status = base.StatusInactive
-				mate.UpdateById([]string{"status"})
-				log.Debugf("a mate is down: %s", mate.NodeAddr)
+				// mate.Status = base.StatusInactive // Don't meddle in other people's business.
+				// mate.UpdateById([]string{"status"})
+				// log.Debugf("a mate is down: %s", mate.NodeAddr)
 				//n.Worker.KickMate(mate.Id)//todo locked
 				// delete(n.Worker.ClusterMembers, mate.NodeName)
 				// n.Worker.ClusterMembersMap.Delete(mate.NodeName)

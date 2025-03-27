@@ -402,11 +402,7 @@ func (w *Worker) UpdateMates(clusterMembers string, listVer string) (memberCnt i
 
 	if !IamIn {
 		log.Errorf("I(%s,%s) am not in the list(%s). I quit.", w.Id, w.ServiceAddr, clusterMembers)
-		w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
-			if mateId != w.Id { // not posible
-				w.ClusterMembersMap.Delete(mateId)
-			}
-		})
+		w.quitChan <- true
 		return 0
 	}
 
