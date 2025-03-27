@@ -70,7 +70,13 @@
                 {{range .list}}
                 <tr>
                     <td>{{.Id}}</td>
-                    <td>{{.NodeName}}({{if eq .Follow .NodeName}}<b class="text-danger">I'm Master.</b>{{else}} follow: {{.Follow}}{{end}})</td>
+                    <td>
+                        {{if eq .Follow .NodeName}}
+                            <b class="text-success">{{.NodeName}}(I'm Master.)</b>
+                        {{else}}
+                            {{.NodeName}} (follow: {{.Follow}})
+                        {{end}}
+                    </td>
                     <td>{{.NodeAddr}}</td>
                     <td>{{space4Human .UsedSpace }} / {{space4Human .TotalSpace }}</td>
                     <td>{{.FileCount }}</td>
@@ -79,6 +85,11 @@
                     <td>{{mgrStatus .Status}}</td>
                     <td>
                         <button class="btn btn-info setSpace " data-toggle1="modal" data-target1="#setspaceModal" data-id="{{.Id}}" data-space="{{.TotalSpace}}">设置空间</button>
+                        {{if eq .Status 1}}
+                            <a href="/node/kick/{{.Id}}">Kick</a>
+                        {{else}}
+                            <a href="/node/invite/{{.Id}}">Invite</a>
+                        {{end}}
                     </td>
                 </tr>
                 {{else}}

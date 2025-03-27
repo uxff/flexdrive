@@ -109,6 +109,8 @@ func StartHttpServer(addr string) error {
 
 	rbacRouter.GET("/node/list", NodeList)
 	rbacRouter.POST("/node/setspace", NodeSetspace)
+	rbacRouter.GET("/node/kick/:id", NodeKick)
+	rbacRouter.GET("/node/invite/:id", NodeInvite)
 
 	rbacRouter.GET("/fileindex/list", FileIndexList)
 	rbacRouter.GET("/fileindex/enable/:id/:enable", FileIndexEnable)

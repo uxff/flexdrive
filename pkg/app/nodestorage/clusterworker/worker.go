@@ -21,10 +21,10 @@ const RegisterIntervalSec = 5 // 作为worker或master注册间隔
 
 const (
 	MsgActionFollow      = "cluster.follow"
-	MsgActionKickNode    = "cluster.kick"
-	MsgActionAddNode     = "cluster.add" // @deprecated
 	MsgActionUpdateNodes = "cluster.updateNodes"
-	MsgActionEraseMaster = "cluster.erasemaster"
+	MsgActionKickNode    = "cluster.kick"        // @deprecated
+	MsgActionAddNode     = "cluster.add"         // @deprecated
+	MsgActionEraseMaster = "cluster.erasemaster" // @deprecated
 )
 
 const (
@@ -47,6 +47,8 @@ type Worker struct {
 	// ClusterMembers    map[string]*Worker `json:"-"`
 	// ClusterMembersMap表示节点名单，初始化后基本不变，名单的加减将由接口更新名单来完成，而不是运行时随意更改
 	ClusterMembersMap *utils.Map[string, *Worker]
+	members           string // list of members in string, eg: 127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033
+	listVer           string // the time version that when members is set
 
 	clusterAssist *clusterHelper
 
@@ -178,26 +180,24 @@ func (w *Worker) RegisterToMates() {
 	defer workerMgrLock.Unlock()
 
 	// 从redis注册id
-	w.LastRegistered = time.Now().Unix() // 没用
+	w.LastRegistered = time.Now().Unix() // 更新自己的，没用
 
 	wg := &sync.WaitGroup{}
 
 	// for mateId := range w.ClusterMembers {
 	w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
+		if mateId == w.Id {
+			mate.MarkActive() // 自己直接更新为活跃
+			return
+		}
 		wg.Add(1)
 		go func(mateId string, mate *Worker) {
 			defer wg.Done()
-			//w.PingNode(mateId)
-			if w.Id != mateId {
-				metaData := url.Values{
-					"masterId": []string{w.MasterId},
-				}
-				// res, err := w.pingableWorker.PingTo(w.ClusterMembers[mateId].ServiceAddr, w.Id, metaData)
-				res, err := w.pingableWorker.PingTo(mate.ServiceAddr, w.Id, metaData)
-				if err == nil && res != nil {
-					// 发出ping成功跟新本地的mate状态；收到ping方更新对方自己的mate的active状态。
-					w.RegisterIn(mateId, res.Get("masterId"))
-				}
+			// ping metaData: {"masterId":"xx","members":"127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033","clusterId":"mycluster","listVer":"xx"}
+			res, err := w.pingableWorker.PingTo(mate.ServiceAddr, w.Id, w.buildPingMetaData())
+			if err == nil && res != nil {
+				// 发出ping成功跟新本地的mate状态；收到ping方更新对方自己的mate的active状态。
+				w.RegisterIn(mateId, res.Get("masterId"))
 			}
 		}(mateId, mate)
 	})
@@ -261,6 +261,7 @@ func (w *Worker) Follow(masterId string) error {
 
 	w.MasterId = masterId
 
+	log.Errorf("I(%s) followed %s", w.Id, masterId)
 	// as same as PerformFollower
 	return nil
 }
@@ -319,25 +320,25 @@ func (w *Worker) ElectMaster() {
 }
 
 // find existing master. Make sure this master has been follow by more than half of total members
-func (w *Worker) FindFollowedMaster() string {
-	masterMap := make(map[string]int, 0)
-	// for mateId := range w.ClusterMembers {
-	memberCnt := w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
-		if mate.IsActive() && mate.MasterId != "" {
-			masterMap[mate.MasterId]++
-		}
-	})
+// func (w *Worker) FindFollowedMaster() string {
+// 	masterMap := make(map[string]int, 0)
+// 	// for mateId := range w.ClusterMembers {
+// 	memberCnt := w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
+// 		if mate.IsActive() && mate.MasterId != "" {
+// 			masterMap[mate.MasterId]++
+// 		}
+// 	})
 
-	for masterId, followerNum := range masterMap {
-		// if followerNum >= len(w.ClusterMembers)/2 {
-		if followerNum > memberCnt/2 { // BUG HERE!
-			log.Debugf("find a master(%s) with a number of followers(%d) that over half the total:%d", masterId, followerNum, memberCnt/2)
-			return masterId
-		}
-	}
+// 	for masterId, followerNum := range masterMap {
+// 		// if followerNum >= len(w.ClusterMembers)/2 {
+// 		if followerNum > memberCnt/2 { // BUG HERE!
+// 			log.Debugf("find a master(%s) with a number of followers(%d) that over half the total:%d", masterId, followerNum, memberCnt/2)
+// 			return masterId
+// 		}
+// 	}
 
-	return ""
-}
+// 	return ""
+// }
 
 func (w *Worker) PerformMaster() {
 
@@ -416,15 +417,24 @@ func (w *Worker) BroadcastVoted(masterId string) {
 	})
 }
 
+func (w *Worker) BroadcastMembersUpdated() {
+	// for mateId := range w.ClusterMembers {
+	w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
+		if mateId == w.Id {
+			// 跳过自己
+			return
+		}
+		go w.pingableWorker.MsgTo(mate.ServiceAddr, MsgActionUpdateNodes, "", w.buildPingMetaData())
+	})
+}
+
 // Use should be checked strictly. mateServiceAddrs should be a complete list, including self.
 // Will not trigger election.
-func (w *Worker) UpdateMates(mateServiceAddrs []string) (memberCnt int) {
-	// re-use exist mate
-	// w.ClusterMembersMap.Range(func(mateId string, mate *Worker) bool {
-	// 	w.ClusterMembersMap.Delete(mateId)
-	// 	return true
-	// })
+func (w *Worker) UpdateMates(clusterMembers string, listVer string) (memberCnt int) {
 
+	IamIn := false
+
+	mateServiceAddrs := strings.Split(clusterMembers, ",")
 	for _, nodeAddr := range mateServiceAddrs {
 		nodeId := w.clusterAssist.genMemberHash(nodeAddr)
 		mate, exist := w.ClusterMembersMap.Load(nodeId)
@@ -435,8 +445,19 @@ func (w *Worker) UpdateMates(mateServiceAddrs []string) (memberCnt int) {
 			log.Debugf("%s joined my(%s) cluster(%s)", mate.Id, w.Id, w.ClusterId)
 		}
 		if mate.Id == w.Id {
+			IamIn = true
 			mate.MarkActive() // at least myself online
 		}
+	}
+
+	if !IamIn {
+		log.Errorf("I(%s,%s) am not in the list(%s). I quit.", w.Id, w.ServiceAddr, clusterMembers)
+		w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
+			if mateId != w.Id { // not posible
+				w.ClusterMembersMap.Delete(mateId)
+			}
+		})
+		return 0
 	}
 
 	// check if ClusterMembers does not include node, then delete it
@@ -454,16 +475,18 @@ func (w *Worker) UpdateMates(mateServiceAddrs []string) (memberCnt int) {
 		}
 	})
 
-	log.Debugf("mate list updated:%v cnt:%d", mateServiceAddrs, memberCnt)
+	log.Debugf("mate list updated:%v cnt:%d ver:%s", mateServiceAddrs, memberCnt, listVer)
+	w.members = clusterMembers
+	w.listVer = listVer // time.Now().Format("20060102T150405")
 
 	// TODO: how about I was not in the list?
 	return
 }
 
 // Use should be checked strictly
-func (w *Worker) DeleteMate(mateId string) {
-	w.ClusterMembersMap.Delete(mateId)
-}
+// func (w *Worker) DeleteMate(mateId string) {
+// 	w.ClusterMembersMap.Delete(mateId)
+// }
 
 func (w *Worker) RegisterIn(mateId string, masterIdOfMate string) {
 	// if _, ok := w.ClusterMembers[mateId]; !ok {
@@ -475,10 +498,6 @@ func (w *Worker) RegisterIn(mateId string, masterIdOfMate string) {
 		return
 	}
 
-	// w.ClusterMembers[mateId].LastRegistered = time.Now().Unix()
-	// w.ClusterMembers[mateId].MasterId = masterIdOfMate
-	// w.ClusterMembers[mateId].Active = true
-	// mate.LastRegistered = time.Now().Unix()
 	mate.MarkActive()
 	mate.MasterId = masterIdOfMate
 }
@@ -504,23 +523,41 @@ func (w *Worker) DecodeMetaData(str string) {
 
 func (w *Worker) ServePingable() error {
 
-	//w.pingableWorker = NewGrpcWorker(w)
-	// todo: Follow,Add,Remove,EraseMaster should use native gRPC functions
-	// register is only for outer biz
-
-	// addNode is deprecated. use UpdateNodes Instead, will fully repleace the existing list, and re-elect new master
-	// @param string nodes node1,node2
+	// addNode is deprecated. use UpdateNodes instead, will fully repleace the existing list, and re-elect new master
+	// @IMPORTANT: receiver must compare mateListVer and local listVer, use new one.
+	// @param reqParam: {"members":"node1,node2,...","listVer":"20250101.150405"}
 	w.pingableWorker.RegisterMsgHandler(MsgActionUpdateNodes, func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error) {
-		if nodesStr := reqParam.Get("nodes"); nodesStr != "" {
-			nodesArr := strings.Split(nodesStr, ",")
-			w.UpdateMates(nodesArr)
+		members := reqParam.Get("members")
+		if members == "" {
+			log.Errorf("when handling UpdateNodes, members not give, ignore.")
+			return w.buildMsgRes("FAIL", "no members given"), nil
+		}
+
+		clusterId := reqParam.Get("clusterId")
+		if clusterId != w.ClusterId {
+			log.Errorf("when handling UpdateNodes, clusterId(%s) not matched, ignore.", clusterId)
+			return w.buildMsgRes("FAIL", "clusterId("+clusterId+") not matched"), nil
+		}
+
+		// compare local version, if remote version is newer, then use remote version and update local.
+		mateListVer := reqParam.Get("listVer")
+		if mateListVer != "" && mateListVer > w.listVer {
+
+			memberCnt := w.UpdateMates(members, mateListVer)
+			if memberCnt == 0 {
+				log.Errorf("I(%s) join members failed. memmbers:%s clusterId:%s", w.Id, members, w.ClusterId)
+				return w.buildMsgRes("FAIL", "join failed. no members. quit."), nil
+			}
+
 			w.MarkMateActive(fromId, ActiveOnline) // at least mark fromId active
 			// trigger election
 			go w.ElectMaster()
 		}
-		return nil, nil
+
+		return w.buildMsgRes("OK", ""), nil
 	})
 
+	// @deprecated, KickNode will be instead of UpdateNodes
 	// @param string nodeId
 	w.pingableWorker.RegisterMsgHandler(MsgActionKickNode, func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error) {
 		// delete(w.ClusterMembers, reqParam.Get("nodeId"))
@@ -530,60 +567,56 @@ func (w *Worker) ServePingable() error {
 		return nil, nil
 	})
 
+	// @deprecated, use UpdateNodes instead.
 	w.pingableWorker.RegisterMsgHandler(MsgActionEraseMaster, func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error) {
 		w.MasterId = ""
 		return nil, nil
 	})
 
-	// dont return error
+	// will follow param masterId. dont return error
 	// @param string masterId
 	w.pingableWorker.RegisterMsgHandler(MsgActionFollow, func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error) {
 		masterId := reqParam.Get("masterId")
 		if w.MasterId == masterId {
 			log.Debugf("i(%s) have already follow %s while recv demand follow", w.Id, masterId)
-			return nil, nil
+			return w.buildMsgRes("OK", "already"), nil
 		}
 		// masterWorker, masterExist := w.ClusterMembers[masterId]
 		masterWorker, masterExist := w.ClusterMembersMap.Load(masterId)
 		if !masterExist {
 			log.Debugf("will follow but masterId:" + masterId + " not exist")
-			return nil, nil
+			return w.buildMsgRes("FAIL", "masterId not exist"), nil
 		}
 
 		// if I am a master, only follow fromId if compared as I'm larger
 		if w.Id == w.MasterId {
 			if w.Id < masterId {
 				log.Warnf("I(%s) do not fucking follow you mate(%s)", w.Id, masterId)
-				return nil, nil
+				return w.buildMsgRes("FAIL", "reject to follow because I'm the prime master"), nil
 			}
 			log.Warnf("I(%s) am a master, but I surrender to follow %s", w.Id, masterId)
 		}
 
 		// masterPingRes := w.PingNode(masterId)
-		metaData := url.Values{
-			"masterId": []string{w.MasterId},
-		}
-		masterPingRes, err := w.pingableWorker.PingTo(masterWorker.ServiceAddr, w.Id, metaData)
+		masterPingRes, err := w.pingableWorker.PingTo(masterWorker.ServiceAddr, w.Id, w.buildPingMetaData())
 		if err != nil || masterPingRes == nil {
 			log.Debugf("will follow(%s) but ping error:%v", err)
-			return nil, nil
+			return w.buildMsgRes("FAIL", "ping master fail"), nil
 		}
-		// if masterPingRes.Code != 0 {
-		// 	log.Debugf("will follow(%s) but ping error:" + masterPingRes.Get("masterId"))
-		// 	return nil, nil
-		// }
 
 		// masterId = masterPingRes.Get("masterId") // follow master's master
 		w.Follow(masterId)
 
 		go w.RegisterToMates()
 
-		return nil, nil
+		return w.buildMsgRes("OK", ""), nil
 	})
 
+	// RegisterPong will be triggered if others call PingTO(toMe)
+	// ping metaData: {"masterId":"xx","members":"127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033","clusterId":"mycluster","listVer":"xx"}
 	w.pingableWorker.RegisterPong(func(fromId, toId, metaData string) (url.Values, error) {
 		// w.MarkActive(fromId, ActiveOnline) // at least mark fromId active
-		log.Debugf("receive ping from:%s meta:%s", fromId, metaData)
+		// log.Debugf("receive ping from:%s meta:%s", fromId, metaData)
 		mate, ok := w.ClusterMembersMap.Load(fromId)
 		if ok {
 			mate.MarkActive()
@@ -591,7 +624,12 @@ func (w *Worker) ServePingable() error {
 			// parse mate.MasterId
 			reqVal, err := url.ParseQuery(metaData)
 			if err != nil {
-				log.Errorf("parse pong.masterId failed, from:%s meta:%s", fromId, metaData)
+				log.Errorf("parse pong.metaData failed, from:%s meta:%s", fromId, metaData)
+			}
+
+			mateClusterId := reqVal.Get("clusterId")
+			if mateClusterId != w.ClusterId {
+				log.Warnf("receive ping from %s, what hell your clusterId:%s diff from my:%s", fromId, mateClusterId, w.ClusterId)
 			}
 
 			mateMasterId := reqVal.Get("masterId")
@@ -600,6 +638,12 @@ func (w *Worker) ServePingable() error {
 				log.Warnf("receive ping from %s master %s diff from my master:%s", fromId, mateMasterId, w.MasterId)
 				// TODO: how to do?
 			}
+
+			mateListVer := reqVal.Get("listVer")
+			if mateListVer != w.listVer {
+				log.Warnf("receive ping from %s, what hell your listVer:%s diff from my:%s", fromId, mateListVer, w.listVer)
+			}
+
 		}
 		return nil, nil
 	})
@@ -636,4 +680,28 @@ func (w *Worker) MarkOffline() {
 
 func (w *Worker) MarkDeactive() {
 	w.Active = Deactivated
+}
+
+func (w *Worker) buildPingMetaData() url.Values {
+	return url.Values{
+		"masterId":  []string{w.MasterId},
+		"members":   []string{w.members},
+		"clusterId": []string{w.ClusterId},
+		"listVer":   []string{w.listVer},
+	}
+}
+
+func (w *Worker) buildMsgRes(code, msg string) url.Values {
+	return url.Values{
+		"code":      []string{code},
+		"msg":       []string{msg},
+		"masterId":  []string{w.MasterId},
+		"members":   []string{w.members},
+		"clusterId": []string{w.ClusterId},
+		"listVer":   []string{w.listVer},
+	}
+}
+
+func (w *Worker) GenNewListVer() string {
+	return time.Now().Format("20060102T150405")
 }

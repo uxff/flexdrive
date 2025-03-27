@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -71,10 +72,10 @@ func StartNode(storageDir string, httpAddr string, clusterId string, clusterMemb
 	// node.Worker.SetPingableWorker(grpcpingable.NewGrpcWorker()) //grpcpingable
 
 	// update mates list
-	memberCnt := node.Worker.UpdateMates(strings.Split(clusterMembers, ","))
+	memberCnt := node.Worker.UpdateMates(clusterMembers, node.Worker.GenNewListVer())
 	if memberCnt == 0 {
-		log.Errorf("no CLUSTERMEMBERS assigned in env!")
-		return fmt.Errorf("no CLUSTERMEMBERS assigned in env!")
+		log.Errorf("no CLUSTERMEMBERS assigned in env! or I(%s)'m not in the list(%s).", node.WorkerAddr, clusterMembers)
+		return fmt.Errorf("no CLUSTERMEMBERS assigned in env! or I(%s)'m not in the list(%s).", node.WorkerAddr, clusterMembers)
 	}
 
 	var err error
@@ -469,21 +470,67 @@ func (n *NodeStorage) GetLowestRankedNodes() []*dao.Node {
 	}
 
 	// 转换成node的可排序对象
-	var nodeListIf NodeList = nodeList
-	sort.Sort(nodeListIf)
+	// var nodeListIf NodeList = nodeList
+	// sort.Sort(nodeListIf)
+	sort.Slice(nodeList, func(i, j int) bool {
+		return nodeList[i].UnusedSpace < nodeList[j].UnusedSpace
+	})
 
 	return nodeList
 }
 
-// / 用于排序
-type NodeList []*dao.Node
+func AddMember(nodeAddr string) error {
+	if nodeAddr == "" {
+		return fmt.Errorf("when addMember, nodeAddr not given")
+	}
 
-func (nl NodeList) Len() int {
-	return len(nl)
+	memberList := strings.Split(node.ClusterMembers, ",")
+	if slices.Contains[[]string](memberList, nodeAddr) {
+		return nil
+	}
+
+	memberList = append(memberList, nodeAddr)
+	newMemberListStr := strings.Join(memberList, ",")
+
+	memberCnt := node.Worker.UpdateMates(newMemberListStr, node.Worker.GenNewListVer())
+
+	node.ClusterMembers = newMemberListStr
+	node.Worker.BroadcastMembersUpdated()
+
+	if memberCnt == 0 {
+		return fmt.Errorf("when addMember, worker return failed")
+	}
+
+	node.Worker.ElectMaster()
+
+	return nil
 }
-func (nl NodeList) Less(i, j int) bool {
-	return nl[i].UnusedSpace < nl[j].UnusedSpace
-}
-func (nl NodeList) Swap(i, j int) {
-	nl[j], nl[i] = nl[i], nl[j]
+
+func KickMember(nodeAddr string) error {
+	if nodeAddr == "" {
+		return fmt.Errorf("when kickMember, nodeAddr not given")
+	}
+
+	memberList := strings.Split(node.ClusterMembers, ",")
+	kickMemberIdx := slices.Index(memberList, nodeAddr)
+
+	if kickMemberIdx < 0 {
+		return nil // already kicked
+	}
+
+	memberList = append(memberList[:kickMemberIdx], memberList[kickMemberIdx+1:]...)
+
+	newMemberListStr := strings.Join(memberList, ",")
+
+	memberCnt := node.Worker.UpdateMates(newMemberListStr, node.Worker.GenNewListVer())
+
+	node.ClusterMembers = newMemberListStr
+	node.Worker.BroadcastMembersUpdated()
+
+	if memberCnt == 0 {
+		return fmt.Errorf("when kickMember, worker return failed")
+	}
+
+	node.Worker.ElectMaster()
+	return nil
 }

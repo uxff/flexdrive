@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/uxff/flexdrive/pkg/app/nodestorage/model/storagemodel"
 	"github.com/uxff/flexdrive/pkg/dao"
 	"github.com/uxff/flexdrive/pkg/dao/base"
 	"github.com/uxff/flexdrive/pkg/log"
@@ -129,6 +130,66 @@ func NodeSetspace(c *gin.Context) {
 		log.Trace(requestId).Errorf("update node(%d) error:%v", nodeId, err)
 		StdErrMsgResponse(c, ErrInternal, "节点id更新错误:"+err.Error())
 		return
+	}
+
+	c.Redirect(http.StatusMovedPermanently, RouteNodeList)
+}
+
+// kick a node in the cluster
+func NodeKick(c *gin.Context) {
+	requestId := c.GetString(CtxKeyRequestId)
+	nodeIdStr := c.Param("id") // id in the db, not clusterMemberId
+	nodeId, _ := strconv.Atoi(nodeIdStr)
+
+	if nodeId <= 0 {
+		StdErrMsgResponse(c, ErrInternal, "没有提交节点id")
+		return
+	}
+
+	nodeEnt, err := dao.GetNodeById(nodeId)
+	if err != nil {
+		log.Trace(requestId).Errorf("get node(%d) error:%v", nodeId, err)
+		StdErrMsgResponse(c, ErrInternal, "节点id查询失败:"+err.Error())
+		return
+	}
+	if nodeEnt == nil {
+		StdErrMsgResponse(c, ErrInternal, "节点id不存在")
+		return
+	}
+
+	err = storagemodel.KickMember(nodeEnt.NodeAddr)
+	if err != nil {
+		log.Trace(requestId).Errorf("kick node(%d) error:%v", nodeId, err)
+	}
+
+	c.Redirect(http.StatusMovedPermanently, RouteNodeList)
+}
+
+// invite node join the cluster
+func NodeInvite(c *gin.Context) {
+	requestId := c.GetString(CtxKeyRequestId)
+	nodeIdStr := c.Param("id") // id in the db, not clusterMemberId
+	nodeId, _ := strconv.Atoi(nodeIdStr)
+
+	if nodeId <= 0 {
+		StdErrMsgResponse(c, ErrInternal, "没有提交节点id")
+		return
+	}
+
+	nodeEnt, err := dao.GetNodeById(nodeId)
+	if err != nil {
+		log.Trace(requestId).Errorf("get node(%d) error:%v", nodeId, err)
+		StdErrMsgResponse(c, ErrInternal, "节点id查询失败:"+err.Error())
+		return
+	}
+	if nodeEnt == nil {
+		StdErrMsgResponse(c, ErrInternal, "节点id不存在")
+		return
+	}
+
+	err = storagemodel.AddMember(nodeEnt.NodeAddr)
+	if err != nil {
+		log.Trace(requestId).Errorf("invite node(%d) error:%v", nodeId, err)
 	}
 
 	c.Redirect(http.StatusMovedPermanently, RouteNodeList)
