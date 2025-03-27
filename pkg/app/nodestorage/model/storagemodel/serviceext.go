@@ -18,10 +18,14 @@ const (
 	RouteFile = "/file/" // format /file/:fileHash
 )
 
+const (
+	MsgActionSaveFile = "savefile"
+)
+
 func (n *NodeStorage) AttachService() {
 
 	// 保存文件 依赖注入
-	n.Worker.GetPingableWorker().RegisterMsgHandler("savefile", func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error) {
+	n.Worker.GetPingableWorker().RegisterMsgHandler(MsgActionSaveFile, func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error) {
 		log.Debugf("i(%s) am demanded to savefile: fromId:%s msgId:%s urlVals:%+v", n.Worker.Id, fromId, msgId, reqParam)
 
 		fileIndexId, _ := strconv.Atoi(reqParam.Get("fileIndexId"))
@@ -93,7 +97,7 @@ func (n *NodeStorage) DemandMateSaveFile(mateId string, fileIndexId int, asNodeL
 		log.Errorf("mate(%s) not exist while DemandMateSaveFile", mateId)
 	}
 	// _, err := n.Worker.GetPingableWorker().MsgTo(n.Worker.ClusterMembers[mateId].ServiceAddr, "savefile", "", urlVal)
-	_, err := n.Worker.GetPingableWorker().MsgTo(mate.ServiceAddr, "savefile", "", urlVal)
+	_, err := n.Worker.GetPingableWorker().MsgTo(mate.ServiceAddr, MsgActionSaveFile, "", urlVal)
 	if err != nil {
 		log.Errorf("demandMateSaveFile(%s, %d) failed:%v", mateId, fileIndexId, err)
 	}

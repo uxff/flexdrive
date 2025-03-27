@@ -31,7 +31,7 @@ const (
 type NodeStorage struct {
 	StorageDir     string // 本节点的存储路径 保证有/结尾
 	ClusterId      string
-	ClusterMembers string
+	ClusterMembers string // @deprecated, use node.Worker.GetClusterMembers() instead
 	WorkerAddr     string
 
 	NodeEnt *dao.Node
@@ -56,7 +56,7 @@ func StartNode(storageDir string, httpAddr string, clusterId string, clusterMemb
 
 	node.StorageDir = storageDir
 	node.ClusterId = clusterId
-	node.ClusterMembers = clusterMembers
+	// node.ClusterMembers = clusterMembers
 	node.WorkerAddr = httpAddr
 
 	// 准备makedir
@@ -484,7 +484,7 @@ func AddMember(nodeAddr string) error {
 		return fmt.Errorf("when addMember, nodeAddr not given")
 	}
 
-	memberList := strings.Split(node.ClusterMembers, ",")
+	memberList := strings.Split(node.Worker.GetClusterMembers(), ",")
 	if slices.Contains[[]string](memberList, nodeAddr) {
 		return nil
 	}
@@ -494,7 +494,7 @@ func AddMember(nodeAddr string) error {
 
 	memberCnt := node.Worker.UpdateMates(newMemberListStr, node.Worker.GenNewListVer())
 
-	node.ClusterMembers = newMemberListStr
+	// node.ClusterMembers = newMemberListStr
 	node.Worker.BroadcastMembersUpdated()
 
 	if memberCnt == 0 {
@@ -511,7 +511,7 @@ func KickMember(nodeAddr string) error {
 		return fmt.Errorf("when kickMember, nodeAddr not given")
 	}
 
-	memberList := strings.Split(node.ClusterMembers, ",")
+	memberList := strings.Split(node.Worker.GetClusterMembers(), ",")
 	kickMemberIdx := slices.Index(memberList, nodeAddr)
 
 	if kickMemberIdx < 0 {
@@ -524,7 +524,7 @@ func KickMember(nodeAddr string) error {
 
 	memberCnt := node.Worker.UpdateMates(newMemberListStr, node.Worker.GenNewListVer())
 
-	node.ClusterMembers = newMemberListStr
+	// node.ClusterMembers = newMemberListStr
 	node.Worker.BroadcastMembersUpdated()
 
 	if memberCnt == 0 {

@@ -28,7 +28,7 @@ func (n *NodeStorage) WatchMatesFronDB() error {
 		// register self
 		n.NodeEnt.LastRegistered = time.Now()
 		n.NodeEnt.Status = base.StatusNormal
-		n.NodeEnt.Follow = n.Worker.MasterId
+		n.NodeEnt.Follow = n.Worker.GetMasterId()
 		n.NodeEnt.UpdateById([]string{"lastRegistered", "status", "follow"})
 
 		// check mates are registered

@@ -3,7 +3,6 @@ package clusterworker
 // tobe instead httpworker
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/url"
 	"sort"
@@ -40,9 +39,9 @@ type Worker struct {
 	Id             string // from redis incr? // uniq in cluster, different from other nodes
 	ClusterId      string
 	ServiceAddr    string // self addr of listen, must be addressable for other nodes
-	MasterId       string
-	LastRegistered int64 // timestamp
-	Active         int   // is active 0=init, not activated; 1=active; 2=offline; 3=deactivated
+	masterId       string
+	lastRegistered int64 // timestamp
+	active         int   // is active 0=init, not activated; 1=active; 2=offline; 3=deactivated
 
 	// ClusterMembers    map[string]*Worker `json:"-"`
 	// ClusterMembersMap表示节点名单，初始化后基本不变，名单的加减将由接口更新名单来完成，而不是运行时随意更改
@@ -56,7 +55,7 @@ type Worker struct {
 	masterGoneChan chan bool
 	//masterChangeChan chan string
 
-	metaData map[string]interface{}
+	// metaData map[string]interface{}
 
 	pingableWorker pingableif.PingableWorker // pointer to GrpcWorker
 }
@@ -76,7 +75,7 @@ func NewWorker(serviceAddr string, clusterId string) *Worker {
 	w.masterGoneChan = make(chan bool, 1)
 	//w.masterChangeChan = make(chan string, 1) // useful?
 
-	w.metaData = make(map[string]interface{}, 0)
+	// w.metaData = make(map[string]interface{}, 0)
 
 	return w
 }
@@ -127,13 +126,13 @@ func (w *Worker) Start() error {
 
 		// 来自自身监控master
 		case <-w.masterGoneChan:
-			log.Debugf("will elect when master %s timeout", w.MasterId)
+			log.Debugf("will elect when master %s timeout", w.masterId)
 
 			// 清掉已经注册的master 需要重新注册
-			w.MasterId = ""
+			w.masterId = ""
 			// for mateId := range w.ClusterMembers {
 			w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
-				mate.MasterId = ""
+				mate.masterId = ""
 			})
 
 			w.ElectMaster()
@@ -150,11 +149,11 @@ func (w *Worker) Start() error {
 				log.Debugf("quitChan is closed in start while Start()")
 			}
 			log.Debugf("recv quit signal, than stop Start()")
-			return fmt.Errorf("worker(%s) master(%s) will quit", w.Id, w.MasterId)
+			return fmt.Errorf("worker(%s) master(%s) will quit", w.Id, w.masterId)
 		}
 	}
 
-	return fmt.Errorf("worker(%s) master(%s) will quit", w.Id, w.MasterId)
+	return fmt.Errorf("worker(%s) master(%s) will quit", w.Id, w.masterId)
 }
 
 // redis hashkey: /nota/clusterId.clusterSalt = [md5(addr:port/clusterId+salt):{workerInfo}]
@@ -163,7 +162,7 @@ func (w *Worker) RegisterToMates() {
 	defer workerMgrLock.Unlock()
 
 	// 从redis注册id
-	w.LastRegistered = time.Now().Unix() // 更新自己的，没用
+	w.lastRegistered = time.Now().Unix() // 更新自己的，没用
 
 	wg := &sync.WaitGroup{}
 
@@ -171,7 +170,7 @@ func (w *Worker) RegisterToMates() {
 	w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
 		if mateId == w.Id {
 			mate.MarkActive() // 自己直接更新为活跃
-			mate.MasterId = w.MasterId
+			mate.masterId = w.masterId
 			return
 		}
 		wg.Add(1)
@@ -192,12 +191,12 @@ func (w *Worker) RegisterToMates() {
 	// for mateId := range w.ClusterMembers {
 	w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
 		if mate.Id != w.Id && mate.isTimeout() {
-			mate.Active = ActiveOffline
+			mate.active = ActiveOffline
 		}
 		// mate.Active = !mate.isTimeout()
-		if mateId == w.MasterId && !mate.IsActive() {
+		if mateId == w.masterId && !mate.IsActive() {
 			// master 超时 通知重新选举
-			w.MasterId = ""
+			w.masterId = ""
 			w.masterGoneChan <- true
 		}
 	})
@@ -217,10 +216,10 @@ func (w *Worker) KeepRegistered() {
 
 			mateDesc := ""
 			w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
-				mateDesc += fmt.Sprintf("%s->%s:%d; ", mate.Id, mate.MasterId, mate.Active)
+				mateDesc += fmt.Sprintf("%s->%s:%d; ", mate.Id, mate.masterId, mate.active)
 			})
 
-			log.Debugf("id:%s has registered to mates(%s), master:%s", w.Id, mateDesc, w.MasterId)
+			log.Debugf("id:%s has registered to mates(%s), master:%s", w.Id, mateDesc, w.masterId)
 
 			time.Sleep(time.Second * RegisterIntervalSec)
 		}
@@ -236,13 +235,13 @@ func (w *Worker) Follow(masterId string) error {
 	}
 
 	// check if master follows me
-	if target.MasterId != "" && target.MasterId != target.Id {
+	if target.masterId != "" && target.masterId != target.Id {
 		// 跟随主人的主人
 		//return w.Follow(target.MasterId)
-		log.Warnf("master follows others. should follow master(%s)'s master(%s)?", target.Id, target.MasterId)
+		log.Warnf("master follows others. should follow master(%s)'s master(%s)?", target.Id, target.masterId)
 	}
 
-	w.MasterId = masterId
+	w.masterId = masterId
 
 	log.Errorf("I(%s) followed %s", w.Id, masterId)
 	// as same as PerformFollower
@@ -265,7 +264,7 @@ func (w *Worker) VoteAMaster() string {
 
 	if len(allCondidateMateIds) == 0 {
 		// must use self
-		log.Debugf("vote to self:%s", w.Id)
+		log.Debugf("vote to self:%s cluster only one member", w.Id)
 		return w.Id
 	}
 
@@ -293,20 +292,20 @@ func (w *Worker) ElectMaster() {
 
 func (w *Worker) PerformMaster() {
 
-	log.Debugf("worker %s will perform master, real-time master:%s", w.Id, w.MasterId)
+	log.Debugf("worker %s will perform master, real-time master:%s", w.Id, w.masterId)
 
 	tick := time.NewTicker(time.Second * RegisterIntervalSec)
 	defer tick.Stop()
 	for {
 		select {
 		case <-tick.C:
-			if w.MasterId == w.Id {
+			if w.masterId == w.Id {
 				// for mateId := range w.ClusterMembers {
 				w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
-					if mateId != w.Id && mate.MasterId != w.MasterId {
+					if mateId != w.Id && mate.masterId != w.masterId {
 						// if timeout?
-						log.Debugf("demand %s to follow me %s", mateId, w.MasterId)
-						go w.DemandFollow(mate, w.MasterId)
+						log.Debugf("demand %s to follow me %s", mateId, w.masterId)
+						go w.DemandFollow(mate, w.masterId)
 					}
 				})
 			}
@@ -318,14 +317,14 @@ func (w *Worker) PerformMaster() {
 }
 
 // @deprecated replaced by WrapMetaData()
-func (w *Worker) ToString() string {
-	buf, _ := json.Marshal(w)
-	return string(buf)
-}
+// func (w *Worker) ToString() string {
+// 	buf, _ := json.Marshal(w)
+// 	return string(buf)
+// }
 
 func (w *Worker) DemandFollow(mate *Worker, masterId string) error {
 
-	_, err := w.pingableWorker.MsgTo(mate.ServiceAddr, MsgActionFollow, "", url.Values{"masterId": {masterId}})
+	_, err := w.pingableWorker.MsgTo(mate.ServiceAddr, MsgActionFollow, "", w.buildPingMetaData())
 	//res := w.MessageTo("follow", mateId, nil) // instead by pingableWorker.MsgTo
 
 	if err != nil {
@@ -350,7 +349,7 @@ func (w *Worker) Quit() {
 }
 
 func (w *Worker) calcTimeout() int64 {
-	return time.Now().Unix() - w.LastRegistered
+	return time.Now().Unix() - w.lastRegistered
 }
 
 func (w *Worker) isTimeout() bool {
@@ -412,7 +411,7 @@ func (w *Worker) UpdateMates(clusterMembers string, listVer string) (memberCnt i
 	}
 
 	// check if ClusterMembers does not include node, then delete it
-	memberCnt = w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
+	w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
 		exist := false
 		for _, inputMateAddr := range mateServiceAddrs {
 			if mate.ServiceAddr == inputMateAddr {
@@ -420,9 +419,11 @@ func (w *Worker) UpdateMates(clusterMembers string, listVer string) (memberCnt i
 				break
 			}
 		}
+		memberCnt++
 		if !exist {
 			w.ClusterMembersMap.Delete(mateId)
 			log.Debugf("%s be kicked out my(%s) cluster(%s)", mate.Id, w.Id, w.ClusterId)
+			memberCnt--
 		}
 	})
 
@@ -450,7 +451,7 @@ func (w *Worker) RegisterIn(mateId string, masterIdOfMate string) {
 	}
 
 	mate.MarkActive()
-	mate.MasterId = masterIdOfMate
+	mate.masterId = masterIdOfMate
 }
 
 func (w *Worker) genServeUrl(method string, params url.Values) string {
@@ -463,14 +464,14 @@ func (w *Worker) genServeUrl(method string, params url.Values) string {
 	return u.String()
 }
 
-func (w *Worker) WrapMetaData() string {
-	b, _ := json.Marshal(w.metaData)
-	return string(b)
-}
+// func (w *Worker) WrapMetaData() string {
+// 	b, _ := json.Marshal(w.metaData)
+// 	return string(b)
+// }
 
-func (w *Worker) DecodeMetaData(str string) {
-	json.Unmarshal([]byte(str), &w.metaData)
-}
+// func (w *Worker) DecodeMetaData(str string) {
+// 	json.Unmarshal([]byte(str), &w.metaData)
+// }
 
 func (w *Worker) ServePingable() error {
 
@@ -514,7 +515,7 @@ func (w *Worker) ServePingable() error {
 	// @param string masterId
 	w.pingableWorker.RegisterMsgHandler(MsgActionFollow, func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error) {
 		masterId := reqParam.Get("masterId")
-		if w.MasterId == masterId {
+		if w.masterId == masterId {
 			log.Debugf("i(%s) have already follow %s while recv demand follow", w.Id, masterId)
 			return w.buildMsgRes("OK", "already"), nil
 		}
@@ -526,7 +527,7 @@ func (w *Worker) ServePingable() error {
 		}
 
 		// if I am a master, only follow fromId if compared as I'm larger
-		if w.Id == w.MasterId {
+		if w.Id == w.masterId {
 			if w.Id < masterId {
 				log.Warnf("I(%s) do not fucking follow you mate(%s)", w.Id, masterId)
 				return w.buildMsgRes("FAIL", "reject to follow because I'm the prime master"), nil
@@ -565,10 +566,10 @@ func (w *Worker) ServePingable() error {
 
 			mateMasterId := metaData.Get("masterId")
 
-			mate.MasterId = mateMasterId
+			mate.masterId = mateMasterId
 
-			if mateMasterId != w.MasterId {
-				log.Warnf("receive ping from %s master %s diff from my master:%s", fromId, mateMasterId, w.MasterId)
+			if mateMasterId != w.masterId {
+				log.Warnf("receive ping from %s master %s diff from my master:%s", fromId, mateMasterId, w.masterId)
 				// TODO: how to do?
 			}
 
@@ -589,35 +590,36 @@ func (w *Worker) GetPingableWorker() pingableif.PingableWorker {
 }
 
 func (w *Worker) IsActive() bool {
-	return w.Active == ActiveOnline
+	return w.active == ActiveOnline
 }
 
 func (w *Worker) MarkMateActive(mateId string, mark int) {
 	mate, ok := w.ClusterMembersMap.Load(mateId)
 	if ok {
-		mate.Active = mark
+		mate.active = mark
 		if mark == ActiveOnline {
-			mate.LastRegistered = time.Now().Unix()
+			mate.lastRegistered = time.Now().Unix()
 		}
 	}
 }
 
 func (w *Worker) MarkActive() {
-	w.Active = ActiveOnline
-	w.LastRegistered = time.Now().Unix()
+	w.active = ActiveOnline
+	w.lastRegistered = time.Now().Unix()
 }
 
 func (w *Worker) MarkOffline() {
-	w.Active = ActiveOffline
+	w.active = ActiveOffline
 }
 
 func (w *Worker) MarkDeactive() {
-	w.Active = Deactivated
+	w.active = Deactivated
 }
 
 func (w *Worker) buildPingMetaData() url.Values {
 	return url.Values{
-		"masterId":  []string{w.MasterId},
+		"fromId":    []string{w.Id},
+		"masterId":  []string{w.masterId},
 		"members":   []string{w.members},
 		"clusterId": []string{w.ClusterId},
 		"listVer":   []string{w.listVer},
@@ -628,7 +630,7 @@ func (w *Worker) buildMsgRes(code, msg string) url.Values {
 	return url.Values{
 		"code":      []string{code},
 		"msg":       []string{msg},
-		"masterId":  []string{w.MasterId},
+		"masterId":  []string{w.masterId},
 		"members":   []string{w.members},
 		"clusterId": []string{w.ClusterId},
 		"listVer":   []string{w.listVer},
@@ -637,4 +639,16 @@ func (w *Worker) buildMsgRes(code, msg string) url.Values {
 
 func (w *Worker) GenNewListVer() string {
 	return time.Now().Format("20060102T150405")
+}
+
+func (w *Worker) GetClusterMembers() string {
+	return w.members
+}
+
+func (w *Worker) GetMasterId() string {
+	return w.masterId
+}
+
+func (w *Worker) GetActive() int {
+	return w.active
 }
