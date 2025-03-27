@@ -243,7 +243,7 @@ func (w *Worker) Follow(masterId string) error {
 
 	w.masterId = masterId
 
-	log.Errorf("I(%s) followed %s", w.Id, masterId)
+	log.Debugf("I(%s) followed %s", w.Id, masterId)
 	// as same as PerformFollower
 	return nil
 }
