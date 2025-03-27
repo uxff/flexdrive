@@ -484,6 +484,8 @@ func AddMember(nodeAddr string) error {
 		return fmt.Errorf("when addMember, nodeAddr not given")
 	}
 
+	log.Debugf("will add:%s into ", nodeAddr, node.Worker.GetClusterMembers())
+
 	memberList := strings.Split(node.Worker.GetClusterMembers(), ",")
 	if slices.Contains[[]string](memberList, nodeAddr) {
 		return nil
@@ -510,6 +512,8 @@ func KickMember(nodeAddr string) error {
 	if nodeAddr == "" {
 		return fmt.Errorf("when kickMember, nodeAddr not given")
 	}
+
+	log.Debugf("will kick:%s from %s", nodeAddr, node.Worker.GetClusterMembers())
 
 	memberList := strings.Split(node.Worker.GetClusterMembers(), ",")
 	kickMemberIdx := slices.Index(memberList, nodeAddr)
