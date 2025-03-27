@@ -521,7 +521,7 @@ func (w *Worker) ServePingable() error {
 	w.pingableWorker.RegisterMsgHandler(MsgActionFollow, func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error) {
 		masterId := reqParam.Get("masterId")
 		if w.masterId == masterId {
-			log.Debugf("i(%s) have already follow %s while recv demand follow", w.Id, masterId)
+			// log.Debugf("i(%s) have already follow %s while recv demand follow", w.Id, masterId)
 			return w.buildMsgRes("OK", "already"), nil
 		}
 		// masterWorker, masterExist := w.ClusterMembers[masterId]
