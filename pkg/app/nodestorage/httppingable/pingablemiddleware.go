@@ -152,7 +152,7 @@ func (w *HttpPingableWorker) genServeUrl(serviceAddr, method string) string {
 
 func (w *HttpPingableWorker) Serve(serviceAddr string) error {
 
-	router := gin.Default()
+	router := gin.New() //gin.Default()
 	w.router = router
 
 	router.GET("/", func(c *gin.Context) {
