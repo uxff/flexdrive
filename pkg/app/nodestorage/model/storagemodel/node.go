@@ -484,7 +484,7 @@ func AddMember(nodeAddr string) error {
 		return fmt.Errorf("when addMember, nodeAddr not given")
 	}
 
-	log.Debugf("will add:%s into ", nodeAddr, node.Worker.GetClusterMembers())
+	log.Debugf("will add:%s into %s", nodeAddr, node.Worker.GetClusterMembers())
 
 	memberList := strings.Split(node.Worker.GetClusterMembers(), ",")
 	if slices.Contains[[]string](memberList, nodeAddr) {
