@@ -171,6 +171,7 @@ func (w *Worker) RegisterToMates() {
 	w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
 		if mateId == w.Id {
 			mate.MarkActive() // 自己直接更新为活跃
+			mate.MasterId = w.MasterId
 			return
 		}
 		wg.Add(1)
