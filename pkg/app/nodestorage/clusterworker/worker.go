@@ -658,3 +658,11 @@ func (w *Worker) GetMasterId() string {
 func (w *Worker) GetActive() int {
 	return w.active
 }
+
+func (w *Worker) GetRuntimeMembers() *utils.Map[string, *Worker] {
+	return w.ClusterMembersMap
+}
+
+func (w *Worker) GetListVer() string {
+	return w.listVer
+}

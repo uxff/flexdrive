@@ -82,6 +82,7 @@ func NodeList(c *gin.Context) {
 	// 从数据库结构转换成返回结构
 	resItems := make([]*NodeItem, 0)
 	for _, v := range list {
+		v.ClusterId += "@" + storagemodel.GetRuntimeWorker().GetListVer()
 		resItems = append(resItems, NewNodeItemFromEnt(v))
 	}
 

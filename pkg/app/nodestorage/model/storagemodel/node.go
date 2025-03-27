@@ -330,6 +330,10 @@ func GetCurrentNode() *NodeStorage {
 	return node
 }
 
+func GetRuntimeWorker() *worker.Worker {
+	return node.Worker
+}
+
 func (n *NodeStorage) FileHashToStoragePath(fileHash string) string {
 
 	splitDeep := DirSplitDeep // 2

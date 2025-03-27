@@ -74,7 +74,7 @@
                         {{if eq $v.Follow $v.NodeName}}
                             <b class="text-success">{{$v.NodeName}}(Master)</b>
                         {{else}}
-                            {{$v.NodeName}} (follow: {{$v.Follow}})
+                            {{$v.NodeName}} (follow: {{$v.Follow}}, {{$v.ClusterId}})
                         {{end}}
                     </td>
                     <td>{{$v.NodeAddr}}</td>
