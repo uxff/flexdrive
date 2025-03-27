@@ -181,9 +181,10 @@ func (w *HttpPingableWorker) Serve(serviceAddr string) error {
 		}
 
 		if w.pongHandler != nil {
-			resVal, err := w.pongHandler(req.FromId, "", req.MetaData)
+			reqVal, _ := url.ParseQuery(req.MetaData)
+			resVal, err := w.pongHandler(req.FromId, "", reqVal)
 			if err != nil || res == nil {
-				log.Debugf("no error posted")
+				log.Debugf("pongHandler error:%v", err)
 				res.Code, res.Msg = 1, err.Error()
 				c.JSON(http.StatusOK, res)
 				return

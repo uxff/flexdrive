@@ -70,7 +70,8 @@ func NewGrpcWorker() *GrpcWorker {
 // ping to other, implement grpc
 func (g *GrpcWorker) Ping(ctx context.Context, req *pingablepb.PingRequest) (*pingablepb.PingResponse, error) {
 	if g.pongHandler != nil {
-		resMap, err := g.pongHandler(req.FromId, req.MasterId, req.MetaData)
+		reqVal, _ := url.ParseQuery(req.MetaData)
+		resMap, err := g.pongHandler(req.FromId, req.MasterId, reqVal)
 		res := &pingablepb.PingResponse{
 			Code: 0,
 			Msg:  "",

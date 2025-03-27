@@ -5,7 +5,7 @@ import (
 )
 
 type MsgHandler func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error)
-type PongHandler func(fromId, toId, metaData string) (url.Values, error)
+type PongHandler func(fromId, toId string, metaData url.Values) (url.Values, error)
 
 // its a communicate middle ware, clusterworker rely use this interface
 // GrpcWorker implements this interface

@@ -548,25 +548,19 @@ func (w *Worker) ServePingable() error {
 
 	// RegisterPong will be triggered if others call PingTO(toMe)
 	// ping metaData: {"masterId":"xx","members":"127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033","clusterId":"mycluster","listVer":"xx"}
-	w.pingableWorker.RegisterPong(func(fromId, toId, metaData string) (url.Values, error) {
+	w.pingableWorker.RegisterPong(func(fromId, toId string, metaData url.Values) (url.Values, error) {
 		// w.MarkActive(fromId, ActiveOnline) // at least mark fromId active
 		// log.Debugf("receive ping from:%s meta:%s", fromId, metaData)
 		mate, ok := w.ClusterMembersMap.Load(fromId)
 		if ok {
 			mate.MarkActive()
 
-			// parse mate.MasterId
-			reqVal, err := url.ParseQuery(metaData)
-			if err != nil {
-				log.Errorf("parse pong.metaData failed, from:%s meta:%s", fromId, metaData)
-			}
-
-			mateClusterId := reqVal.Get("clusterId")
+			mateClusterId := metaData.Get("clusterId")
 			if mateClusterId != w.ClusterId {
 				log.Warnf("receive ping from %s, what hell your clusterId:%s diff from my:%s", fromId, mateClusterId, w.ClusterId)
 			}
 
-			mateMasterId := reqVal.Get("masterId")
+			mateMasterId := metaData.Get("masterId")
 
 			mate.MasterId = mateMasterId
 
@@ -575,7 +569,7 @@ func (w *Worker) ServePingable() error {
 				// TODO: how to do?
 			}
 
-			mateListVer := reqVal.Get("listVer")
+			mateListVer := metaData.Get("listVer")
 			if mateListVer != w.listVer {
 				log.Warnf("receive ping from %s, what hell your listVer:%s diff from my:%s", fromId, mateListVer, w.listVer)
 			}
