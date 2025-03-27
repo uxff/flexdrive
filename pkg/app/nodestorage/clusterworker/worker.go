@@ -22,9 +22,9 @@ const RegisterIntervalSec = 5 // 作为worker或master注册间隔
 const (
 	MsgActionFollow      = "cluster.follow"
 	MsgActionUpdateNodes = "cluster.updateNodes"
-	MsgActionKickNode    = "cluster.kick"        // @deprecated
-	MsgActionAddNode     = "cluster.add"         // @deprecated
-	MsgActionEraseMaster = "cluster.erasemaster" // @deprecated
+	// MsgActionKickNode    = "cluster.kick"        // @deprecated
+	// MsgActionAddNode     = "cluster.add"         // @deprecated
+	// MsgActionEraseMaster = "cluster.erasemaster" // @deprecated
 )
 
 const (
@@ -505,22 +505,6 @@ func (w *Worker) ServePingable() error {
 		}
 
 		return w.buildMsgRes("OK", ""), nil
-	})
-
-	// @deprecated, KickNode will be instead of UpdateNodes
-	// @param string nodeId
-	w.pingableWorker.RegisterMsgHandler(MsgActionKickNode, func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error) {
-		// delete(w.ClusterMembers, reqParam.Get("nodeId"))
-		// w.ClusterMembersMap.Delete(reqParam.Get("nodeId")) // TODO: Not to kick, do mark inactive instead
-		targetId := reqParam.Get("nodeId")
-		w.MarkMateActive(targetId, ActiveOffline)
-		return nil, nil
-	})
-
-	// @deprecated, use UpdateNodes instead.
-	w.pingableWorker.RegisterMsgHandler(MsgActionEraseMaster, func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error) {
-		w.MasterId = ""
-		return nil, nil
 	})
 
 	// will follow param masterId. dont return error
