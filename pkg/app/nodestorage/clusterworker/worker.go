@@ -419,10 +419,14 @@ func (w *Worker) UpdateMates(clusterMembers string, listVer string) (memberCnt i
 		}
 		memberCnt++
 		if !exist {
-			// w.ClusterMembersMap.Delete(mateId)
-			mate.MarkDeactive()
+			mate.MarkDeactive() // lately delete
 			log.Debugf("%s be kicked out my(%s) cluster(%s)", mate.Id, w.Id, w.ClusterId)
 			memberCnt--
+
+			go func(mateId string) {
+				w.ClusterMembersMap.Delete(mateId)
+				time.Sleep(time.Second * 5)
+			}(mateId)
 		}
 	})
 
