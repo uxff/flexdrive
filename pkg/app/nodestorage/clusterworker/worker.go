@@ -215,11 +215,11 @@ func (w *Worker) KeepRegistered() {
 			w.RegisterToMates()
 
 			mateDesc := ""
-			w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
+			memberCnt := w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
 				mateDesc += fmt.Sprintf("%s->%s:%d; ", mate.Id, mate.masterId, mate.active)
 			})
 
-			log.Debugf("id:%s has registered to mates(%s), master:%s", w.Id, mateDesc, w.masterId)
+			log.Debugf("id:%s has registered to %d mates(%s), master:%s", w.Id, memberCnt, mateDesc, w.masterId)
 
 			time.Sleep(time.Second * RegisterIntervalSec)
 		}
