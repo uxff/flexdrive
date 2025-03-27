@@ -577,7 +577,7 @@ func (w *Worker) ServePingable() error {
 			}
 
 		}
-		return nil, nil
+		return w.buildMsgRes("OK", ""), nil
 	})
 
 	return w.pingableWorker.Serve(w.ServiceAddr)
