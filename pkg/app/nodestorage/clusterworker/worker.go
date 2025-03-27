@@ -119,23 +119,6 @@ func (w *Worker) Start() error {
 		time.Sleep(time.Millisecond * 100)
 	}
 
-	// 抢占式选举 最快选举好的直接广播给别人 让别人无条件服从
-	// masterId := w.FindFollowedMaster()
-	// if masterId != "" {
-	// 	// 如果master也在follow自己，则比较hash字符串后在决定。字符串靠前的当master
-	// 	masterNode, exist := w.ClusterMembersMap.Load(masterId)
-	// 	if !exist || masterNode == nil || !masterNode.IsActive() {
-	// 		log.Warnf("find followed master(%s) but not exist in my list, or inactive:%+v", masterId, masterNode)
-	// 	} else {
-	// 		//
-	// 		log.Debugf("%s will follow %s from existing cluster", w.Id, masterId)
-	// 		w.Follow(masterId)
-	// 	}
-
-	// } else {
-	// 	log.Debugf("cannot find out existing master, will elect new master.")
-	// }
-
 	w.ElectMaster()
 
 	for {
@@ -252,7 +235,6 @@ func (w *Worker) Follow(masterId string) error {
 	}
 
 	// check if master follows me
-
 	if target.MasterId != "" && target.MasterId != target.Id {
 		// 跟随主人的主人
 		//return w.Follow(target.MasterId)
@@ -268,19 +250,8 @@ func (w *Worker) Follow(masterId string) error {
 
 // 选择出不超时的 至少选择出自己
 func (w *Worker) VoteAMaster() string {
-	// if len(w.ClusterMembers) == 0 {
-	// 	// must use self
-	// 	return w.Id
-	// }
 
 	allCondidateMateIds := make([]string, 0)
-	// for mateId := range w.ClusterMembers {
-	// 	if !w.Active {
-	// 		// 超时的节点不能参与投票
-	// 		continue
-	// 	}
-	// 	allMateIds = append(allMateIds, mateId)
-	// }
 	memberCnt := w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
 		if mate.IsActive() {
 			allCondidateMateIds = append(allCondidateMateIds, mateId)
@@ -318,27 +289,6 @@ func (w *Worker) ElectMaster() {
 	w.BroadcastVoted(votedMasterId)
 
 }
-
-// find existing master. Make sure this master has been follow by more than half of total members
-// func (w *Worker) FindFollowedMaster() string {
-// 	masterMap := make(map[string]int, 0)
-// 	// for mateId := range w.ClusterMembers {
-// 	memberCnt := w.ClusterMembersMap.RangeAndCount(func(mateId string, mate *Worker) {
-// 		if mate.IsActive() && mate.MasterId != "" {
-// 			masterMap[mate.MasterId]++
-// 		}
-// 	})
-
-// 	for masterId, followerNum := range masterMap {
-// 		// if followerNum >= len(w.ClusterMembers)/2 {
-// 		if followerNum > memberCnt/2 { // BUG HERE!
-// 			log.Debugf("find a master(%s) with a number of followers(%d) that over half the total:%d", masterId, followerNum, memberCnt/2)
-// 			return masterId
-// 		}
-// 	}
-
-// 	return ""
-// }
 
 func (w *Worker) PerformMaster() {
 
