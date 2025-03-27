@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/uxff/flexdrive/pkg/app/nodestorage/clusterworker"
 	"github.com/uxff/flexdrive/pkg/app/nodestorage/model/storagemodel"
 	"github.com/uxff/flexdrive/pkg/dao"
 	"github.com/uxff/flexdrive/pkg/dao/base"
@@ -82,7 +83,11 @@ func NodeList(c *gin.Context) {
 	// 从数据库结构转换成返回结构
 	resItems := make([]*NodeItem, 0)
 	for _, v := range list {
-		v.ClusterId += "@" + storagemodel.GetRuntimeWorker().GetListVer()
+		storagemodel.GetRuntimeWorker().GetRuntimeMembers().RangeAndCount(func(mateId string, mate *clusterworker.Worker) {
+			if v.NodeName == mateId {
+				v.ClusterId += "@" + mate.GetListVer()
+			}
+		})
 		resItems = append(resItems, NewNodeItemFromEnt(v))
 	}
 
