@@ -477,6 +477,8 @@ func (w *Worker) ServePingable() error {
 	// @IMPORTANT: receiver must compare mateListVer and local listVer, use new one.
 	// @param reqParam: {"members":"node1,node2,...","listVer":"20250101.150405"}
 	w.pingableWorker.RegisterMsgHandler(MsgActionUpdateNodes, func(fromId, toId, msgId string, reqParam url.Values) (url.Values, error) {
+		log.Debugf("%s tell me to update nodes: %v", fromId, reqParam)
+
 		members := reqParam.Get("members")
 		if members == "" {
 			log.Errorf("when handling UpdateNodes, members not give, ignore.")
