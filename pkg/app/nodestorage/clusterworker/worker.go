@@ -179,8 +179,10 @@ func (w *Worker) RegisterToMates() {
 			// ping metaData: {"masterId":"xx","members":"127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033","clusterId":"mycluster","listVer":"xx"}
 			res, err := w.pingableWorker.PingTo(mate.ServiceAddr, w.Id, w.buildPingMetaData())
 			if err == nil && res != nil {
-				// 发出ping成功跟新本地的mate状态；收到ping方更新对方自己的mate的active状态。
-				w.RegisterIn(mateId, res.Get("masterId"))
+				if res.Get("listVer") == w.listVer {
+					// 发出ping成功跟新本地的mate状态；收到ping方更新对方自己的mate的active状态。
+					w.RegisterIn(mateId, res.Get("masterId"))
+				}
 			}
 		}(mateId, mate)
 	})
@@ -417,7 +419,8 @@ func (w *Worker) UpdateMates(clusterMembers string, listVer string) (memberCnt i
 		}
 		memberCnt++
 		if !exist {
-			w.ClusterMembersMap.Delete(mateId)
+			// w.ClusterMembersMap.Delete(mateId)
+			mate.MarkDeactive()
 			log.Debugf("%s be kicked out my(%s) cluster(%s)", mate.Id, w.Id, w.ClusterId)
 			memberCnt--
 		}
@@ -553,6 +556,14 @@ func (w *Worker) ServePingable() error {
 		// log.Debugf("receive ping from:%s meta:%s", fromId, metaData)
 		mate, ok := w.ClusterMembersMap.Load(fromId)
 		if ok {
+
+			mateListVer := metaData.Get("listVer")
+			if mateListVer < w.listVer {
+				// 放弃旧的pong，因为这个可能是被踢出的节点发来的。
+				log.Warnf("receive ping from %s, what hell your listVer:%s is old than my:%s", fromId, mateListVer, w.listVer)
+				return w.buildMsgRes("FAIL", ""), nil
+			}
+
 			mate.MarkActive()
 
 			mateClusterId := metaData.Get("clusterId")
@@ -567,11 +578,6 @@ func (w *Worker) ServePingable() error {
 			if mateMasterId != w.masterId {
 				log.Warnf("receive ping from %s master %s diff from my master:%s", fromId, mateMasterId, w.masterId)
 				// TODO: how to do?
-			}
-
-			mateListVer := metaData.Get("listVer")
-			if mateListVer != w.listVer {
-				log.Warnf("receive ping from %s, what hell your listVer:%s diff from my:%s", fromId, mateListVer, w.listVer)
 			}
 
 		}
