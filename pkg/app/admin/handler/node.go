@@ -88,6 +88,7 @@ func NodeList(c *gin.Context) {
 	c.HTML(http.StatusOK, "node/list.tpl", gin.H{
 		"LoginInfo": getLoginInfo(c),
 		"IsLogin":   isLoginIn(c),
+		"ts":        time.Now().Unix(),
 		"total":     total,
 		"page":      req.Page,
 		"pagesize":  req.PageSize,

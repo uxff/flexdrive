@@ -86,9 +86,9 @@
                     <td>
                         <button class="btn btn-info setSpace " data-toggle1="modal" data-target1="#setspaceModal" data-id="{{.Id}}" data-space="{{.TotalSpace}}">设置空间</button>
                         {{if eq .Status 1}}
-                            <a href="/node/kick/{{.Id}}">Kick</a>
+                            <a href="/node/kick/{{.Id}}?ts={{.ts}}">Kick</a>
                         {{else}}
-                            <a href="/node/invite/{{.Id}}">Invite</a>
+                            <a href="/node/invite/{{.Id}}?ts={{.ts}}">Invite</a>
                         {{end}}
                     </td>
                 </tr>
