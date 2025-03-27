@@ -568,6 +568,8 @@ func (w *Worker) ServePingable() error {
 
 			mateMasterId := reqVal.Get("masterId")
 
+			mate.MasterId = mateMasterId
+
 			if mateMasterId != w.MasterId {
 				log.Warnf("receive ping from %s master %s diff from my master:%s", fromId, mateMasterId, w.MasterId)
 				// TODO: how to do?
