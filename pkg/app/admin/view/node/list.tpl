@@ -67,28 +67,28 @@
                 </tr>
             </thead>
             <tbody>
-                {{range .list}}
+                {{range $i, $v := .list}}
                 <tr>
-                    <td>{{.Id}}</td>
+                    <td>{{$v.Id}}</td>
                     <td>
-                        {{if eq .Follow .NodeName}}
-                            <b class="text-success">{{.NodeName}}(I'm Master.)</b>
+                        {{if eq $v.Follow $v.NodeName}}
+                            <b class="text-success">{{$v.NodeName}}(I'm Master.)</b>
                         {{else}}
-                            {{.NodeName}} (follow: {{.Follow}})
+                            {{$v.NodeName}} (follow: {{$v.Follow}})
                         {{end}}
                     </td>
-                    <td>{{.NodeAddr}}</td>
-                    <td>{{space4Human .UsedSpace }} / {{space4Human .TotalSpace }}</td>
-                    <td>{{.FileCount }}</td>
-                    <td>{{.Created}}</td>
-                    <td style="color:{{timeSmell .LastRegistered}}"><b>{{.LastRegistered}}</b></td>
-                    <td>{{mgrStatus .Status}}</td>
+                    <td>{{$v.NodeAddr}}</td>
+                    <td>{{space4Human $v.UsedSpace }} / {{space4Human $v.TotalSpace }}</td>
+                    <td>{{$v.FileCount }}</td>
+                    <td>{{$v.Created}}</td>
+                    <td style="color:{{timeSmell $v.LastRegistered}}"><b>{{$v.LastRegistered}}</b></td>
+                    <td>{{mgrStatus $v.Status}}</td>
                     <td>
-                        <button class="btn btn-info setSpace " data-toggle1="modal" data-target1="#setspaceModal" data-id="{{.Id}}" data-space="{{.TotalSpace}}">设置空间</button>
-                        {{if eq .Status 1}}
-                            <a href="/node/kick/{{.Id}}?ts={{.nowts}}">Kick</a>
+                        <button class="btn btn-info setSpace " data-toggle1="modal" data-target1="#setspaceModal" data-id="{{$v.Id}}" data-space="{{$v.TotalSpace}}">设置空间</button>
+                        {{if eq $v.Status 1}}
+                            <a href="/node/kick/{{$v.Id}}?ts={{.nowts}}">Kick</a>
                         {{else}}
-                            <a href="/node/invite/{{.Id}}?ts={{.nowts}}">Invite</a>
+                            <a href="/node/invite/{{$v.Id}}?ts={{.nowts}}">Invite</a>
                         {{end}}
                     </td>
                 </tr>
