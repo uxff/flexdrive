@@ -108,17 +108,18 @@ func (w *HttpPingableWorker) MsgTo(mateAddr, action, msgId string, param url.Val
 		ToId:   param.Get("toId"),
 		Action: action,
 		Data:   param.Encode(),
+		// MsgId:  msgId, // Useless
 	}
 	// req := param
 	// req.Add("action", action)
 	// req.Add("msgId", "")
 
-	method := "msg"
+	prefix := "msg"
 
 	reqBuf, _ := json.Marshal(req)
 	reqBufReader := bytes.NewReader(reqBuf) //strings.NewReader(req.Encode()) //
 
-	targetUrl := w.genServeUrl(mateAddr, method)
+	targetUrl := w.genServeUrl(mateAddr, prefix)
 	resp, err := http.Post(targetUrl, gin.MIMEJSON, reqBufReader)
 	if err != nil {
 		log.Errorf("ping error:%v", err)
@@ -140,11 +141,11 @@ func (w *HttpPingableWorker) MsgTo(mateAddr, action, msgId string, param url.Val
 	return resVal, err
 }
 
-func (w *HttpPingableWorker) genServeUrl(serviceAddr, method string) string {
+func (w *HttpPingableWorker) genServeUrl(serviceAddr, prefix string) string {
 	u := url.URL{
 		Scheme: "http",
 		Host:   serviceAddr,
-		Path:   "/" + method,
+		Path:   "/" + prefix,
 		//RawQuery: params.Encode(),
 	}
 	return u.String()
