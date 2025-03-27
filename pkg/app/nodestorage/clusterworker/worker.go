@@ -400,6 +400,7 @@ func (w *Worker) UpdateMates(clusterMembers string, listVer string) (memberCnt i
 		if mate.Id == w.Id {
 			IamIn = true
 			mate.MarkActive() // at least myself online
+			mate.listVer = listVer
 		}
 	}
 
