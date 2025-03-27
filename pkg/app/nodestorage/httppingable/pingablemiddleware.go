@@ -62,12 +62,12 @@ func (w *HttpPingableWorker) PingTo(mateAddr string, fromId string, metaData url
 		MetaData: metaData.Encode(),
 	}
 
-	method := "ping"
+	prefix := "ping"
 
 	reqBuf, _ := json.Marshal(req)
 	reqBufReader := bytes.NewReader(reqBuf) //strings.NewReader(req.Encode()) //
 
-	targetUrl := w.genServeUrl(mateAddr, method)
+	targetUrl := w.genServeUrl(mateAddr, prefix)
 	resp, err := http.Post(targetUrl, gin.MIMEPOSTForm, reqBufReader)
 	if err != nil {
 		log.Errorf("ping error:%v", err)

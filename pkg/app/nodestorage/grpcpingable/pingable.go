@@ -71,7 +71,7 @@ func NewGrpcWorker() *GrpcWorker {
 func (g *GrpcWorker) Ping(ctx context.Context, req *pingablepb.PingRequest) (*pingablepb.PingResponse, error) {
 	if g.pongHandler != nil {
 		reqVal, _ := url.ParseQuery(req.MetaData)
-		resMap, err := g.pongHandler(req.FromId, req.MasterId, reqVal)
+		resMap, err := g.pongHandler(req.FromId, "", reqVal)
 		res := &pingablepb.PingResponse{
 			Code: 0,
 			Msg:  "",
@@ -216,7 +216,7 @@ func (g *GrpcWorker) Serve(serviceAddr string) error {
 	var opts []grpc.ServerOption
 	g.rpcServer = grpc.NewServer(opts...)
 
-	pingablepb.RegisterPingableInterfaceServer(g.rpcServer, &GrpcWorker{})
+	pingablepb.RegisterPingableInterfaceServer(g.rpcServer, g)
 	reflection.Register(g.rpcServer)
 
 	return g.rpcServer.Serve(lis)

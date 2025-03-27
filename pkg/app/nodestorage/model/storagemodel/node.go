@@ -12,7 +12,7 @@ import (
 
 	//worker "github.com/uxff/flexdrive/pkg/app/nodestorage/httpworker"
 	worker "github.com/uxff/flexdrive/pkg/app/nodestorage/clusterworker"
-	"github.com/uxff/flexdrive/pkg/app/nodestorage/httppingable"
+	"github.com/uxff/flexdrive/pkg/app/nodestorage/grpcpingable"
 	"github.com/uxff/flexdrive/pkg/log"
 	"github.com/uxff/flexdrive/pkg/utils/filehash"
 
@@ -67,9 +67,9 @@ func StartNode(storageDir string, httpAddr string, clusterId string, clusterMemb
 		}
 	}
 
-	node.Worker = worker.NewWorker(node.WorkerAddr, node.ClusterId)     //httpworker
-	node.Worker.SetPingableWorker(httppingable.NewHttpPingableWorker()) //httppingable
-	// node.Worker.SetPingableWorker(grpcpingable.NewGrpcWorker()) //grpcpingable
+	node.Worker = worker.NewWorker(node.WorkerAddr, node.ClusterId) //httpworker
+	// node.Worker.SetPingableWorker(httppingable.NewHttpPingableWorker()) //httppingable
+	node.Worker.SetPingableWorker(grpcpingable.NewGrpcWorker()) //grpcpingable
 
 	// update mates list
 	memberCnt := node.Worker.UpdateMates(clusterMembers, node.Worker.GenNewListVer())
