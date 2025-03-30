@@ -52,7 +52,7 @@ func LoginForm(c *gin.Context) {
 		return
 	}
 
-	if mgrEnt.Id == 0 {
+	if mgrEnt == nil || mgrEnt.Id == 0 {
 		log.Warnf("email:%s not exist, verify failed", req.Email)
 		JsonErr(c, ErrMgrNotExist)
 		return
