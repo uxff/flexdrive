@@ -77,6 +77,7 @@ func LoginForm(c *gin.Context) {
 	JsonOk(c, gin.H{
 		"date":      time.Now(),
 		"API-Token": token,
+		"mgr":       mgrEnt,
 	})
 	// c.Redirect(http.StatusMovedPermanently, RouteHome)
 }
