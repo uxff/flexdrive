@@ -80,7 +80,9 @@ func LoginForm(c *gin.Context) {
 
 	// c.Redirect(http.StatusMovedPermanently, RouteHome)
 	//StdResponse(c, ErrSuccess, "/")
-	JsonOk(c, nil)
+	JsonOk(c, gin.H{
+		"user": userEnt,
+	})
 }
 
 //// 获取一些全局配置 比如登录信息 菜单列表
