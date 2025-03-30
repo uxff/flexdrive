@@ -76,12 +76,13 @@ func LoginForm(c *gin.Context) {
 	}
 
 	// 登录成功 种下cookie
-	AcceptLogin(c, userEnt)
+	tokenStr, _ := AcceptLogin(c, userEnt)
 
 	// c.Redirect(http.StatusMovedPermanently, RouteHome)
 	//StdResponse(c, ErrSuccess, "/")
 	JsonOk(c, gin.H{
-		"user": userEnt,
+		"user":      userEnt,
+		"API-Token": tokenStr,
 	})
 }
 
@@ -124,7 +125,7 @@ func Logout(c *gin.Context) {
 }
 
 // 受理登录
-func AcceptLogin(c *gin.Context, userEnt *dao.User) error {
+func AcceptLogin(c *gin.Context, userEnt *dao.User) (tokenStr string, err error) {
 	userEnt.LastLoginIp = getRemoteIp(c)
 	userEnt.LastLoginAt = time.Now() //util.JsonTime(time.Now()) // time.Now().Format("2006-01-02 15:04:05")
 
@@ -138,7 +139,7 @@ func AcceptLogin(c *gin.Context, userEnt *dao.User) error {
 	cuaToken, jwtTokenStr, err := genJwtSignedTokenFromUserEnt(userEnt)
 	if err != nil {
 		log.Errorf("gen jwt token failed:%v", err)
-		return err
+		return "", err
 	}
 
 	c.SetCookie(CookieKeyAuth, jwtTokenStr, LoginCookieExpire, "", "", false, false)
@@ -147,7 +148,7 @@ func AcceptLogin(c *gin.Context, userEnt *dao.User) error {
 
 	// record login
 	go userEnt.UpdateById([]string{"lastLoginAt", "lastLoginIp"})
-	return nil
+	return jwtTokenStr, nil
 }
 
 func ClearLogin(c *gin.Context) {

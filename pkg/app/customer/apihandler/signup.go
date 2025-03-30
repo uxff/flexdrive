@@ -108,9 +108,11 @@ func SignupForm(c *gin.Context) {
 	}
 
 	// 注册成功 种下cookie
-	AcceptLogin(c, userEnt)
+	tokenStr, _ := AcceptLogin(c, userEnt)
 
 	// c.Redirect(http.StatusMovedPermanently, RouteHome)
 	//StdResponse(c, ErrSuccess, "/")
-	JsonOk(c, nil)
+	JsonOk(c, gin.H{
+		"API-Token": tokenStr,
+	})
 }
