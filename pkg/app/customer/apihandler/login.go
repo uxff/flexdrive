@@ -82,8 +82,8 @@ func LoginForm(c *gin.Context) {
 	// c.Redirect(http.StatusMovedPermanently, RouteHome)
 	//StdResponse(c, ErrSuccess, "/")
 	JsonOk(c, gin.H{
-		"user":      userEnt,
 		"API-Token": tokenStr,
+		// "user":      userEnt,
 	})
 }
 
@@ -145,6 +145,7 @@ func AcceptLogin(c *gin.Context, userEnt *dao.User) (tokenStr string, err error)
 
 	c.SetCookie(CookieKeyAuth, jwtTokenStr, LoginCookieExpire, "", "", false, false)
 	cuaToken.UserEnt = userEnt
+	cuaToken.UserEnt.Pwd = ""
 	c.Set(CtxKeyCua, cuaToken)
 
 	// record login

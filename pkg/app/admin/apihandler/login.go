@@ -77,7 +77,7 @@ func LoginForm(c *gin.Context) {
 	JsonOk(c, gin.H{
 		"date":      time.Now(),
 		"API-Token": token,
-		"mgr":       mgrEnt,
+		// "mgr":       mgrEnt,
 	})
 	// c.Redirect(http.StatusMovedPermanently, RouteHome)
 }
@@ -150,6 +150,7 @@ func AcceptLogin(c *gin.Context, mgrEnt *dao.Manager) (token string, err error) 
 
 	// 设置context
 	gpaToken.MgrEnt = mgrEnt
+	gpaToken.MgrEnt.Pwd = ""
 	c.Set(CtxKeyGpa, gpaToken)
 
 	// record login
