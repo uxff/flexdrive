@@ -11,14 +11,15 @@ import (
 )
 
 type LoginRequest struct {
-	Email   string `form:"email" json:"email"`
-	Pwd     string `form:"password" json:"password"`
-	Captcha string `form:"captcha" json:"captcha"`
+	Username string `form:"username" json:"username"`
+	Pwd      string `form:"password" json:"password"`
+	Captcha  string `form:"captcha" json:"captcha"`
 }
 
 type LoginResponse struct {
-	Email  string `json:"email"`
-	UserId int    `json:"mid"`
+	Email    string `json:"email"`
+	Username string `json:"username"`
+	UserId   int    `json:"mid"`
 }
 
 // func Login(c *gin.Context) {
@@ -50,21 +51,21 @@ func LoginForm(c *gin.Context) {
 		return
 	}
 
-	userEnt, err := dao.GetUserByEmail(req.Email)
+	userEnt, err := dao.GetUserByEmail(req.Username)
 	if err != nil {
-		log.Errorf("query by email:%s failed:%v", req.Email, err)
+		log.Errorf("query by email:%s failed:%v", req.Username, err)
 		JsonErr(c, ErrUserNotExist)
 		return
 	}
 
 	if userEnt == nil || userEnt.Id == 0 {
-		log.Warnf("email:%s not exist, verify failed", req.Email)
+		log.Warnf("email:%s not exist, verify failed", req.Username)
 		JsonErr(c, ErrUserNotExist)
 		return
 	}
 
 	if !userEnt.IsPwdValid(req.Pwd) {
-		log.Warnf("mgr pwd not matched, verify failed. email:%s", req.Email)
+		log.Warnf("mgr pwd not matched, verify failed. email:%s", req.Username)
 		JsonErr(c, ErrInvalidPass)
 		return
 	}

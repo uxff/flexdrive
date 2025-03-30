@@ -17,9 +17,9 @@ import (
 // }
 
 type LoginRequest struct {
-	Email   string `form:"email"`
-	Pwd     string `form:"password" json:"password"`
-	Captcha string `form:"captcha"`
+	Username string `form:"username" json:"username"`
+	Pwd      string `form:"password" json:"password"`
+	Captcha  string `form:"captcha" json:"captcha"`
 }
 
 type LoginResponse struct {
@@ -45,22 +45,22 @@ func LoginForm(c *gin.Context) {
 	}
 
 	// 查找账号
-	mgrEnt, err := dao.GetManagerByEmail(req.Email)
+	mgrEnt, err := dao.GetManagerByEmail(req.Username)
 	if err != nil {
-		log.Errorf("query by email:%s failed:%v", req.Email, err)
+		log.Errorf("query by email:%s failed:%v", req.Username, err)
 		JsonErr(c, ErrMgrNotExist)
 		return
 	}
 
 	if mgrEnt == nil || mgrEnt.Id == 0 {
-		log.Warnf("email:%s not exist, verify failed", req.Email)
+		log.Warnf("email:%s not exist, verify failed", req.Username)
 		JsonErr(c, ErrMgrNotExist)
 		return
 	}
 
 	// 验证密码
 	if !mgrEnt.IsPwdValid(req.Pwd) {
-		log.Warnf("mgr pwd not matched, verify failed. email:%s", req.Email)
+		log.Warnf("mgr pwd not matched, verify failed. email:%s", req.Username)
 		JsonErr(c, ErrInvalidPass)
 		return
 	}
