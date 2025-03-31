@@ -61,11 +61,11 @@ func NewNodeItemFromEnt(nodeEnt *dao.Node) *NodeItem {
 func NodeList(c *gin.Context) {
 	requestId := c.GetString(CtxKeyRequestId)
 
-	// 请求参数校验
+	// 请求参数校验 不能提交空字符串，至少是空对象{}
 	req := &NodeListRequest{}
 	err := c.ShouldBindJSON(req)
 	if err != nil {
-		JsonErr(c, ErrInvalidParam+":"+err.Error())
+		JsonErrMsg(c, ErrInvalidParam, err.Error())
 		return
 	}
 
