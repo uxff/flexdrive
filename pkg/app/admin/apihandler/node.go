@@ -65,7 +65,7 @@ func NodeList(c *gin.Context) {
 	req := &NodeListRequest{}
 	err := c.ShouldBindJSON(req)
 	if err != nil {
-		JsonErr(c, ErrInvalidParam)
+		JsonErr(c, ErrInvalidParam+":"+err.Error())
 		return
 	}
 

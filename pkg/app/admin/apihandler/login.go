@@ -114,6 +114,7 @@ func LoginForm(c *gin.Context) {
 //}
 
 func Logout(c *gin.Context) {
+	// 有问题，清理Cookie后，其实已经发放出去的Token还是有效的，可以继续访问
 	ClearLogin(c)
 	//StdResponse(c, ErrSuccess, nil)
 	JsonOk(c, gin.H{
