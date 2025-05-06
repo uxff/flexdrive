@@ -1,4 +1,4 @@
-export DATADSN='mysql://user:user1234@tcp(127.0.0.1:3306)/flexdrive?charset=utf8mb4&parseTime=True&loc=Local'
+export DATADSN='mysql://flexdrive:flexdrive@tcp(127.0.0.1:13306)/flexdrive?charset=utf8mb4&parseTime=True&loc=Local'
 export CLUSTERMEMBERS=127.0.0.1:10013,127.0.0.1:10023,127.0.0.1:10033
 export STORAGEDIR=./data/
 export CLUSTERID=mydrive1

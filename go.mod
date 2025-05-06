@@ -8,7 +8,7 @@ require (
 	github.com/dchest/captcha v0.0.0-20170622155422-6a29415a8364
 	github.com/garyburd/redigo v1.0.1-0.20170216214944-0d253a66e6e1
 	github.com/gin-gonic/gin v1.9.1
-	github.com/go-sql-driver/mysql v1.3.1-0.20180125054745-bc14601d1bd5
+	github.com/go-sql-driver/mysql v1.8.1
 	github.com/go-xorm/core v0.5.7-0.20170614060517-e9b7412d750d
 	github.com/go-xorm/xorm v0.6.3-0.20170625093504-32d688fd965e
 	github.com/golang-jwt/jwt v3.2.2+incompatible
@@ -21,6 +21,7 @@ require (
 )
 
 require (
+	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/bytedance/sonic v1.9.1 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/denisenkom/go-mssqldb v0.0.0-20200206145737-bbfc9a55622e // indirect
